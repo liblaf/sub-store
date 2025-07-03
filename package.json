@@ -45,10 +45,20 @@
     "lint": "biome check --write",
     "prepack": "npm run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@stricli/auto-complete": "^1.2.0",
+    "@stricli/core": "^1.2.0",
+    "@type-cacheable/core": "^14.1.0",
+    "@type-cacheable/lru-cache-adapter": "^18.0.0",
+    "lru-cache": "^11.1.0",
+    "tslog": "^4.9.3",
+    "world-countries": "^5.1.0",
+    "zod": "^3.25.71"
+  },
   "devDependencies": {
     "@biomejs/biome": "latest",
     "@tsconfig/bun": "latest",
+    "@types/bun": "latest",
     "bunup": "latest"
   },
   "peerDependencies": {

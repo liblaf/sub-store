@@ -3,9 +3,20 @@
   "workspaces": {
     "": {
       "name": "@liblaf/sub-store",
+      "dependencies": {
+        "@stricli/auto-complete": "^1.2.0",
+        "@stricli/core": "^1.2.0",
+        "@type-cacheable/core": "^14.1.0",
+        "@type-cacheable/lru-cache-adapter": "^18.0.0",
+        "lru-cache": "^11.1.0",
+        "tslog": "^4.9.3",
+        "world-countries": "^5.1.0",
+        "zod": "^3.25.71",
+      },
       "devDependencies": {
         "@biomejs/biome": "latest",
         "@tsconfig/bun": "latest",
+        "@types/bun": "latest",
         "bunup": "latest",
       },
       "peerDependencies": {
@@ -102,9 +113,21 @@
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "https://mirrors.huaweicloud.com/repository/npm/@pkgjs/parseargs/-/parseargs-0.11.0.tgz", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
+    "@stricli/auto-complete": ["@stricli/auto-complete@1.2.0", "https://mirrors.huaweicloud.com/repository/npm/@stricli/auto-complete/-/auto-complete-1.2.0.tgz", { "dependencies": { "@stricli/core": "^1.2.0" }, "bin": { "auto-complete": "dist/bin/cli.js" } }, "sha512-r9/msiloVmTF95mdhe04Uzqei1B0ZofhYRLeiPqpJ1W1RMCC8p9iW7kqBZEbALl2aRL5ZK9OEW3Q1cIejH7KEQ=="],
+
+    "@stricli/core": ["@stricli/core@1.2.0", "https://mirrors.huaweicloud.com/repository/npm/@stricli/core/-/core-1.2.0.tgz", {}, "sha512-5b+npntDY0TAB7wAw0daGlh3/R2sf0TDLyrB1By2jCNH+C+lmcSqMtJXOMLVtEGSkIOvqAgIWpLMSs1PXqzt3w=="],
+
     "@tsconfig/bun": ["@tsconfig/bun@1.0.8", "https://mirrors.huaweicloud.com/repository/npm/@tsconfig/bun/-/bun-1.0.8.tgz", {}, "sha512-JlJaRaS4hBTypxtFe8WhnwV8blf0R+3yehLk8XuyxUYNx6VXsKCjACSCvOYEFUiqlhlBWxtYCn/zRlOb8BzBQg=="],
 
     "@tybys/wasm-util": ["@tybys/wasm-util@0.9.0", "https://mirrors.huaweicloud.com/repository/npm/@tybys/wasm-util/-/wasm-util-0.9.0.tgz", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw=="],
+
+    "@type-cacheable/core": ["@type-cacheable/core@14.1.0", "https://mirrors.huaweicloud.com/repository/npm/@type-cacheable/core/-/core-14.1.0.tgz", { "dependencies": { "blueimp-md5": "^2.19.0", "reflect-metadata": "^0.2.0", "serialize-javascript": "^6.0.0" } }, "sha512-GyIjMrjeZuP2G+u6SZAKqaaJ9eJKaxY7+DT6pMzYQSqv5ikNX7Rd5xCw0BcELSssJygOdgCgD5XR8hD7c5q97A=="],
+
+    "@type-cacheable/lru-cache-adapter": ["@type-cacheable/lru-cache-adapter@18.0.0", "https://mirrors.huaweicloud.com/repository/npm/@type-cacheable/lru-cache-adapter/-/lru-cache-adapter-18.0.0.tgz", { "peerDependencies": { "@type-cacheable/core": ">=14.0.0 < 15.0.0", "lru-cache": ">=11.0.0 < 12.0.0" } }, "sha512-3dML//6RSC9WX/CPaZHOwN2dT9KtPRr0Bk0v75Ba8C6HnxyjcP2R3VsAM9p3G2n80XJncWDOX3NZy6rguPhiJg=="],
+
+    "@types/bun": ["@types/bun@1.2.17", "https://mirrors.huaweicloud.com/repository/npm/@types/bun/-/bun-1.2.17.tgz", { "dependencies": { "bun-types": "1.2.17" } }, "sha512-l/BYs/JYt+cXA/0+wUhulYJB6a6p//GTPiJ7nV+QHa8iiId4HZmnu/3J/SowP5g0rTiERY2kfGKXEK5Ehltx4Q=="],
+
+    "@types/node": ["@types/node@24.0.10", "https://mirrors.huaweicloud.com/repository/npm/@types/node/-/node-24.0.10.tgz", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-ENHwaH+JIRTDIEEbDK6QSQntAYGtbvdDXnMXnZaZ6k13Du1dPMmprkEHIL7ok2Wl2aZevetwTAb5S+7yIF+enA=="],
 
     "ansi-regex": ["ansi-regex@5.0.1", "https://mirrors.huaweicloud.com/repository/npm/ansi-regex/-/ansi-regex-5.0.1.tgz", {}, "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="],
 
@@ -112,7 +135,11 @@
 
     "balanced-match": ["balanced-match@1.0.2", "https://mirrors.huaweicloud.com/repository/npm/balanced-match/-/balanced-match-1.0.2.tgz", {}, "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="],
 
+    "blueimp-md5": ["blueimp-md5@2.19.0", "https://mirrors.huaweicloud.com/repository/npm/blueimp-md5/-/blueimp-md5-2.19.0.tgz", {}, "sha512-DRQrD6gJyy8FbiE4s+bDoXS9hiW3Vbx5uCdwvcCf3zLHL+Iv7LtGHLpr+GZV8rHG8tK766FGYBwRbu8pELTt+w=="],
+
     "brace-expansion": ["brace-expansion@2.0.2", "https://mirrors.huaweicloud.com/repository/npm/brace-expansion/-/brace-expansion-2.0.2.tgz", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ=="],
+
+    "bun-types": ["bun-types@1.2.17", "https://mirrors.huaweicloud.com/repository/npm/bun-types/-/bun-types-1.2.17.tgz", { "dependencies": { "@types/node": "*" } }, "sha512-ElC7ItwT3SCQwYZDYoAH+q6KT4Fxjl8DtZ6qDulUFBmXA8YB4xo+l54J9ZJN+k2pphfn9vk7kfubeSd5QfTVJQ=="],
 
     "bunup": ["bunup@0.8.54", "https://mirrors.huaweicloud.com/repository/npm/bunup/-/bunup-0.8.54.tgz", { "dependencies": { "@clack/prompts": "^0.10.1", "chokidar": "^4.0.3", "coffi": "^0.1.31", "giget": "^2.0.0", "picocolors": "^1.1.1", "replace-in-file": "^8.3.0", "tinyexec": "^1.0.1", "typeroll": "^0.6.11" }, "peerDependencies": { "lightningcss": ">=1.17.0", "typescript": ">=4.5.0" }, "optionalPeers": ["lightningcss", "typescript"], "bin": { "bunup": "dist/cli/index.js" } }, "sha512-p47mIxNLjH30fxpQbqcwRZVaVBpzbWinTs5MK2uYu0jxdfObIvoz3IVFmOCN29ejiiZxtS55IyxCxFavkyvNHA=="],
 
@@ -160,7 +187,7 @@
 
     "jackspeak": ["jackspeak@3.4.3", "https://mirrors.huaweicloud.com/repository/npm/jackspeak/-/jackspeak-3.4.3.tgz", { "dependencies": { "@isaacs/cliui": "^8.0.2" }, "optionalDependencies": { "@pkgjs/parseargs": "^0.11.0" } }, "sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw=="],
 
-    "lru-cache": ["lru-cache@10.4.3", "https://mirrors.huaweicloud.com/repository/npm/lru-cache/-/lru-cache-10.4.3.tgz", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
+    "lru-cache": ["lru-cache@11.1.0", "https://mirrors.huaweicloud.com/repository/npm/lru-cache/-/lru-cache-11.1.0.tgz", {}, "sha512-QIXZUBJUx+2zHUdQujWejBkcD9+cs94tLn0+YL8UrCh+D5sCXZ4c7LaEH48pNwRY3MLDgqUFyhlCyjJPf1WP0A=="],
 
     "minimatch": ["minimatch@9.0.5", "https://mirrors.huaweicloud.com/repository/npm/minimatch/-/minimatch-9.0.5.tgz", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
@@ -186,11 +213,19 @@
 
     "pkg-types": ["pkg-types@2.2.0", "https://mirrors.huaweicloud.com/repository/npm/pkg-types/-/pkg-types-2.2.0.tgz", { "dependencies": { "confbox": "^0.2.2", "exsolve": "^1.0.7", "pathe": "^2.0.3" } }, "sha512-2SM/GZGAEkPp3KWORxQZns4M+WSeXbC2HEvmOIJe3Cmiv6ieAJvdVhDldtHqM5J1Y7MrR1XhkBT/rMlhh9FdqQ=="],
 
+    "randombytes": ["randombytes@2.1.0", "https://mirrors.huaweicloud.com/repository/npm/randombytes/-/randombytes-2.1.0.tgz", { "dependencies": { "safe-buffer": "^5.1.0" } }, "sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ=="],
+
     "readdirp": ["readdirp@4.1.2", "https://mirrors.huaweicloud.com/repository/npm/readdirp/-/readdirp-4.1.2.tgz", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
+
+    "reflect-metadata": ["reflect-metadata@0.2.2", "https://mirrors.huaweicloud.com/repository/npm/reflect-metadata/-/reflect-metadata-0.2.2.tgz", {}, "sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q=="],
 
     "replace-in-file": ["replace-in-file@8.3.0", "https://mirrors.huaweicloud.com/repository/npm/replace-in-file/-/replace-in-file-8.3.0.tgz", { "dependencies": { "chalk": "^5.3.0", "glob": "^10.4.2", "yargs": "^17.7.2" }, "bin": { "replace-in-file": "bin/cli.js" } }, "sha512-4VhddQiMCPIuypiwHDTM+XHjZoVu9h7ngBbSCnwGRcwdHwxltjt/m//Ep3GDwqaOx1fDSrKFQ+n7uo4uVcEz9Q=="],
 
     "require-directory": ["require-directory@2.1.1", "https://mirrors.huaweicloud.com/repository/npm/require-directory/-/require-directory-2.1.1.tgz", {}, "sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q=="],
+
+    "safe-buffer": ["safe-buffer@5.2.1", "https://mirrors.huaweicloud.com/repository/npm/safe-buffer/-/safe-buffer-5.2.1.tgz", {}, "sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ=="],
+
+    "serialize-javascript": ["serialize-javascript@6.0.2", "https://mirrors.huaweicloud.com/repository/npm/serialize-javascript/-/serialize-javascript-6.0.2.tgz", { "dependencies": { "randombytes": "^2.1.0" } }, "sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g=="],
 
     "shebang-command": ["shebang-command@2.0.0", "https://mirrors.huaweicloud.com/repository/npm/shebang-command/-/shebang-command-2.0.0.tgz", { "dependencies": { "shebang-regex": "^3.0.0" } }, "sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA=="],
 
@@ -218,11 +253,17 @@
 
     "tslib": ["tslib@2.8.1", "https://mirrors.huaweicloud.com/repository/npm/tslib/-/tslib-2.8.1.tgz", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
+    "tslog": ["tslog@4.9.3", "https://mirrors.huaweicloud.com/repository/npm/tslog/-/tslog-4.9.3.tgz", {}, "sha512-oDWuGVONxhVEBtschLf2cs/Jy8i7h1T+CpdkTNWQgdAF7DhRo2G8vMCgILKe7ojdEkLhICWgI1LYSSKaJsRgcw=="],
+
     "typeroll": ["typeroll@0.6.11", "https://mirrors.huaweicloud.com/repository/npm/typeroll/-/typeroll-0.6.11.tgz", { "dependencies": { "@babel/parser": "^7.27.5", "@babel/types": "^7.27.3", "coffi": "^0.1.31", "oxc-resolver": "^8.0.0", "oxc-transform": "^0.67.0", "picocolors": "^1.1.1", "std-env": "^3.9.0", "ts-import-resolver": "^0.1.22" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-rnCgqL/xG7nCOTGQhioW3PFMbcOdcgOLE878PsbqZ5FHunXEJPKRNEvE2WsAmu5rqISnNk2palYKa6SuUynetQ=="],
 
     "typescript": ["typescript@5.8.3", "https://mirrors.huaweicloud.com/repository/npm/typescript/-/typescript-5.8.3.tgz", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ=="],
 
+    "undici-types": ["undici-types@7.8.0", "https://mirrors.huaweicloud.com/repository/npm/undici-types/-/undici-types-7.8.0.tgz", {}, "sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw=="],
+
     "which": ["which@2.0.2", "https://mirrors.huaweicloud.com/repository/npm/which/-/which-2.0.2.tgz", { "dependencies": { "isexe": "^2.0.0" }, "bin": { "node-which": "./bin/node-which" } }, "sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA=="],
+
+    "world-countries": ["world-countries@5.1.0", "https://mirrors.huaweicloud.com/repository/npm/world-countries/-/world-countries-5.1.0.tgz", {}, "sha512-CXR6EBvTbArDlDDIWU3gfKb7Qk0ck2WNZ234b/A0vuecPzIfzzxH+O6Ejnvg1sT8XuiZjVlzOH0h08ZtaO7g0w=="],
 
     "wrap-ansi": ["wrap-ansi@7.0.0", "https://mirrors.huaweicloud.com/repository/npm/wrap-ansi/-/wrap-ansi-7.0.0.tgz", { "dependencies": { "ansi-styles": "^4.0.0", "string-width": "^4.1.0", "strip-ansi": "^6.0.0" } }, "sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q=="],
 
@@ -234,6 +275,8 @@
 
     "yargs-parser": ["yargs-parser@21.1.1", "https://mirrors.huaweicloud.com/repository/npm/yargs-parser/-/yargs-parser-21.1.1.tgz", {}, "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="],
 
+    "zod": ["zod@3.25.71", "https://mirrors.huaweicloud.com/repository/npm/zod/-/zod-3.25.71.tgz", {}, "sha512-BsBc/NPk7h8WsUWYWYL+BajcJPY8YhjelaWu2NMLuzgraKAz4Lb4/6K11g9jpuDetjMiqhZ6YaexFLOC0Ogi3Q=="],
+
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "https://mirrors.huaweicloud.com/repository/npm/string-width/-/string-width-5.1.2.tgz", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA=="],
 
     "@isaacs/cliui/strip-ansi": ["strip-ansi@7.1.0", "https://mirrors.huaweicloud.com/repository/npm/strip-ansi/-/strip-ansi-7.1.0.tgz", { "dependencies": { "ansi-regex": "^6.0.1" } }, "sha512-iq6eVVI64nQQTRYq2KtEg2d2uU7LElhTJwsH4YzIHZshxlgZms/wIc4VoDQTlG/IvVIrBKG06CrZnp0qv7hkcQ=="],
@@ -241,6 +284,8 @@
     "@isaacs/cliui/wrap-ansi": ["wrap-ansi@8.1.0", "https://mirrors.huaweicloud.com/repository/npm/wrap-ansi/-/wrap-ansi-8.1.0.tgz", { "dependencies": { "ansi-styles": "^6.1.0", "string-width": "^5.0.1", "strip-ansi": "^7.0.1" } }, "sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ=="],
 
     "nypm/tinyexec": ["tinyexec@0.3.2", "https://mirrors.huaweicloud.com/repository/npm/tinyexec/-/tinyexec-0.3.2.tgz", {}, "sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA=="],
+
+    "path-scurry/lru-cache": ["lru-cache@10.4.3", "https://mirrors.huaweicloud.com/repository/npm/lru-cache/-/lru-cache-10.4.3.tgz", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
 
     "@isaacs/cliui/string-width/emoji-regex": ["emoji-regex@9.2.2", "https://mirrors.huaweicloud.com/repository/npm/emoji-regex/-/emoji-regex-9.2.2.tgz", {}, "sha512-L18DaJsXSUk2+42pv8mLs5jJT2hqFkFE4j21wOmgbUqsZ2hL72NsUU785g9RXgo3s0ZNgVl42TiHp3ZtOv/Vyg=="],
 

@@ -9,8 +9,11 @@
     "jscoverage",
     "jspm",
     "liblaf",
+    "mihomo",
     "nuxt",
     "pids",
+    "stricli",
+    "tslog",
     "vuepress",
     "wscript"
   ],
