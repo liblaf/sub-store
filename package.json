@@ -1,0 +1,63 @@
+{
+  "name": "@liblaf/sub-store",
+  "description": "TODO",
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "module": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "keywords": [
+    "TODO"
+  ],
+  "homepage": "https://github.com/liblaf/sub-store",
+  "bugs": {
+    "url": "https://github.com/liblaf/sub-store/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "liblaf",
+    "url": "https://github.com/liblaf",
+    "email": "30631553+liblaf@users.noreply.github.com"
+  },
+  "bin": {},
+  "repository": "github:liblaf/sub-store",
+  "funding": {
+    "url": "https://github.com/liblaf/sub-store?sponsor=1",
+    "type": "github"
+  },
+  "scripts": {
+    "build": "bunup",
+    "lint": "biome check --write",
+    "prepack": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "latest",
+    "@tsconfig/bun": "latest",
+    "bunup": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "latest"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/",
+    "provenance": true
+  },
+  "readme": "README.md"
+}
