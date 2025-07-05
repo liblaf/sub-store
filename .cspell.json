@@ -4,10 +4,11 @@
   "language": "en",
   "words": [
     "bunup",
+    "cioc",
+    "descr",
     "direnv",
     "dotenv",
     "geoip",
-    "ipap",
     "ipapi",
     "jscoverage",
     "jspm",
@@ -15,9 +16,11 @@
     "mihomo",
     "nuxt",
     "pids",
+    "remeda",
     "stricli",
     "tslog",
     "vuepress",
+    "whois",
     "wscript"
   ],
   "ignorePaths": [

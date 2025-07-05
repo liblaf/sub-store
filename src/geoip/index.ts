@@ -1,6 +1,7 @@
-export type { APIResponse, BulkAPIResponse } from "./ipapi.is";
+export type { APIBulkResponse, APIResponse } from "./ipapi.is";
 export {
+  API,
+  API_BULK_RESPONSE_SCHEMA,
   API_RESPONSE_SCHEMA,
-  BULK_API_RESPONSE_SCHEMA,
-  IPAPIis,
+  GeoIP,
 } from "./ipapi.is";

@@ -50,9 +50,12 @@
     "@stricli/core": "^1.2.0",
     "@type-cacheable/core": "^14.1.0",
     "@type-cacheable/lru-cache-adapter": "^18.0.0",
+    "ky": "^1.8.1",
     "lru-cache": "^11.1.0",
+    "remeda": "^2.24.0",
     "tslog": "^4.9.3",
     "world-countries": "^5.1.0",
+    "yaml": "^2.8.0",
     "zod": "^3.25.71"
   },
   "devDependencies": {

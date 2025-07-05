@@ -94,9 +94,9 @@ export const API_RESPONSE_SCHEMA = z.object({
 
 export type APIResponse = z.infer<typeof API_RESPONSE_SCHEMA>;
 
-export const BULK_API_RESPONSE_SCHEMA = z.record(
+export const API_BULK_RESPONSE_SCHEMA = z.record(
   z.string(),
   API_RESPONSE_SCHEMA,
 );
 
-export type BulkAPIResponse = z.infer<typeof BULK_API_RESPONSE_SCHEMA>;
+export type APIBulkResponse = z.infer<typeof API_BULK_RESPONSE_SCHEMA>;
