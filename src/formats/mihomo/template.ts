@@ -31,15 +31,15 @@ export class MihomoTemplate {
     this.options = MIHOMO_TEMPLATE_OPTIONS_SCHEMA.parse(options);
   }
 
-  async render(outbounds: Outbound[], groups: Group[]): Promise<string> {
+  render(outbounds: Outbound[], groups: Group[]): string {
     let result: Mihomo = R.clone(this.template);
     result.proxies = outbounds
       .map((outbound: Outbound) => outbound.mihomo)
       .filter((mihomo): mihomo is MihomoProxy => mihomo !== undefined);
-    const groupProxy: MihomoProxyGroup = await this.renderGroupProxy();
+    const groupProxy: MihomoProxyGroup = this.renderGroupProxy();
     result["proxy-groups"] = [groupProxy];
     for (const group of groups) {
-      const proxyGroup: MihomoProxyGroup | undefined = await this.renderGroup(
+      const proxyGroup: MihomoProxyGroup | undefined = this.renderGroup(
         outbounds,
         group,
       );
@@ -57,7 +57,7 @@ export class MihomoTemplate {
     return mihomo;
   }
 
-  protected async renderGroupProxy(): Promise<MihomoProxyGroup> {
+  protected renderGroupProxy(): MihomoProxyGroup {
     const options: MihomoProxyGroupOptions = {
       name: "PROXY",
       type: "select",
@@ -66,16 +66,18 @@ export class MihomoTemplate {
     return MIHOMO_PROXY_GROUP_SCHEMA.parse(options);
   }
 
-  protected async renderGroup(
+  protected renderGroup(
     outbounds: Outbound[],
     group: Group,
-  ): Promise<MihomoProxyGroup | undefined> {
+  ): MihomoProxyGroup | undefined {
     const filtered: Outbound[] = outbounds.filter(group.filter);
-    if (!filtered) return undefined;
+    if (filtered.length === 0) return undefined;
     const options: MihomoProxyGroupOptions = {
       name: group.name,
       type: group.type,
-      proxies: filtered.map((outbound: Outbound): string => outbound.name),
+      proxies: filtered.map(
+        (outbound: Outbound): string => outbound.prettyName,
+      ),
       url: group.url,
       icon: group.icon,
     };

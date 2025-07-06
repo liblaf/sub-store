@@ -30,23 +30,33 @@ export class CountryInferrer {
     return result;
   }
 
+  prettyCountry(country: Country | undefined): string {
+    if (!country) return "Unknown";
+    return `${country.flag} ${country.name.common} (${country.cca2})`;
+  }
+
   // @Cacheable cannot cache undefined, so we use a string literal "Unknown" as sentinel
   @Cacheable({ client })
   protected async _infer(outbound: Outbound): Promise<Country | "Unknown"> {
     let result: Country | undefined;
-    result = await this.inferFromServer(outbound.server);
-    if (result) return result;
     result = await this.inferFromName(outbound.name);
+    if (result) return result;
+    result = await this.inferFromServer(outbound);
     if (result) return result;
     return "Unknown";
   }
 
   protected async inferFromServer(
-    server?: string,
+    outbound: Outbound,
   ): Promise<Country | undefined> {
-    if (!server) return undefined;
+    if (!outbound.server) return undefined;
     if (!this.geoip) return undefined;
-    const result: Country | undefined = await this.geoip.lookup(server);
+    const result: Country | undefined = await this.geoip.lookup(
+      outbound.server,
+    );
+    logger.debug(
+      `${outbound.name} => ${outbound.server} => ${this.prettyCountry(result)}`,
+    );
     if (result?.cca2 === "CN") return undefined;
     return result;
   }
@@ -57,9 +67,7 @@ export class CountryInferrer {
       if (country.cca2 === "CN") continue;
       for (const pattern of patterns(country)) {
         if (name.match(pattern)) {
-          logger.debug(
-            `${name} =~ ${pattern} (${country.flag} ${country.name.common})`,
-          );
+          logger.debug(`${name} =~ ${pattern} ${this.prettyCountry(country)}`);
           return country;
         }
       }

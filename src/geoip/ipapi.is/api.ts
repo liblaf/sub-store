@@ -47,6 +47,7 @@ export class API {
   }
 
   async bulk(ips: string[]): Promise<APIBulkResponse> {
+    ips = R.unique(ips);
     const cacheResults: Record<string, APIResponse | undefined> =
       Object.fromEntries(
         await Promise.all(

@@ -18,7 +18,15 @@ export class SubStore {
   }
 
   async fetchMihomoOutbounds(): Promise<Outbound[]> {
-    throw new Error("Not Implemented");
+    const outbounds: Outbound[] = (
+      await Promise.all(
+        this.providers.map(
+          async (provider: Provider): Promise<Outbound[]> =>
+            await provider.fetchMihomoOutbounds(),
+        ),
+      )
+    ).flat();
+    return outbounds;
   }
 
   async servers(): Promise<string[]> {

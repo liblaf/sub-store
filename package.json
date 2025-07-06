@@ -35,7 +35,9 @@
     "url": "https://github.com/liblaf",
     "email": "30631553+liblaf@users.noreply.github.com"
   },
-  "bin": {},
+  "bin": {
+    "sub-store": "./dist/bin/sub-store.js"
+  },
   "repository": "github:liblaf/sub-store",
   "funding": {
     "url": "https://github.com/liblaf/sub-store?sponsor=1",

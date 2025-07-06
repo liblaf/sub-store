@@ -1,3 +1,4 @@
+import * as R from "remeda";
 import type { Country } from "world-countries";
 import countries from "world-countries";
 import { DNS } from "../dns";
@@ -19,19 +20,20 @@ export class GeoIP {
   }
 
   async lookup(server: string): Promise<Country | undefined> {
-    const ips: string[] = await this.dns.resolve4(server);
-    if (!ips) return undefined;
+    const ips: string[] = await this.dns.resolveIP(server);
+    if (ips.length === 0) return undefined;
     const ip: string = ips[0]!;
     const result: APIResponse = await this.api.lookup(ip);
     return this.countries[result.location.country_code];
   }
 
   async bulk(servers: string[]): Promise<Record<string, Country | undefined>> {
+    servers = R.unique(servers);
     const ips: Record<string, string | undefined> = Object.fromEntries(
       await Promise.all(
         servers.map(
           async (server: string): Promise<[string, string | undefined]> => {
-            const ips: string[] = await this.dns.resolve4(server);
+            const ips: string[] = await this.dns.resolveIP(server);
             return [server, ips[0]];
           },
         ),

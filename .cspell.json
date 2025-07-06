@@ -8,6 +8,7 @@
     "descr",
     "direnv",
     "dotenv",
+    "emby",
     "geoip",
     "ipapi",
     "jscoverage",
