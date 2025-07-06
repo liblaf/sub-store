@@ -11,6 +11,7 @@ export function makeCountryGroup(country: Country | undefined): Group {
     emoji: country ? country.flag : "🇺🇳",
     icon: `https://flagcdn.com/256x192/${cca2}.png`,
     filter(outbound: Outbound): boolean {
+      if (outbound.emby || outbound.placeholder) return false;
       if (!country) return outbound.country === undefined;
       if (!outbound.country) return false;
       return outbound.country === country.cca2;
@@ -43,7 +44,8 @@ export const AUTO: Group = {
   emoji: "🚀",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Auto.png",
   filter(outbound: Outbound): boolean {
-    return !outbound.emby;
+    if (outbound.emby || outbound.placeholder) return false;
+    return outbound.multiplier <= 2.0;
   },
 };
 
@@ -54,11 +56,8 @@ export const AI: Group = {
   emoji: "🤖",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/AI.png",
   filter(outbound: Outbound): boolean {
-    return (
-      !outbound.emby &&
-      !!outbound.country &&
-      !AI_EXCLUDE_REGIONS.has(outbound.country)
-    );
+    if (outbound.emby || outbound.placeholder) return false;
+    return !!outbound.country && !AI_EXCLUDE_REGIONS.has(outbound.country);
   },
 };
 
@@ -68,7 +67,8 @@ export const DOWNLOAD: Group = {
   emoji: "📥",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Download.png",
   filter(outbound: Outbound): boolean {
-    return !outbound.emby && outbound.multiplier <= 1.0;
+    if (outbound.emby || outbound.placeholder) return false;
+    return outbound.multiplier <= 1.0;
   },
 };
 
@@ -78,7 +78,18 @@ export const STREAM: Group = {
   emoji: "📺",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/YouTube.png",
   filter(outbound: Outbound): boolean {
-    return !outbound.emby && outbound.multiplier < 2.0;
+    if (outbound.emby || outbound.placeholder) return false;
+    return outbound.multiplier < 2.0;
+  },
+};
+
+export const INFO: Group = {
+  name: "Info",
+  type: "select",
+  emoji: "ℹ️",
+  icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Info.png",
+  filter(outbound: Outbound): boolean {
+    return outbound.placeholder;
   },
 };
 
@@ -89,7 +100,7 @@ export const CITRUSLAB_EMBY: Group = {
   type: "url-test",
   emoji: "🍟",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Emby.png",
-  url: "https://cp.cloudflare.com", // TODO: replace with actual URL
+  url: "https://shenmi.link",
   filter(outbound: Outbound): boolean {
     return outbound.emby && outbound.provider === "CitrusLab";
   },
@@ -99,9 +110,9 @@ export const CITRUSLAB_EMBY: Group = {
 
 export function defaultGroups(): Group[] {
   return [
-    PROXY,
-    SELECT,
     AUTO,
+    SELECT,
+    INFO,
     AI,
     DOWNLOAD,
     STREAM,

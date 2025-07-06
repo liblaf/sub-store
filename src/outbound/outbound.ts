@@ -22,6 +22,7 @@ export class Outbound {
   country?: string;
   emby: boolean = false;
   multiplier: number = 1.0;
+  placeholder: boolean = false;
 
   private _mihomo?: MihomoProxy;
 

@@ -44,8 +44,8 @@
     "type": "github"
   },
   "scripts": {
-    "build": "bunup",
-    "lint": "biome check --write",
+    "build": "bunup && prettier --write package.json",
+    "lint": "prettier --write . && biome check --write",
     "prepack": "npm run build"
   },
   "dependencies": {
@@ -65,7 +65,8 @@
     "@biomejs/biome": "latest",
     "@tsconfig/bun": "latest",
     "@types/bun": "latest",
-    "bunup": "latest"
+    "bunup": "latest",
+    "prettier": "latest"
   },
   "peerDependencies": {
     "typescript": "latest"

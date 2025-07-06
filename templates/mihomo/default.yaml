@@ -21,7 +21,7 @@ unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
 geo-update-interval: 24 # hours
-geox-url: # TODO: migrate to custom mirror
+geox-url:
   geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
   geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
   mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb

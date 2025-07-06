@@ -5,7 +5,12 @@ import { z } from "zod/v4";
 import { MihomoTemplate } from "../formats/mihomo";
 import { GeoIP } from "../geoip";
 import { defaultGroups, type Group } from "../groups";
-import { CountryInferrer, EmbyInferrer, MultiplierInferrer } from "../infer";
+import {
+  CountryInferrer,
+  EmbyInferrer,
+  MultiplierInferrer,
+  PlaceholderInferrer,
+} from "../infer";
 import type { Outbound } from "../outbound";
 import type { ProfileParams } from "../store";
 import { SubStore } from "../store";
@@ -33,6 +38,7 @@ export const mihomo = buildCommand({
     const countryInferrer = new CountryInferrer({ geoip });
     const embyInferrer = new EmbyInferrer();
     const multiplierInferrer = new MultiplierInferrer();
+    const placeholderInferrer = new PlaceholderInferrer();
 
     let outbounds: Outbound[] = await store.fetchMihomoOutbounds();
     await geoip?.bulk(
@@ -43,6 +49,7 @@ export const mihomo = buildCommand({
         outbound.country = (await countryInferrer.infer(outbound))?.cca2;
         outbound.emby = embyInferrer.infer(outbound);
         outbound.multiplier = multiplierInferrer.infer(outbound);
+        outbound.placeholder = placeholderInferrer.infer(outbound);
         return outbound;
       }),
     );
