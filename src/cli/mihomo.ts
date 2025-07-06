@@ -1,6 +1,5 @@
 import fs from "node:fs/promises";
 import { buildCommand, type CommandContext } from "@stricli/core";
-import type { Logger } from "tslog";
 import YAML from "yaml";
 import { z } from "zod/v4";
 import { MihomoTemplate } from "../formats/mihomo";
@@ -10,7 +9,6 @@ import { CountryInferrer, EmbyInferrer, MultiplierInferrer } from "../infer";
 import type { Outbound } from "../outbound";
 import type { ProfileParams } from "../store";
 import { SubStore } from "../store";
-import { getLogger } from "../utils";
 
 type Flags = {
   key?: string;
@@ -27,7 +25,6 @@ export const mihomo = buildCommand({
     brief: "mihomo",
   },
   async func(this: CommandContext, flags: Flags): Promise<void> {
-    // const logger: Logger<undefined> = getLogger();
     const template = new MihomoTemplate(flags.template, { port: flags.port });
     const geoip: GeoIP | undefined = flags.key
       ? new GeoIP({ key: flags.key })
@@ -37,11 +34,10 @@ export const mihomo = buildCommand({
     const embyInferrer = new EmbyInferrer();
     const multiplierInferrer = new MultiplierInferrer();
 
-    // warmup GeoIP cache
     let outbounds: Outbound[] = await store.fetchMihomoOutbounds();
     await geoip?.bulk(
       outbounds.map((outbound: Outbound): string => outbound.server),
-    );
+    ); // warmup GeoIP cache
     outbounds = await Promise.all(
       outbounds.map(async (outbound: Outbound): Promise<Outbound> => {
         outbound.country = (await countryInferrer.infer(outbound))?.cca2;

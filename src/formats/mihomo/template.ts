@@ -49,11 +49,12 @@ export class MihomoTemplate {
     }
     result["mixed-port"] = this.options.port;
     result = this.sanitize(result);
-    return YAML.stringify(result);
+    return YAML.stringify(result, { aliasDuplicateObjects: false });
   }
 
   sanitize(mihomo: Mihomo): Mihomo {
     // TODO: remove rules to nonexistent outbound
+    mihomo = R.omitBy(mihomo, (_val, key: string) => key.startsWith("__"));
     return mihomo;
   }
 

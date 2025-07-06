@@ -1,1 +1,264 @@
-mixed-port: 7890
+allow-lan: true
+bind-address: "*"
+lan-allowed-ips:
+  - 10.0.0.0/8
+  - 100.64.0.0/10
+  - 127.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - ::1/128
+skip-auth-prefixes:
+  - 127.0.0.0/8
+  - ::1/128
+log-level: warning
+external-controller: 127.0.0.1:9090
+external-ui: ui
+external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
+profile:
+  store-selected: true
+  store-fake-ip: true
+unified-delay: true
+tcp-concurrent: true
+geo-auto-update: true
+geo-update-interval: 24 # hours
+geox-url: # TODO: migrate to custom mirror
+  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
+  asn: https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb
+
+dns:
+  enable: true
+  cache-algorithm: arc
+  prefer-h3: false
+  use-hosts: true
+  use-system-hosts: true
+  respect-rules: true
+  ipv6: true
+  default-nameserver:
+    - 101.6.6.6 # TUNA DNS666
+    - 114.114.115.115
+    - 119.28.28.28 # 腾讯 DNSPod
+    - 223.6.6.6 # 阿里云公共 DNS
+    - system
+  enhanced-mode: redir-host
+  nameserver: &nameserver
+    - https://101.6.6.6/dns-query
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+    - system
+  fallback:
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+  proxy-server-nameserver: *nameserver
+  direct-nameserver: *nameserver
+  direct-nameserver-follow-policy: false
+
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
+
+mixed-port: 7892
+
+__proxy-groups-anchors:
+  url-test: &url-test
+    url: https://cp.cloudflare.com
+    interval: 300
+    timeout: 5000
+    lazy: true
+    expected-status: 204
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - Auto
+    <<: *url-test
+  - name: Auto
+    type: url-test
+    <<: *url-test
+    include-all: true
+  - name: AI
+    type: url-test
+    <<: *url-test
+    include-all: true
+  - name: Download
+    type: url-test
+    <<: *url-test
+    include-all: true
+  - name: Stream
+    type: url-test
+    <<: *url-test
+    include-all: true
+  - name: CitrusLab Emby
+    type: url-test
+    <<: *url-test
+    include-all: true
+
+rules:
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT-DROP # block QUIC
+
+  - RULE-SET,domainset-cdn,Download
+  - RULE-SET,domainset-apple-cdn,DIRECT
+  - RULE-SET,domainset-download,Download
+
+  - RULE-SET,non-ip-cdn,Download
+  - RULE-SET,non-ip-stream,Stream
+  - RULE-SET,non-ip-ai,AI
+  - RULE-SET,non-ip-telegram,PROXY
+  - RULE-SET,non-ip-apple-cn,DIRECT
+  - RULE-SET,non-ip-microsoft-cdn,DIRECT
+  - RULE-SET,non-ip-download,Download
+  - RULE-SET,non-ip-lan,DIRECT
+  - RULE-SET,non-ip-domestic,DIRECT
+  - RULE-SET,non-ip-direct,DIRECT
+  - RULE-SET,non-ip-global,PROXY
+
+  # custom rules
+  - DOMAIN-SUFFIX,shenmi.link,CitrusLab Emby
+  - RULE-SET,domain-direct,DIRECT
+
+  - RULE-SET,ip-stream,Stream
+  - RULE-SET,ip-telegram,PROXY
+  - RULE-SET,ip-lan,DIRECT
+  - RULE-SET,ip-domestic,DIRECT
+  - RULE-SET,ip-china-ip,DIRECT
+  - RULE-SET,ip-china-ipv6,DIRECT
+
+  - MATCH,PROXY
+
+__rule-providers-anchors:
+  classical: &classical
+    type: http
+    behavior: classical
+    format: text
+    interval: 86400
+  domain: &domain
+    type: http
+    behavior: domain
+    format: text
+    interval: 86400
+  ipcidr: &ipcidr
+    type: http
+    behavior: ipcidr
+    format: text
+    interval: 86400
+
+rule-providers:
+  # 常见静态 CDN
+  domainset-cdn:
+    <<: *domain
+    url: https://ruleset.skk.moe/Clash/domainset/cdn.txt
+    path: ./ruleset.skk.moe/Clash/domainset/cdn.txt
+  non-ip-cdn:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/cdn.txt
+
+  # 流媒体
+  non-ip-stream:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/stream.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/stream.txt
+  ip-stream:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/ip/stream.txt
+    path: ./ruleset.skk.moe/Clash/ip/stream.txt
+
+  # AI
+  non-ip-ai:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/ai.txt
+
+  # Telegram
+  non-ip-telegram:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/telegram.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/telegram.txt
+  ip-telegram:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/ip/telegram.txt
+    path: ./ruleset.skk.moe/Clash/ip/telegram.txt
+
+  # Apple CDN
+  domainset-apple-cdn:
+    <<: *domain
+    url: https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt
+    path: ./ruleset.skk.moe/Clash/domainset/apple-cdn.txt
+
+  # Apple CN
+  non-ip-apple-cn:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/apple_cn.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/apple-cn.txt
+
+  # Microsoft CDN
+  non-ip-microsoft-cdn:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/microsoft-cdn.txt
+
+  # 软件更新、操作系统等大文件下载
+  domainset-download:
+    <<: *domain
+    url: https://ruleset.skk.moe/Clash/domainset/download.txt
+    path: ./ruleset.skk.moe/Clash/domainset/download.txt
+  non-ip-download:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/download.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/download.txt
+
+  # 内网域名和局域网 IP
+  non-ip-lan:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/lan.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/lan.txt
+  ip-lan:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/ip/lan.txt
+    path: ./ruleset.skk.moe/Clash/ip/lan.txt
+
+  # Misc
+  non-ip-domestic:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/domestic.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/domestic.txt
+  non-ip-direct:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/direct.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/direct.txt
+  non-ip-global:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/non_ip/global.txt
+    path: ./ruleset.skk.moe/Clash/non-ip/global.txt
+  ip-domestic:
+    <<: *classical
+    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
+    path: ./ruleset.skk.moe/Clash/ip/domestic.txt
+
+  # chnroute CIDR
+  ip-china-ip:
+    <<: *ipcidr
+    url: https://ruleset.skk.moe/Clash/ip/china_ip.txt
+    path: ./ruleset.skk.moe/Clash/ip/china-ip.txt
+  ip-china-ipv6:
+    <<: *ipcidr
+    url: https://ruleset.skk.moe/Clash/ip/china_ip_ipv6.txt
+    path: ./ruleset.skk.moe/Clash/ip/china-ipv6.txt
+
+  # Custom Rules
+  domain-direct:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/sub-store/rules/mihomo/domain/direct.txt
+    path: ./rules/mihomo/domain/direct.txt
