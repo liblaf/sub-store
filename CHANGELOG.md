@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.1](https://github.com/liblaf/sub-store/compare/v0.0.0...v0.0.1) (2025-07-11)
+
+
+### ✨ Features
+
+* add scripts for pulling and pushing profile data ([db90eaf](https://github.com/liblaf/sub-store/commit/db90eaf0dc93b200c8b4ef3c1eb8ad11d6cd2a61))
+
 ## [0.0.0] - 2025-07-11
 
 ### 💥 BREAKING CHANGES
