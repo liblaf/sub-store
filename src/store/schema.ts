@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 import { PROVIDER_SCHEMA } from "../provider";
 
 export const PROFILE_SCHEMA = z.object({

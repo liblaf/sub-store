@@ -36,8 +36,8 @@ export class MihomoTemplate {
     result.proxies = outbounds
       .map((outbound: Outbound) => outbound.mihomo)
       .filter((mihomo): mihomo is MihomoProxy => mihomo !== undefined);
-    const groupProxy: MihomoProxyGroup = this.renderGroupProxy();
-    result["proxy-groups"] = [groupProxy];
+    const groupDefault: MihomoProxyGroup = this.renderGroupDefault();
+    result["proxy-groups"] = [groupDefault];
     for (const group of groups) {
       const proxyGroup: MihomoProxyGroup | undefined = this.renderGroup(
         outbounds,
@@ -45,7 +45,7 @@ export class MihomoTemplate {
       );
       if (!proxyGroup) continue;
       result["proxy-groups"].push(proxyGroup);
-      groupProxy.proxies.push(proxyGroup.name);
+      groupDefault.proxies.push(proxyGroup.name);
     }
     result["mixed-port"] = this.options.port;
     result = this.sanitize(result);
@@ -58,11 +58,12 @@ export class MihomoTemplate {
     return mihomo;
   }
 
-  protected renderGroupProxy(): MihomoProxyGroup {
+  protected renderGroupDefault(): MihomoProxyGroup {
     const options: MihomoProxyGroupOptions = {
       name: "PROXY",
       type: "select",
       proxies: [],
+      icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png",
     };
     return MIHOMO_PROXY_GROUP_SCHEMA.parse(options);
   }

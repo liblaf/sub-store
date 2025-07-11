@@ -33,6 +33,13 @@ export class Outbound {
   }
 
   get name(): string {
+    if (this.provider === "JMS") {
+      const match = this._mihomo!.name.match(/@(?<name>[\w-]+)/);
+      if (match) {
+        const name: string = match.groups?.name ?? this._mihomo!.name;
+        return name;
+      }
+    }
     return this._mihomo!.name;
   }
 

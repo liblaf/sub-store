@@ -5,7 +5,7 @@ import {
 } from "@type-cacheable/lru-cache-adapter";
 import ky from "ky";
 import { LRUCache } from "lru-cache";
-import z from "zod";
+import z from "zod/v4";
 
 const client: LRUCache<string, any> = new LRUCache({ max: 8 });
 const adaptor: LRUCacheAdapter<any> = useAdapter(client, undefined, {
@@ -13,7 +13,7 @@ const adaptor: LRUCacheAdapter<any> = useAdapter(client, undefined, {
 });
 
 const SUBCONVERTER_SCHEMA = z.object({
-  url: z.string().url(),
+  url: z.url(),
   target: z.string(),
   backend: z.string().default("https://url.v1.mk/sub"),
 });

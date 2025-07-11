@@ -87,7 +87,7 @@ export const INFO: Group = {
   name: "Info",
   type: "select",
   emoji: "ℹ️",
-  icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Info.png",
+  icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Airport.png",
   filter(outbound: Outbound): boolean {
     return outbound.placeholder;
   },

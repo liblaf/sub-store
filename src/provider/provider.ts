@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 import { type Mihomo, type MihomoProxy, parseMihomo } from "../formats";
 import { Outbound } from "../outbound";
 import { fetcher } from "./fetch";
@@ -8,9 +8,9 @@ export const PROVIDER_SCHEMA = z.object({
   free: z.boolean().default(false),
   // subscription format
   mihomo: z
-    .object({ url: z.string().url(), ua: z.string().default("clash.meta") })
+    .object({ url: z.url(), ua: z.string().default("clash.meta") })
     .optional(),
-  jms: z.object({}).optional(),
+  jms: z.object({ api: z.url().optional(), url: z.url() }).optional(),
 });
 
 export type ProviderParams = z.input<typeof PROVIDER_SCHEMA>;
@@ -22,7 +22,7 @@ export class Provider {
   public free: boolean;
   // subscription format
   public mihomo?: { url: string; ua: string };
-  public jms?: any;
+  public jms?: { api?: string; url: string };
 
   private _mihomo?: Mihomo;
 
@@ -39,6 +39,8 @@ export class Provider {
       let text: string = "";
       if (this.mihomo) {
         text = await fetcher.fetchText(this.mihomo.url, this.mihomo.ua);
+      } else if (this.jms) {
+        text = await fetcher.subconvert({ url: this.jms.url, target: "clash" });
       }
       this._mihomo = parseMihomo(text);
     }
@@ -46,13 +48,8 @@ export class Provider {
   }
 
   async fetchMihomoOutbounds(): Promise<Outbound[]> {
-    if (!this._mihomo) {
-      let text: string | undefined;
-      if (this.mihomo)
-        text = await fetcher.fetchText(this.mihomo.url, this.mihomo.ua);
-      this._mihomo = parseMihomo(text!);
-    }
-    return this._mihomo.proxies!.map(
+    const mihomo: Mihomo = await this.fetchMihomo();
+    return mihomo.proxies!.map(
       (proxy: MihomoProxy): Outbound =>
         new Outbound({ provider: this.name, mihomo: proxy }),
     );

@@ -55,7 +55,7 @@ export class CountryInferrer {
       outbound.server,
     );
     logger.debug(
-      `${outbound.name} => ${outbound.server} => ${this.prettyCountry(result)}`,
+      `Country: ${outbound.name} => ${outbound.server} => ${this.prettyCountry(result)}`,
     );
     if (result?.cca2 === "CN") return undefined;
     return result;
@@ -67,7 +67,9 @@ export class CountryInferrer {
       if (country.cca2 === "CN") continue;
       for (const pattern of patterns(country)) {
         if (name.match(pattern)) {
-          logger.debug(`${name} =~ ${pattern} ${this.prettyCountry(country)}`);
+          logger.debug(
+            `Country: ${name} =~ ${pattern} ${this.prettyCountry(country)}`,
+          );
           return country;
         }
       }
@@ -75,38 +77,50 @@ export class CountryInferrer {
   }
 }
 
-const EXCLUDE_PATTERNS = new Set(["GB"]);
-
 function* patterns(country: Country): Generator<RegExp> {
-  for (const name of namesMaybeEmpty(country)) {
-    if (!name) continue;
-    if (name.match(/[0-9]+/g)) continue;
-    if (EXCLUDE_PATTERNS.has(name)) continue;
-    if (name.length <= 3) yield new RegExp(name);
-    else yield new RegExp(name, "i");
+  for (const pattern of patternsMaybeEmpty(country)) {
+    if (!pattern) continue;
+    yield pattern;
   }
 }
 
-function* namesMaybeEmpty(country: Country): Generator<string | undefined> {
+function* patternsMaybeEmpty(country: Country): Generator<RegExp | undefined> {
   for (const locale of ["en", "zh"]) {
     for (const style of ["narrow", "short", "long"]) {
       const display = new Intl.DisplayNames(locale, {
         style: style as Intl.RelativeTimeFormatStyle,
         type: "region",
       });
-      yield display.of(country.cca2);
+      if (style === "narrow" || style === "short") {
+        yield patternShort(display.of(country.cca2));
+      } else if (style === "long") {
+        yield patternLong(display.of(country.cca2));
+      }
     }
   }
-  yield country.name.common;
-  yield country.name.official;
+  yield patternLong(country.name.common);
+  yield patternLong(country.name.official);
   for (const lang in country.name.native) {
-    yield country.name.native[lang]?.common;
-    yield country.name.native[lang]?.official;
+    yield patternLong(country.name.native[lang]!.common);
+    yield patternLong(country.name.native[lang]!.official);
   }
-  yield country.cca2;
-  yield country.ccn3;
-  yield country.cca3;
-  yield country.cioc;
-  for (const capital of country.capital) yield capital;
-  for (const alt of country.altSpellings) yield alt;
+  yield patternShort(country.cca2);
+  // yield patternLong(country.ccn3);
+  yield patternShort(country.cca3);
+  yield patternShort(country.cioc);
+  for (const capital of country.capital) yield patternLong(capital);
+  // for (const alt of country.altSpellings) yield patternLong(alt);
+}
+
+const EXCLUDE_PATTERNS = new Set(["GB"]);
+
+function patternShort(pattern?: string): RegExp | undefined {
+  if (!pattern) return undefined;
+  if (EXCLUDE_PATTERNS.has(pattern)) return undefined;
+  return new RegExp(`\\b${pattern}\\b`);
+}
+
+function patternLong(pattern?: string): RegExp | undefined {
+  if (!pattern) return undefined;
+  return new RegExp(pattern, "i");
 }
