@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/liblaf/sub-store/compare/v0.0.1...v0.0.2) (2025-07-12)
+
+
+### ⬆️ Dependencies
+
+* **deps:** update dependency zod to v4 ([#3](https://github.com/liblaf/sub-store/issues/3)) ([d66eed2](https://github.com/liblaf/sub-store/commit/d66eed25f66dd0216cf562a228ea602cd7309b7d))
+
 ## [0.0.1](https://github.com/liblaf/sub-store/compare/v0.0.0..v0.0.1) - 2025-07-11
 
 ### ✨ Features
