@@ -14,7 +14,7 @@
         "tslog": "^4.9.3",
         "world-countries": "^5.1.0",
         "yaml": "^2.8.0",
-        "zod": "^3.25.71",
+        "zod": "^4.0.0",
       },
       "devDependencies": {
         "@biomejs/biome": "latest",
@@ -289,7 +289,7 @@
 
     "yargs-parser": ["yargs-parser@21.1.1", "https://mirrors.huaweicloud.com/repository/npm/yargs-parser/-/yargs-parser-21.1.1.tgz", {}, "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="],
 
-    "zod": ["zod@3.25.71", "https://mirrors.huaweicloud.com/repository/npm/zod/-/zod-3.25.71.tgz", {}, "sha512-BsBc/NPk7h8WsUWYWYL+BajcJPY8YhjelaWu2NMLuzgraKAz4Lb4/6K11g9jpuDetjMiqhZ6YaexFLOC0Ogi3Q=="],
+    "zod": ["zod@4.0.5", "", {}, "sha512-/5UuuRPStvHXu7RS+gmvRf4NXrNxpSllGwDnCBcJZtQsKrviYXm54yDGV2KYNLT5kq0lHGcl7lqWJLgSaG+tgA=="],
 
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "https://mirrors.huaweicloud.com/repository/npm/string-width/-/string-width-5.1.2.tgz", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA=="],
 
