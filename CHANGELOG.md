@@ -1,6 +1,18 @@
 # Changelog
 
-## [0.0.2](https://github.com/liblaf/sub-store/compare/v0.0.1..v0.0.2) - 2025-07-12
+## [0.1.0](https://github.com/liblaf/sub-store/compare/v0.0.2..v0.1.0) - 2025-08-16
+
+### ✨ Features
+
+- **config:** support multiple profiles and generate schemas - ([1e181d3](https://github.com/liblaf/sub-store/commit/1e181d36765fbea489d1664eb02f19de51a1762f))
+
+### ❤️ New Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
+- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#7](https://github.com/liblaf/sub-store/pull/7)
+
+## [0.0.2](https://github.com/liblaf/sub-store/compare/v0.0.1..v0.0.2) - 2025-07-13
 
 ### ⬆️ Dependencies
 
