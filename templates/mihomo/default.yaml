@@ -1,3 +1,5 @@
+# ref: <https://wiki.metacubex.one/config/>
+
 allow-lan: true
 bind-address: "*"
 lan-allowed-ips:
@@ -11,6 +13,7 @@ skip-auth-prefixes:
   - 127.0.0.0/8
   - ::1/128
 log-level: warning
+ipv6: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
 external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
@@ -35,23 +38,26 @@ dns:
   use-system-hosts: true
   respect-rules: true
   ipv6: true
+  enhanced-mode: redir-host
   default-nameserver:
     - 101.6.6.6 # TUNA DNS666
+    - system
     - 114.114.115.115
     - 119.28.28.28 # 腾讯 DNSPod
     - 223.6.6.6 # 阿里云公共 DNS
-    - system
-  enhanced-mode: redir-host
-  nameserver: &nameserver
+  proxy-server-nameserver:
     - https://101.6.6.6/dns-query
     - https://dns.alidns.com/dns-query
     - https://doh.pub/dns-query
     - system
-  fallback:
+  direct-nameserver:
+    - https://101.6.6.6/dns-query
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+    - system
+  nameserver:
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
-  proxy-server-nameserver: *nameserver
-  direct-nameserver: *nameserver
   direct-nameserver-follow-policy: false
 
 sniffer:
@@ -108,6 +114,10 @@ proxy-groups:
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT-DROP # block QUIC
 
+  # custom rules
+  - DOMAIN-SUFFIX,shenmi.link,CitrusLab Emby
+  - RULE-SET,domain-direct,DIRECT
+
   - RULE-SET,domainset-cdn,Download
   - RULE-SET,domainset-apple-cdn,DIRECT
   - RULE-SET,domainset-download,Download
@@ -124,16 +134,12 @@ rules:
   - RULE-SET,non-ip-direct,DIRECT
   - RULE-SET,non-ip-global,PROXY
 
-  # custom rules
-  - DOMAIN-SUFFIX,shenmi.link,CitrusLab Emby
-  - RULE-SET,domain-direct,DIRECT
-
-  - RULE-SET,ip-stream,Stream
-  - RULE-SET,ip-telegram,PROXY
-  - RULE-SET,ip-lan,DIRECT
-  - RULE-SET,ip-domestic,DIRECT
-  - RULE-SET,ip-china-ip,DIRECT
-  - RULE-SET,ip-china-ipv6,DIRECT
+  - RULE-SET,ip-stream,Stream,no-resolve
+  - RULE-SET,ip-telegram,PROXY,no-resolve
+  - RULE-SET,ip-lan,DIRECT,no-resolve
+  - RULE-SET,ip-domestic,DIRECT,no-resolve
+  - RULE-SET,ip-china-ip,DIRECT,no-resolve
+  - RULE-SET,ip-china-ipv6,DIRECT,no-resolve
 
   - MATCH,PROXY
 

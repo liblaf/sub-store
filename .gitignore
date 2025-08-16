@@ -146,4 +146,5 @@ dist
 playground/
 
 config.yaml
-profile.yaml
+mihomo.*.yaml
+profile.*.yaml

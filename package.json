@@ -49,27 +49,27 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@stricli/auto-complete": "^1.2.0",
-    "@stricli/core": "^1.2.0",
-    "@type-cacheable/core": "^14.1.0",
-    "@type-cacheable/lru-cache-adapter": "^18.0.0",
-    "ky": "^1.8.1",
-    "lru-cache": "^11.1.0",
-    "remeda": "^2.24.0",
-    "tslog": "^4.9.3",
-    "world-countries": "^5.1.0",
-    "yaml": "^2.8.0",
-    "zod": "^4.0.0"
+    "@stricli/auto-complete": "^1",
+    "@stricli/core": "^1",
+    "@type-cacheable/core": "^14",
+    "@type-cacheable/lru-cache-adapter": "^18",
+    "ky": "^1",
+    "lru-cache": "^11",
+    "remeda": "^2",
+    "tslog": "^4",
+    "world-countries": "^5",
+    "yaml": "^2",
+    "zod": "^4"
   },
   "devDependencies": {
-    "@biomejs/biome": "latest",
-    "@tsconfig/bun": "latest",
-    "@types/bun": "latest",
-    "bunup": "latest",
-    "prettier": "latest"
+    "@biomejs/biome": "^2",
+    "@tsconfig/bun": "^1",
+    "@types/bun": "^1",
+    "bunup": "^0.9",
+    "prettier": "^3"
   },
   "peerDependencies": {
-    "typescript": "latest"
+    "typescript": "^5"
   },
   "publishConfig": {
     "access": "public",
