@@ -44,7 +44,7 @@ export class Outbound {
   }
 
   get prettyName(): string {
-    if (this.provider) return `[${this.provider}]${this.name}`;
+    if (this.provider) return `[${this.provider}] ${this.name}`;
     return this.name;
   }
 
