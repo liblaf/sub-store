@@ -6,9 +6,9 @@ export default defineConfig({
   format: ["esm"],
   minify: true,
   dts: true,
+  preferredTsconfigPath: ".config/copier/tsconfig.build.json",
   target: "bun",
   sourcemap: "linked",
   onSuccess: "bun run 'scripts/gen-schemas.ts'",
   plugins: [shims(), exports()],
-  preferredTsconfigPath: ".config/copier/tsconfig.build.json",
 });

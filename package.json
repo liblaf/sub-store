@@ -44,7 +44,7 @@
     "type": "github"
   },
   "scripts": {
-    "build": "bunup && prettier --write package.json",
+    "build": "bunup",
     "lint": "prettier --write . && biome check --write",
     "prepack": "npm run build"
   },
