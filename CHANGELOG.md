@@ -1,14 +1,23 @@
 # Changelog
 
+## [0.1.2](https://github.com/liblaf/sub-store/compare/v0.1.1..v0.1.2) - 2025-08-18
+
+### 🐛 Bug Fixes
+
+- **infer:** recognize English "Traffic" in placeholder inferrer - ([a1b2c14](https://github.com/liblaf/sub-store/commit/a1b2c14725060df8ef041bf50fbca5cfdfeda344))
+- **mihomo:** update default configuration template with DNS improvements and rule fixes - ([67682f2](https://github.com/liblaf/sub-store/commit/67682f2f3497785815e6b047b7439d0c1c4468a8))
+
+### ❤️ New Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#10](https://github.com/liblaf/sub-store/pull/10)
+- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
+
 ## [0.1.1](https://github.com/liblaf/sub-store/compare/v0.1.0..v0.1.1) - 2025-08-16
 
 ### 🐛 Bug Fixes
 
 - **outbound:** add space in prettyName for provider tags - ([63d4c59](https://github.com/liblaf/sub-store/commit/63d4c59618ac5374dc1697bfb346e9df670d13d8))
-
-### ❤️ New Contributors
-
-- [@liblaf](https://github.com/liblaf) made their first contribution
 
 ## [0.1.0](https://github.com/liblaf/sub-store/compare/v0.0.2..v0.1.0) - 2025-08-16
 
