@@ -2,7 +2,7 @@ import { buildApplication, buildRouteMap } from "@stricli/core";
 import { description, version } from "../../package.json";
 import { mihomo } from "./mihomo";
 
-const routes = buildRouteMap({
+export const routes = buildRouteMap({
   routes: { mihomo },
   docs: { brief: description },
 });

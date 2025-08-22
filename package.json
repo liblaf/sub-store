@@ -7,19 +7,12 @@
     "dist"
   ],
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
+      "import": "./dist/index.js"
     },
     "./bin/sub-store": {
-      "import": {
-        "types": "./dist/bin/sub-store.d.ts",
-        "default": "./dist/bin/sub-store.js"
-      }
+      "import": "./dist/bin/sub-store.js"
     }
   },
   "keywords": [
@@ -45,18 +38,16 @@
   },
   "scripts": {
     "build": "bunup",
-    "lint": "prettier --write . && biome check --write",
+    "lint": "biome check --write",
     "prepack": "npm run build"
   },
   "dependencies": {
     "@stricli/auto-complete": "^1",
     "@stricli/core": "^1",
-    "@type-cacheable/core": "^14",
-    "@type-cacheable/lru-cache-adapter": "^18",
+    "@twemoji/api": "^16",
+    "consola": "^3",
     "ky": "^1",
-    "lru-cache": "^11",
     "remeda": "^2",
-    "tslog": "^4",
     "world-countries": "^5",
     "yaml": "^2",
     "zod": "^4"
@@ -65,7 +56,7 @@
     "@biomejs/biome": "^2",
     "@tsconfig/bun": "^1",
     "@types/bun": "^1",
-    "bunup": "^0.11.0",
+    "bunup": "^0.11",
     "prettier": "^3"
   },
   "peerDependencies": {

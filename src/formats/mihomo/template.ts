@@ -1,87 +1,79 @@
+import fs from "node:fs/promises";
 import * as R from "remeda";
 import YAML from "yaml";
-import z from "zod/v4";
-import type { Group } from "../../groups";
-import type { Outbound } from "../../outbound";
-import { parseMihomo } from "./parser";
+import type { Group } from "../../group";
+import type { MihomoOutbound } from "./outbound";
+import { mihomoParse } from "./parse";
 import {
   MIHOMO_PROXY_GROUP_SCHEMA,
   type Mihomo,
-  type MihomoProxy,
+  type MihomoNode,
   type MihomoProxyGroup,
   type MihomoProxyGroupOptions,
-  PORT_SCHEMA,
 } from "./schema";
 
-const MIHOMO_TEMPLATE_OPTIONS_SCHEMA = z.object({
-  port: PORT_SCHEMA.default(7890),
-});
-
-type MihomoTemplateOptions = z.input<typeof MIHOMO_TEMPLATE_OPTIONS_SCHEMA>;
-type MihomoTemplateOptionsParsed = z.infer<
-  typeof MIHOMO_TEMPLATE_OPTIONS_SCHEMA
->;
-
 export class MihomoTemplate {
-  options: MihomoTemplateOptionsParsed;
   template: Mihomo;
 
-  constructor(template: string, options: MihomoTemplateOptions) {
-    this.template = parseMihomo(template);
-    this.options = MIHOMO_TEMPLATE_OPTIONS_SCHEMA.parse(options);
+  static async load(path: string): Promise<MihomoTemplate> {
+    const template: string = await fs.readFile(path, "utf8");
+    return new MihomoTemplate(template);
   }
 
-  render(outbounds: Outbound[], groups: Group[]): string {
-    let result: Mihomo = R.clone(this.template);
-    result.proxies = outbounds
-      .map((outbound: Outbound) => outbound.mihomo)
-      .filter((mihomo): mihomo is MihomoProxy => mihomo !== undefined);
-    const groupDefault: MihomoProxyGroup = this.renderGroupDefault();
-    result["proxy-groups"] = [groupDefault];
+  public constructor(template: string) {
+    this.template = mihomoParse(template);
+  }
+
+  public render(outbounds: MihomoOutbound[], groups: Group[]): string {
+    let config: Mihomo = R.clone(this.template);
+    config.proxies = outbounds.map((o: MihomoOutbound): MihomoNode => o.mihomo);
+    const groupProxy: MihomoProxyGroup = this.renderGroupProxy();
+    config["proxy-groups"] = [groupProxy];
     for (const group of groups) {
-      const proxyGroup: MihomoProxyGroup | undefined = this.renderGroup(
+      const rendered: MihomoProxyGroup | undefined = this.renderGroup(
         outbounds,
         group,
       );
-      if (!proxyGroup) continue;
-      result["proxy-groups"].push(proxyGroup);
-      groupDefault.proxies.push(proxyGroup.name);
+      if (!rendered) continue;
+      config["proxy-groups"].push(rendered);
+      groupProxy.proxies.push(rendered.name);
     }
-    result["mixed-port"] = this.options.port;
-    result = this.sanitize(result);
-    return YAML.stringify(result, { aliasDuplicateObjects: false });
+    config = this.sanitize(config);
+    return YAML.stringify(config, { aliasDuplicateObjects: false });
   }
 
-  sanitize(mihomo: Mihomo): Mihomo {
-    // TODO: remove rules to nonexistent outbound
-    mihomo = R.omitBy(mihomo, (_val, key: string) => key.startsWith("__"));
-    return mihomo;
+  protected sanitize(config: Mihomo): Mihomo {
+    config = R.omitBy(config, (_value, key: string): boolean =>
+      key.startsWith("__"),
+    );
+    return config;
   }
 
-  protected renderGroupDefault(): MihomoProxyGroup {
+  protected renderGroup(
+    outbounds: MihomoOutbound[],
+    group: Group,
+  ): MihomoProxyGroup | undefined {
+    const filtered: MihomoOutbound[] = outbounds.filter(group.filter);
+    if (filtered.length === 0) return undefined;
+    const filteredNames: string[] = filtered.map(
+      (o: MihomoOutbound): string => o.prettyName,
+    );
+    const options: MihomoProxyGroupOptions = {
+      name: group.name,
+      type: group.type,
+      proxies: filteredNames,
+      url: group.url,
+      icon: group.icon,
+    };
+    return MIHOMO_PROXY_GROUP_SCHEMA.parse(options);
+  }
+
+  protected renderGroupProxy(): MihomoProxyGroup {
     const options: MihomoProxyGroupOptions = {
       name: "PROXY",
       type: "select",
       proxies: [],
       icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png",
-    };
-    return MIHOMO_PROXY_GROUP_SCHEMA.parse(options);
-  }
-
-  protected renderGroup(
-    outbounds: Outbound[],
-    group: Group,
-  ): MihomoProxyGroup | undefined {
-    const filtered: Outbound[] = outbounds.filter(group.filter);
-    if (filtered.length === 0) return undefined;
-    const options: MihomoProxyGroupOptions = {
-      name: group.name,
-      type: group.type,
-      proxies: filtered.map(
-        (outbound: Outbound): string => outbound.prettyName,
-      ),
-      url: group.url,
-      icon: group.icon,
     };
     return MIHOMO_PROXY_GROUP_SCHEMA.parse(options);
   }

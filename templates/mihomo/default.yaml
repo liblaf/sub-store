@@ -1,18 +1,15 @@
-# ref: <https://dns.icoa.cn/>
 # ref: <https://wiki.metacubex.one/config/>
 
 allow-lan: true
 bind-address: "*"
 lan-allowed-ips:
-  - 10.0.0.0/8
-  - 100.64.0.0/10
-  - 127.0.0.0/8
-  - 172.16.0.0/12
-  - 192.168.0.0/16
-  - ::1/128
+  - 100.64.0.0/10 # tailscale
+  - 127.0.0.0/8 # loopback
+  - 172.16.0.0/12 # docker
+  - ::1/128 # loopback
 skip-auth-prefixes:
-  - 127.0.0.0/8
-  - ::1/128
+  - 127.0.0.0/8 # loopback
+  - ::1/128 # loopback
 log-level: warning
 ipv6: true
 external-controller: 127.0.0.1:9090
@@ -25,12 +22,8 @@ unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
 geo-update-interval: 24 # hours
-geox-url:
-  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
-  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
-  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
-  asn: https://github.com/xishang0128/geoip/releases/download/latest/GeoLite2-ASN.mmdb
 
+# ref: <https://dns.icoa.cn/>
 dns:
   enable: true
   cache-algorithm: arc
@@ -79,41 +72,6 @@ sniffer:
     - "+.push.apple.com"
 
 mixed-port: 7892
-
-__proxy-groups-anchors:
-  url-test: &url-test
-    url: https://cp.cloudflare.com
-    interval: 300
-    timeout: 5000
-    lazy: true
-    expected-status: 204
-
-proxy-groups:
-  - name: PROXY
-    type: select
-    proxies:
-      - Auto
-    <<: *url-test
-  - name: Auto
-    type: url-test
-    <<: *url-test
-    include-all: true
-  - name: AI
-    type: url-test
-    <<: *url-test
-    include-all: true
-  - name: Download
-    type: url-test
-    <<: *url-test
-    include-all: true
-  - name: Stream
-    type: url-test
-    <<: *url-test
-    include-all: true
-  - name: CitrusLab Emby
-    type: url-test
-    <<: *url-test
-    include-all: true
 
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # block QUIC

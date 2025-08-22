@@ -1,5 +1,5 @@
-export { ConnectionInferrer } from "./connection";
-export { CountryInferrer } from "./country";
-export { EmbyInferrer } from "./emby";
-export { MultiplierInferrer } from "./multiplier";
-export { PlaceholderInferrer } from "./placeholder";
+export type { Inferrer } from "./abc";
+export { InferrerContainer } from "./container";
+export { InferrerCountry } from "./country";
+export { InferrerEmby } from "./emby";
+export { InferrerInfo } from "./info";

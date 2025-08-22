@@ -6,5 +6,5 @@ export type Group = {
   emoji?: string;
   icon?: string;
   url?: string;
-  filter: (outbound: Outbound) => boolean;
+  filter(outbound: Outbound): boolean;
 };

@@ -1,57 +1,41 @@
-import z from "zod/v4";
-import { type Mihomo, type MihomoProxy, parseMihomo } from "../formats";
-import { Outbound } from "../outbound";
-import { fetcher } from "./fetch";
-
-export const PROVIDER_SCHEMA = z.object({
-  name: z.string(),
-  free: z.boolean().default(false),
-  // subscription format
-  mihomo: z
-    .object({ url: z.url(), ua: z.string().default("clash.meta") })
-    .optional(),
-  jms: z.object({ api: z.url().optional(), url: z.url() }).optional(),
-});
-
-export type ProviderParams = z.input<typeof PROVIDER_SCHEMA>;
-
-export type ProviderParsed = z.infer<typeof PROVIDER_SCHEMA>;
+import consola from "consola";
+import ky from "ky";
+import type { Mihomo, MihomoNode } from "../formats";
+import { MihomoOutbound, mihomoParse } from "../formats";
+import { PROVIDER_SCHEMA, type ProviderOptions } from "./schema";
+import { subconvertUrl } from "./subconvert";
 
 export class Provider {
-  public name: string;
-  public free: boolean;
-  // subscription format
-  public mihomo?: { url: string; ua: string };
-  public jms?: { api?: string; url: string };
+  public readonly name: string;
+  public readonly jms?: { url: string };
+  public readonly mihomo?: { url: string };
 
-  private _mihomo?: Mihomo;
-
-  constructor(params: ProviderParams) {
-    const parsed: ProviderParsed = PROVIDER_SCHEMA.parse(params);
-    this.name = parsed.name;
-    this.free = parsed.free;
-    this.mihomo = parsed.mihomo;
-    this.jms = parsed.jms;
+  public constructor(options: ProviderOptions) {
+    const { name, jms, mihomo } = PROVIDER_SCHEMA.parse(options);
+    this.name = name;
+    this.jms = jms;
+    this.mihomo = mihomo;
   }
 
-  async fetchMihomo(): Promise<Mihomo> {
-    if (!this._mihomo) {
-      let text: string = "";
-      if (this.mihomo) {
-        text = await fetcher.fetchText(this.mihomo.url, this.mihomo.ua);
-      } else if (this.jms) {
-        text = await fetcher.subconvert({ url: this.jms.url, target: "clash" });
-      }
-      this._mihomo = parseMihomo(text);
-    }
-    return this._mihomo!;
-  }
-
-  async fetchMihomoOutbounds(): Promise<Outbound[]> {
-    const mihomo: Mihomo = await this.fetchMihomo();
-    return mihomo.proxies!.map(
-      (proxy: MihomoProxy): Outbound =>
-        new Outbound({ provider: this.name, mihomo: proxy }),
+  public async fetchOutboundsMihomo(): Promise<MihomoOutbound[]> {
+    const url: string | URL | undefined = this.getMihomoURL();
+    if (!url) return [];
+    const headers = new Headers({ "User-Agent": "clash.meta" });
+    const text: string = await ky.get(url, { headers }).text();
+    const config: Mihomo = mihomoParse(text);
+    return config.proxies!.map(
+      (proxy: MihomoNode): MihomoOutbound => new MihomoOutbound(proxy, this),
     );
+  }
+
+  protected warnFormat(format: string): void {
+    consola.warn(`Provider '${this.name}' does not support '${format}'`);
+  }
+
+  protected getMihomoURL(): string | URL | undefined {
+    if (this.mihomo) return this.mihomo.url;
+    if (this.jms) return subconvertUrl(this.jms.url, "clash");
+    this.warnFormat("mihomo");
+    return undefined;
   }
 }

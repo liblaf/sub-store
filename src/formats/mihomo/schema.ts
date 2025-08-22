@@ -1,30 +1,27 @@
-import z from "zod/v4";
+import z from "zod";
 
-export const DEFAULT_URL_TEST = "https://cp.cloudflare.com";
-
-export const PORT_SCHEMA = z.int().min(1).max(65535);
-
-export const MIHOMO_PROXY_SCHEMA = z.looseObject({
+export const MIHOMO_NODE_SCHEMA = z.looseObject({
   name: z.string(),
+  type: z.string(),
   server: z.string(),
 });
-export type MihomoProxy = z.infer<typeof MIHOMO_PROXY_SCHEMA>;
+export type MihomoNode = z.infer<typeof MIHOMO_NODE_SCHEMA>;
+export type MihomoNodeOptions = z.input<typeof MIHOMO_NODE_SCHEMA>;
 
 export const MIHOMO_PROXY_GROUP_SCHEMA = z.looseObject({
   name: z.string(),
   type: z.enum(["select", "url-test"]),
   proxies: z.array(z.string()),
-  url: z.url().default(DEFAULT_URL_TEST).optional(),
-  interval: z.int().positive().default(300).optional(),
-  lazy: z.boolean().default(true).optional(),
-  icon: z.string().optional(),
+  url: z.url().default("https://cp.cloudflare.com"),
+  lazy: z.boolean().default(true),
+  "expected-status": z.int().min(100).max(599).default(204),
+  icon: z.url().optional(),
 });
-export type MihomoProxyGroupOptions = z.input<typeof MIHOMO_PROXY_GROUP_SCHEMA>;
 export type MihomoProxyGroup = z.infer<typeof MIHOMO_PROXY_GROUP_SCHEMA>;
+export type MihomoProxyGroupOptions = z.input<typeof MIHOMO_PROXY_GROUP_SCHEMA>;
 
 export const MIHOMO_SCHEMA = z.looseObject({
-  "mixed-port": PORT_SCHEMA.default(7892).optional(),
-  proxies: z.array(MIHOMO_PROXY_SCHEMA).optional(),
+  proxies: z.array(MIHOMO_NODE_SCHEMA).optional(),
   "proxy-groups": z.array(MIHOMO_PROXY_GROUP_SCHEMA).optional(),
 });
 export type Mihomo = z.infer<typeof MIHOMO_SCHEMA>;

@@ -1,4 +1,15 @@
-export { parseMihomo } from "./parser";
-export type { Mihomo, MihomoProxy } from "./schema";
-export { MIHOMO_PROXY_SCHEMA, MIHOMO_SCHEMA, PORT_SCHEMA } from "./schema";
+export { MihomoOutbound } from "./outbound";
+export { mihomoParse } from "./parse";
+export type {
+  Mihomo,
+  MihomoNode,
+  MihomoNodeOptions,
+  MihomoProxyGroup,
+  MihomoProxyGroupOptions,
+} from "./schema";
+export {
+  MIHOMO_NODE_SCHEMA,
+  MIHOMO_PROXY_GROUP_SCHEMA,
+  MIHOMO_SCHEMA,
+} from "./schema";
 export { MihomoTemplate } from "./template";

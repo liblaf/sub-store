@@ -1,2 +1,8 @@
-export type { Mihomo, MihomoProxy } from "./mihomo";
-export { MIHOMO_PROXY_SCHEMA, MIHOMO_SCHEMA, parseMihomo } from "./mihomo";
+export type { Mihomo, MihomoNode, MihomoNodeOptions } from "./mihomo";
+export {
+  MIHOMO_NODE_SCHEMA,
+  MIHOMO_SCHEMA,
+  MihomoOutbound,
+  MihomoTemplate,
+  mihomoParse,
+} from "./mihomo";
