@@ -46,6 +46,7 @@
     "@stricli/core": "^1",
     "@twemoji/api": "^16",
     "consola": "^3",
+    "dataloader": "^2",
     "ky": "^1",
     "remeda": "^2",
     "world-countries": "^5",

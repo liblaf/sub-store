@@ -7,7 +7,8 @@ export class InferrerInfo extends Inferrer {
 
   public override async infer<T extends Outbound>(outbound: T): Promise<T> {
     outbound.info = this.pattern.test(outbound.name);
-    if (outbound.info) consola.debug(`${outbound.name} ~ ${this.pattern}`);
+    if (outbound.info)
+      consola.success(`${outbound.prettyName} ~ ${this.pattern}`);
     return outbound;
   }
 }

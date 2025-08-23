@@ -1,6 +1,7 @@
 import twemoji from "@twemoji/api";
 import type { Country } from "world-countries";
-import { COUNTRY_UNKNOWN, type Outbound } from "../outbound";
+import type { Outbound } from "../outbound";
+import { COUNTRY_UNKNOWN } from "../utils";
 import type { Group } from "./abc";
 import { good } from "./common";
 

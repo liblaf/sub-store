@@ -11,9 +11,9 @@ export class InferrerContainer extends Inferrer {
     super();
     if (!inferrers) {
       inferrers = [
-        new InferrerCountry(),
         new InferrerEmby(),
         new InferrerInfo(),
+        new InferrerCountry(), // `InferrerCountry` depends on `InferrerEmby` & `InferrerInfo`
       ];
     }
     this.inferrers = inferrers;

@@ -24,7 +24,7 @@ export class MihomoTemplate {
     this.template = mihomoParse(template);
   }
 
-  public render(outbounds: MihomoOutbound[], groups: Group[]): string {
+  public render(outbounds: readonly MihomoOutbound[], groups: Group[]): string {
     let config: Mihomo = R.clone(this.template);
     config.proxies = outbounds.map((o: MihomoOutbound): MihomoNode => o.mihomo);
     const groupProxy: MihomoProxyGroup = this.renderGroupProxy();
@@ -50,7 +50,7 @@ export class MihomoTemplate {
   }
 
   protected renderGroup(
-    outbounds: MihomoOutbound[],
+    outbounds: readonly MihomoOutbound[],
     group: Group,
   ): MihomoProxyGroup | undefined {
     const filtered: MihomoOutbound[] = outbounds.filter(group.filter);

@@ -15,7 +15,7 @@ export class Profile {
     return new Profile(profile.providers);
   }
 
-  constructor(providers: ProviderOptions[]) {
+  constructor(providers: readonly ProviderOptions[]) {
     this.providers = providers.map(
       (options: ProviderOptions): Provider => new Provider(options),
     );

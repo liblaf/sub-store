@@ -7,7 +7,8 @@ export class InferrerEmby extends Inferrer {
 
   public override async infer<T extends Outbound>(outbound: T): Promise<T> {
     outbound.emby = this.pattern.test(outbound.name);
-    if (outbound.emby) consola.debug(`${outbound.name} ~ ${this.pattern}`);
+    if (outbound.emby)
+      consola.success(`${outbound.prettyName} ~ ${this.pattern}`);
     return outbound;
   }
 }

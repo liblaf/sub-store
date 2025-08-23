@@ -1,15 +1,27 @@
 import consola from "consola";
 import countries, { type Country } from "world-countries";
+import { type ApiResponse, GeoIP } from "../geoip";
 import type { Outbound } from "../outbound";
-import { COUNTRY_UNKNOWN } from "../outbound";
+import { COUNTRY_UNKNOWN, lookupCountry } from "../utils";
 import { Inferrer } from "./abc";
 
 export class InferrerCountry extends Inferrer {
+  private readonly geoip: GeoIP = new GeoIP();
+
   public override async infer<T extends Outbound>(outbound: T): Promise<T> {
+    if (outbound.emby || outbound.info) {
+      outbound.country = COUNTRY_UNKNOWN;
+      return outbound;
+    }
     if (outbound.country.cca2 === COUNTRY_UNKNOWN.cca2)
       outbound = this.inferFromName(outbound);
     if (outbound.country.cca2 === COUNTRY_UNKNOWN.cca2)
-      outbound.country = COUNTRY_UNKNOWN;
+      outbound = await this.inferFromServer(outbound);
+    if (outbound.country.cca2 === COUNTRY_UNKNOWN.cca2) {
+      consola.fail(
+        `${outbound.prettyName} (${prettyCountry(outbound.country)})`,
+      );
+    }
     return outbound;
   }
 
@@ -20,11 +32,29 @@ export class InferrerCountry extends Inferrer {
       for (const pattern of patterns(country)) {
         if (!pattern) continue;
         if (pattern.test(name)) {
-          consola.debug(`${name} ~ ${pattern} (${prettyCountry(country)})`);
+          consola.success(
+            `${outbound.prettyName} ~ ${pattern} (${prettyCountry(country)})`,
+          );
           outbound.country = country;
           return outbound;
         }
       }
+    }
+    return outbound;
+  }
+
+  protected async inferFromServer<T extends Outbound>(outbound: T): Promise<T> {
+    const response: ApiResponse = await this.geoip.lookup(outbound.server);
+    if (response.location?.country_code) {
+      outbound.country =
+        lookupCountry(response.location.country_code) || COUNTRY_UNKNOWN;
+    } else {
+      outbound.country = COUNTRY_UNKNOWN;
+    }
+    if (outbound.country.cca2 !== COUNTRY_UNKNOWN.cca2) {
+      consola.success(
+        `${outbound.prettyName} -> ${response.ip} (${prettyCountry(outbound.country)})`,
+      );
     }
     return outbound;
   }

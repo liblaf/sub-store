@@ -1,11 +1,6 @@
 import type { Country } from "world-countries";
 import type { Provider } from "./provider";
-
-export const COUNTRY_UNKNOWN = {
-  name: { common: "Unknown" },
-  cca2: "UN",
-  flag: "🇺🇳",
-} as Country;
+import { COUNTRY_UNKNOWN } from "./utils";
 
 export abstract class Outbound {
   public readonly provider: Provider;
