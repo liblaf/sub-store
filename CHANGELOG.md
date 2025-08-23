@@ -1,16 +1,20 @@
 # Changelog
 
+## [0.1.4](https://github.com/liblaf/sub-store/compare/v0.1.3..v0.1.4) - 2025-08-23
+
+### ✨ Features
+
+- **geoip:** add GeoIP-based country inference for outbound servers - ([79804e5](https://github.com/liblaf/sub-store/commit/79804e5063c31f2ca0398b5d6d629e04d3bc4e31))
+
+### ❤️ New Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+
 ## [0.1.3](https://github.com/liblaf/sub-store/compare/v0.1.2..v0.1.3) - 2025-08-22
 
 ### ♻ Code Refactoring
 
 - restructure project with improved modularity and abstractions - ([43ace87](https://github.com/liblaf/sub-store/commit/43ace87083c6fca6c797f1078d91aa0129cd1851))
-
-### ❤️ New Contributors
-
-- [@liblaf](https://github.com/liblaf) made their first contribution
-- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
-- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#12](https://github.com/liblaf/sub-store/pull/12)
 
 ## [0.1.2](https://github.com/liblaf/sub-store/compare/v0.1.1..v0.1.2) - 2025-08-18
 
