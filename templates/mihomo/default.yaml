@@ -82,7 +82,7 @@ rules:
 
   - RULE-SET,domainset-cdn,Download
   - RULE-SET,domainset-apple-cdn,DIRECT
-  - RULE-SET,domainset-download,Download
+  - RULE-SET,domainset-download,DIRECT
 
   - RULE-SET,non-ip-cdn,Download
   - RULE-SET,non-ip-stream,Stream
