@@ -1,14 +1,21 @@
 # Changelog
 
+## [0.1.5](https://github.com/liblaf/sub-store/compare/v0.1.4..v0.1.5) - 2025-08-25
+
+### 🐛 Bug Fixes
+
+- **template:** route download domains directly instead of through proxy - ([37fc78b](https://github.com/liblaf/sub-store/commit/37fc78b7ab6113571aa616dce0f114ab2a553c1e))
+
+### ❤️ New Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
+
 ## [0.1.4](https://github.com/liblaf/sub-store/compare/v0.1.3..v0.1.4) - 2025-08-23
 
 ### ✨ Features
 
 - **geoip:** add GeoIP-based country inference for outbound servers - ([79804e5](https://github.com/liblaf/sub-store/commit/79804e5063c31f2ca0398b5d6d629e04d3bc4e31))
-
-### ❤️ New Contributors
-
-- [@liblaf](https://github.com/liblaf) made their first contribution
 
 ## [0.1.3](https://github.com/liblaf/sub-store/compare/v0.1.2..v0.1.3) - 2025-08-22
 
