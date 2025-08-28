@@ -76,32 +76,22 @@ mixed-port: 7892
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # block QUIC
 
-  # custom rules
   - DOMAIN-SUFFIX,shenmi.link,CitrusLab Emby
+
+  # domain
   - RULE-SET,domain-direct,DIRECT
+  - RULE-SET,domain-domestic,DIRECT
+  - RULE-SET,domain-local,DIRECT
+  - RULE-SET,domain-ai,AI
+  - RULE-SET,domain-download,Download
+  - RULE-SET,domain-stream,Stream
+  - RULE-SET,domain-global,PROXY
 
-  - RULE-SET,domainset-cdn,Download
-  - RULE-SET,domainset-apple-cdn,DIRECT
-  - RULE-SET,domainset-download,DIRECT
-
-  - RULE-SET,non-ip-cdn,Download
-  - RULE-SET,non-ip-stream,Stream
-  - RULE-SET,non-ip-ai,AI
-  - RULE-SET,non-ip-telegram,PROXY
-  - RULE-SET,non-ip-apple-cn,DIRECT
-  - RULE-SET,non-ip-microsoft-cdn,DIRECT
-  - RULE-SET,non-ip-download,Download
-  - RULE-SET,non-ip-lan,DIRECT
-  - RULE-SET,non-ip-domestic,DIRECT
-  - RULE-SET,non-ip-direct,DIRECT
-  - RULE-SET,non-ip-global,PROXY
-
-  - RULE-SET,ip-stream,Stream
-  - RULE-SET,ip-telegram,PROXY
-  - RULE-SET,ip-lan,DIRECT
-  - RULE-SET,ip-domestic,DIRECT
-  - RULE-SET,ip-china-ip,DIRECT
-  - RULE-SET,ip-china-ipv6,DIRECT
+  # ipcidr
+  - RULE-SET,ipcidr-domestic,DIRECT
+  - RULE-SET,ipcidr-local,DIRECT
+  - RULE-SET,ipcidr-stream,Stream
+  - RULE-SET,ipcidr-global,PROXY
 
   - MATCH,PROXY
 
@@ -114,119 +104,69 @@ __rule-providers-anchors:
   domain: &domain
     type: http
     behavior: domain
-    format: text
+    format: mrs
     interval: 86400
   ipcidr: &ipcidr
     type: http
     behavior: ipcidr
-    format: text
+    format: mrs
     interval: 86400
 
 rule-providers:
-  # 常见静态 CDN
-  domainset-cdn:
+  # 🤖 AI
+  domain-ai:
     <<: *domain
-    url: https://ruleset.skk.moe/Clash/domainset/cdn.txt
-    path: ./ruleset.skk.moe/Clash/domainset/cdn.txt
-  non-ip-cdn:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/cdn.txt
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
+    path: ./rules/ai.domain.mrs
 
-  # 流媒体
-  non-ip-stream:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/stream.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/stream.txt
-  ip-stream:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/ip/stream.txt
-    path: ./ruleset.skk.moe/Clash/ip/stream.txt
-
-  # AI
-  non-ip-ai:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/ai.txt
-
-  # Telegram
-  non-ip-telegram:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/telegram.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/telegram.txt
-  ip-telegram:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/ip/telegram.txt
-    path: ./ruleset.skk.moe/Clash/ip/telegram.txt
-
-  # Apple CDN
-  domainset-apple-cdn:
-    <<: *domain
-    url: https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt
-    path: ./ruleset.skk.moe/Clash/domainset/apple-cdn.txt
-
-  # Apple CN
-  non-ip-apple-cn:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/apple_cn.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/apple-cn.txt
-
-  # Microsoft CDN
-  non-ip-microsoft-cdn:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/microsoft-cdn.txt
-
-  # 软件更新、操作系统等大文件下载
-  domainset-download:
-    <<: *domain
-    url: https://ruleset.skk.moe/Clash/domainset/download.txt
-    path: ./ruleset.skk.moe/Clash/domainset/download.txt
-  non-ip-download:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/download.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/download.txt
-
-  # 内网域名和局域网 IP
-  non-ip-lan:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/lan.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/lan.txt
-  ip-lan:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/ip/lan.txt
-    path: ./ruleset.skk.moe/Clash/ip/lan.txt
-
-  # Misc
-  non-ip-domestic:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/domestic.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/domestic.txt
-  non-ip-direct:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/direct.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/direct.txt
-  non-ip-global:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/non_ip/global.txt
-    path: ./ruleset.skk.moe/Clash/non-ip/global.txt
-  ip-domestic:
-    <<: *classical
-    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
-    path: ./ruleset.skk.moe/Clash/ip/domestic.txt
-
-  # chnroute CIDR
-  ip-china-ip:
-    <<: *ipcidr
-    url: https://ruleset.skk.moe/Clash/ip/china_ip.txt
-    path: ./ruleset.skk.moe/Clash/ip/china-ip.txt
-  ip-china-ipv6:
-    <<: *ipcidr
-    url: https://ruleset.skk.moe/Clash/ip/china_ip_ipv6.txt
-    path: ./ruleset.skk.moe/Clash/ip/china-ipv6.txt
-
-  # Custom Rules
+  # 🎯 Direct
   domain-direct:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/sub-store/rules/mihomo/domain/direct.txt
-    path: ./rules/mihomo/domain/direct.txt
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
+    path: ./rules/direct.domain.mrs
+
+  # 📍 Domestic
+  domain-domestic:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
+    path: ./rules/domestic.domain.mrs
+  ipcidr-domestic:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-domestic.mrs
+    path: ./rules/domestic.ipcidr.mrs
+
+  # 📥 Download
+  domain-download:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
+    path: ./rules/download.domain.mrs
+
+  # 🌐 Global
+  domain-global:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+    path: ./rules/global.domain.mrs
+  ipcidr-global:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-global.mrs
+    path: ./rules/global.ipcidr.mrs
+
+  # ♾️ Local
+  domain-local:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
+    path: ./rules/local.domain.mrs
+  ipcidr-local:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-local.mrs
+    path: ./rules/local.ipcidr.mrs
+
+  # 📺 Stream
+  domain-stream:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
+    path: ./rules/stream.domain.mrs
+  ipcidr-stream:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-stream.mrs
+    path: ./rules/stream.ipcidr.mrs
