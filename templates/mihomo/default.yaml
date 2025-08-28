@@ -134,7 +134,7 @@ rule-providers:
     path: ./rules/domestic.domain.mrs
   ipcidr-domestic:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-domestic.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
     path: ./rules/domestic.ipcidr.mrs
 
   # 📥 Download
@@ -150,7 +150,7 @@ rule-providers:
     path: ./rules/global.domain.mrs
   ipcidr-global:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-global.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
     path: ./rules/global.ipcidr.mrs
 
   # ♾️ Local
@@ -160,7 +160,7 @@ rule-providers:
     path: ./rules/local.domain.mrs
   ipcidr-local:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-local.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
     path: ./rules/local.ipcidr.mrs
 
   # 📺 Stream
@@ -170,7 +170,7 @@ rule-providers:
     path: ./rules/stream.domain.mrs
   ipcidr-stream:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-stream.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
     path: ./rules/stream.ipcidr.mrs
 
   # ✈️ Telegram
@@ -180,5 +180,5 @@ rule-providers:
     path: ./rules/telegram.domain.mrs
   ipcidr-telegram:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-telegram.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
     path: ./rules/telegram.ipcidr.mrs
