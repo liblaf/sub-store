@@ -85,12 +85,14 @@ rules:
   - RULE-SET,domain-ai,AI
   - RULE-SET,domain-download,Download
   - RULE-SET,domain-stream,Stream
+  - RULE-SET,domain-telegram,PROXY
   - RULE-SET,domain-global,PROXY
 
   # ipcidr
   - RULE-SET,ipcidr-domestic,DIRECT
   - RULE-SET,ipcidr-local,DIRECT
   - RULE-SET,ipcidr-stream,Stream
+  - RULE-SET,ipcidr-telegram,PROXY
   - RULE-SET,ipcidr-global,PROXY
 
   - MATCH,PROXY
@@ -170,3 +172,13 @@ rule-providers:
     <<: *ipcidr
     url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-stream.mrs
     path: ./rules/stream.ipcidr.mrs
+
+  # ✈️ Telegram
+  domain-telegram:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
+    path: ./rules/telegram.domain.mrs
+  ipcidr-telegram:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ipcidr-telegram.mrs
+    path: ./rules/telegram.ipcidr.mrs
