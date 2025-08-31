@@ -1,14 +1,30 @@
 # Changelog
 
+## [0.1.5](https://github.com/liblaf/sub-store/compare/v0.1.4..v0.1.5) - 2025-08-31
+
+### ✨ Features
+
+- **mihomo-template:** add Telegram rule providers and routing rules - ([4de1163](https://github.com/liblaf/sub-store/commit/4de1163c01613e1c436acdfca6f923e46ba3f53f))
+
+### 🐛 Bug Fixes
+
+- **mihomo:** correct rule-provider URLs for ipcidr rules - ([54e7915](https://github.com/liblaf/sub-store/commit/54e7915cc7844ec1bfb02047447f6b0288113d0c))
+- **template:** route download domains directly instead of through proxy - ([37fc78b](https://github.com/liblaf/sub-store/commit/37fc78b7ab6113571aa616dce0f114ab2a553c1e))
+
+### ♻ Code Refactoring
+
+- **templates/mihomo:** migrate rule providers to liblaf/route-rules - ([3a6bb17](https://github.com/liblaf/sub-store/commit/3a6bb17b79768725ad1faa2a49627136b0785b8a))
+
+### ❤️ New Contributors
+
+- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
+- [@liblaf](https://github.com/liblaf) made their first contribution
+
 ## [0.1.4](https://github.com/liblaf/sub-store/compare/v0.1.3..v0.1.4) - 2025-08-23
 
 ### ✨ Features
 
 - **geoip:** add GeoIP-based country inference for outbound servers - ([79804e5](https://github.com/liblaf/sub-store/commit/79804e5063c31f2ca0398b5d6d629e04d3bc4e31))
-
-### ❤️ New Contributors
-
-- [@liblaf](https://github.com/liblaf) made their first contribution
 
 ## [0.1.3](https://github.com/liblaf/sub-store/compare/v0.1.2..v0.1.3) - 2025-08-22
 
