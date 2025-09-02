@@ -1,0 +1,5 @@
+#:schema https://mise.jdx.dev/schema/mise.json
+
+# TODO: move this to `.config/mise/conf.d/10-typescript.toml` when <https://github.com/jdx/mise/discussions/5043#discussioncomment-13215330> is fixed
+[hooks.enter]
+script = "bun install"
