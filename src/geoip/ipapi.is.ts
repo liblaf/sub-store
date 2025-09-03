@@ -3,7 +3,15 @@ import ky from "ky";
 import * as R from "remeda";
 import z from "zod";
 
-const RESPONSE_SCHEMA = z.looseObject({
+const RESPONSE_SCHEMA: z.ZodObject<
+  {
+    ip: z.ZodUnion<readonly [z.ZodIPv4, z.ZodIPv6]>;
+    location: z.ZodOptional<
+      z.ZodObject<{ country_code: z.ZodString }, z.core.$loose>
+    >;
+  },
+  z.core.$loose
+> = z.looseObject({
   ip: z.union([z.ipv4(), z.ipv6()]),
   location: z.looseObject({ country_code: z.string().length(2) }).optional(),
 });

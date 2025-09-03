@@ -1,13 +1,15 @@
+import type { Application, RouteMap } from "@stricli/core";
 import { buildApplication, buildRouteMap } from "@stricli/core";
 import { description, version } from "../../package.json";
+import type { Context } from "./context";
 import { mihomo } from "./mihomo";
 
-export const routes = buildRouteMap({
+export const routes: RouteMap<Context> = buildRouteMap({
   routes: { mihomo },
   docs: { brief: description },
 });
 
-export const app = buildApplication(routes, {
+export const app: Application<Context> = buildApplication(routes, {
   name: "sub-store",
   versionInfo: { currentVersion: version },
 });

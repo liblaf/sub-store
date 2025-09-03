@@ -1,6 +1,6 @@
 {
   "name": "@liblaf/sub-store",
-  "description": "TODO",
+  "description": "",
   "version": "0.1.5",
   "type": "module",
   "files": [
@@ -15,9 +15,7 @@
       "import": "./dist/bin/sub-store.js"
     }
   },
-  "keywords": [
-    "TODO"
-  ],
+  "keywords": [],
   "homepage": "https://github.com/liblaf/sub-store",
   "bugs": {
     "url": "https://github.com/liblaf/sub-store/issues"
@@ -31,15 +29,25 @@
   "bin": {
     "sub-store": "./dist/bin/sub-store.js"
   },
-  "repository": "github:liblaf/sub-store",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liblaf/sub-store.git"
+  },
   "funding": {
     "url": "https://github.com/liblaf/sub-store?sponsor=1",
     "type": "github"
   },
   "scripts": {
     "build": "bunup",
-    "lint": "biome check --write",
-    "prepack": "npm run build"
+    "format:fix": "biome format --write",
+    "format": "biome format",
+    "lint:fix": "biome check --write",
+    "lint": "biome check",
+    "prepack": "npm run build",
+    "test:coverage": "bun test --coverage",
+    "test:watch": "bun test --watch",
+    "test": "bun test",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "@stricli/auto-complete": "^1",
@@ -55,7 +63,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2",
-    "@tsconfig/bun": "^1",
+    "@liblaf/config": "^0.1",
     "@types/bun": "^1",
     "bunup": "^0.11",
     "prettier": "^3"

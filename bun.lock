@@ -17,7 +17,7 @@
       },
       "devDependencies": {
         "@biomejs/biome": "^2",
-        "@tsconfig/bun": "^1",
+        "@liblaf/config": "^0.1",
         "@types/bun": "^1",
         "bunup": "^0.11",
         "prettier": "^3",
@@ -59,6 +59,8 @@
     "@emnapi/runtime": ["@emnapi/runtime@1.4.5", "https://mirrors.huaweicloud.com/repository/npm/@emnapi/runtime/-/runtime-1.4.5.tgz", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-++LApOtY0pEEz1zrd9vy1/zXVaVJJ/EbAF3u0fXIzPJEDtnITsBGbbK0EkM72amhl/R5b+5xx0Y/QhcVOpuulg=="],
 
     "@emnapi/wasi-threads": ["@emnapi/wasi-threads@1.0.4", "https://mirrors.huaweicloud.com/repository/npm/@emnapi/wasi-threads/-/wasi-threads-1.0.4.tgz", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g=="],
+
+    "@liblaf/config": ["@liblaf/config@0.1.1", "https://registry.npmmirror.com/@liblaf/config/-/config-0.1.1.tgz", { "peerDependencies": { "typescript": "^5" } }, "sha512-unhTsNhZh7Nc0CfHMp/PtZTieUOO7qgxmFg7eKSKZUru48VemnytVI5TREfzyOrCp+fzb7Jkc25PTtK3S/FwQw=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.0.3", "https://mirrors.huaweicloud.com/repository/npm/@napi-rs/wasm-runtime/-/wasm-runtime-1.0.3.tgz", { "dependencies": { "@emnapi/core": "^1.4.5", "@emnapi/runtime": "^1.4.5", "@tybys/wasm-util": "^0.10.0" } }, "sha512-rZxtMsLwjdXkMUGC3WwsPwLNVqVqnTJT6MNIB6e+5fhMcSCPP0AOsNWuMQ5mdCq6HNjs/ZeWAEchpqeprqBD2Q=="],
 
@@ -141,8 +143,6 @@
     "@stricli/auto-complete": ["@stricli/auto-complete@1.2.0", "https://mirrors.huaweicloud.com/repository/npm/@stricli/auto-complete/-/auto-complete-1.2.0.tgz", { "dependencies": { "@stricli/core": "^1.2.0" }, "bin": { "auto-complete": "dist/bin/cli.js" } }, "sha512-r9/msiloVmTF95mdhe04Uzqei1B0ZofhYRLeiPqpJ1W1RMCC8p9iW7kqBZEbALl2aRL5ZK9OEW3Q1cIejH7KEQ=="],
 
     "@stricli/core": ["@stricli/core@1.2.0", "https://mirrors.huaweicloud.com/repository/npm/@stricli/core/-/core-1.2.0.tgz", {}, "sha512-5b+npntDY0TAB7wAw0daGlh3/R2sf0TDLyrB1By2jCNH+C+lmcSqMtJXOMLVtEGSkIOvqAgIWpLMSs1PXqzt3w=="],
-
-    "@tsconfig/bun": ["@tsconfig/bun@1.0.8", "https://mirrors.huaweicloud.com/repository/npm/@tsconfig/bun/-/bun-1.0.8.tgz", {}, "sha512-JlJaRaS4hBTypxtFe8WhnwV8blf0R+3yehLk8XuyxUYNx6VXsKCjACSCvOYEFUiqlhlBWxtYCn/zRlOb8BzBQg=="],
 
     "@twemoji/api": ["@twemoji/api@16.0.1", "https://registry.npmmirror.com/@twemoji/api/-/api-16.0.1.tgz", { "dependencies": { "@twemoji/parser": "16.0.0", "fs-extra": "^8.0.1", "jsonfile": "^5.0.0", "universalify": "^0.1.2" } }, "sha512-qe7QHeJKVLGNciwAMbu1S872PX5bt1RY0+0xqvN7gNQ+zd3MyRJ5n7dZowEJWYRAgTN5bAUGshD1YAmkFkyAkA=="],
 

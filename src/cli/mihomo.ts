@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import { buildCommand } from "@stricli/core";
+import { buildCommand, type Command } from "@stricli/core";
 import consola from "consola";
 import { type MihomoOutbound, MihomoTemplate } from "../formats";
 import { type Group, newGroups } from "../group";
@@ -13,7 +13,7 @@ type Flags = {
   template: string;
 };
 
-export const mihomo = buildCommand({
+export const mihomo: Command<Context> = buildCommand({
   docs: { brief: "" },
   async func(this: Context, flags: Flags): Promise<void> {
     consola.level = 6;
