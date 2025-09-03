@@ -45,9 +45,9 @@ dns:
     - system
   direct-nameserver:
     - https://101.6.6.6/dns-query
+    - system
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-    - system
   direct-nameserver-follow-policy: false
   nameserver:
     - https://101.6.6.6/dns-query
@@ -56,6 +56,12 @@ dns:
   fallback:
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: cn
+    geosite:
+      - geolocation-!cn
+      - gfw
 
 sniffer:
   enable: true
