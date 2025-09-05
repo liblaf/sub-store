@@ -22,6 +22,11 @@ unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
 geo-update-interval: 24 # hours
+geox-url:
+  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
+  asn: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb
 
 # ref: <https://dns.icoa.cn/>
 dns:
@@ -124,67 +129,67 @@ rule-providers:
   # 🤖 AI
   domain-ai:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
     path: ./rules/ai.domain.mrs
 
   # 🎯 Direct
   domain-direct:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
     path: ./rules/direct.domain.mrs
 
   # 📍 Domestic
   domain-domestic:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
     path: ./rules/domestic.domain.mrs
   ipcidr-domestic:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
     path: ./rules/domestic.ipcidr.mrs
 
   # 📥 Download
   domain-download:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
     path: ./rules/download.domain.mrs
 
   # 🌐 Global
   domain-global:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
     path: ./rules/global.domain.mrs
   ipcidr-global:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
     path: ./rules/global.ipcidr.mrs
 
   # ♾️ Local
   domain-local:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
     path: ./rules/local.domain.mrs
   ipcidr-local:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
     path: ./rules/local.ipcidr.mrs
 
   # 📺 Stream
   domain-stream:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
     path: ./rules/stream.domain.mrs
   ipcidr-stream:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
     path: ./rules/stream.ipcidr.mrs
 
   # ✈️ Telegram
   domain-telegram:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
     path: ./rules/telegram.domain.mrs
   ipcidr-telegram:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
     path: ./rules/telegram.ipcidr.mrs

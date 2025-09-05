@@ -15,23 +15,20 @@ ignoreRandomStrings: true
 useGitignore: true
 words:
   - bunup
-  - chnroute
   - cioc
   - direnv
-  - dotenv
   - emby
   - geoip
+  - geox
   - ipapi
   - ipcidr
-  - jscoverage
-  - jspm
   - liblaf
   - liblaf's
   - mihomo
   - mijia
+  - mmdb
   - numpy
   - nuxt
-  - pids
   - pydata
   - pyvista
   - quic
@@ -41,5 +38,3 @@ words:
   - stricli
   - trimesh
   - ustclog
-  - vuepress
-  - wscript
