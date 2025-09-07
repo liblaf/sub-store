@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.6](https://github.com/liblaf/sub-store/compare/v0.1.5..v0.1.6) - 2025-09-07
+
+### ✨ Features
+
+- **mihomo:** add geox-url configuration and update CDN URLs - ([8a57314](https://github.com/liblaf/sub-store/commit/8a5731477cb854eede10949a00ca12a79df8b57d))
+- **mihomo:** enhance DNS configuration with fallback filtering - ([8235fce](https://github.com/liblaf/sub-store/commit/8235fce67662dbff3b6eff8215386780375fdb22))
+
+### ♻ Code Refactoring
+
+- **config:** migrate to shared liblaf configuration - ([40b246b](https://github.com/liblaf/sub-store/commit/40b246b3d0762630c9504e4c0045d0c539a57c68))
+
+### ❤️ New Contributors
+
+- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#18](https://github.com/liblaf/sub-store/pull/18)
+
 ## [0.1.5](https://github.com/liblaf/sub-store/compare/v0.1.4..v0.1.5) - 2025-08-31
 
 ### ✨ Features
@@ -14,11 +31,6 @@
 ### ♻ Code Refactoring
 
 - **templates/mihomo:** migrate rule providers to liblaf/route-rules - ([3a6bb17](https://github.com/liblaf/sub-store/commit/3a6bb17b79768725ad1faa2a49627136b0785b8a))
-
-### ❤️ New Contributors
-
-- [@liblaf-bot[bot]](https://github.com/apps/liblaf-bot) made their first contribution
-- [@liblaf](https://github.com/liblaf) made their first contribution
 
 ## [0.1.4](https://github.com/liblaf/sub-store/compare/v0.1.3..v0.1.4) - 2025-08-23
 
