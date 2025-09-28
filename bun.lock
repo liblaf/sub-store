@@ -19,7 +19,7 @@
         "@biomejs/biome": "^2",
         "@liblaf/config": "^0.1",
         "@types/bun": "^1",
-        "bunup": "^0.12.0",
+        "bunup": "^0.14.0",
         "prettier": "^3",
       },
       "peerDependencies": {
@@ -54,7 +54,9 @@
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.2.0", "https://mirrors.huaweicloud.com/repository/npm/@biomejs/cli-win32-x64/-/cli-win32-x64-2.2.0.tgz", { "os": "win32", "cpu": "x64" }, "sha512-Nawu5nHjP/zPKTIryh2AavzTc/KEg4um/MxWdXW0A6P/RZOyIpa7+QSjeXwAwX/utJGaCoXRPWtF3m5U/bB3Ww=="],
 
-    "@bunup/dts": ["@bunup/dts@0.12.0", "", { "dependencies": { "@babel/parser": "^7.28.0", "coffi": "^0.1.31", "oxc-minify": "^0.77.2", "oxc-resolver": "^8.0.0", "oxc-transform": "^0.67.0", "picocolors": "^1.1.1", "std-env": "^3.9.0", "ts-import-resolver": "^0.1.23" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-Sr8okIyuy3bRo+NsOxQcU+t5/U9X1y8wEHqD3Dj8biRz+12nHu0f7uGOqik0zDK/TnM4oGjouyE5jrp2v2OVVg=="],
+    "@bunup/dts": ["@bunup/dts@0.13.2", "", { "dependencies": { "@babel/parser": "^7.28.0", "coffi": "^0.1.31", "oxc-minify": "^0.77.2", "oxc-resolver": "^8.0.0", "oxc-transform": "^0.67.0", "picocolors": "^1.1.1", "std-env": "^3.9.0", "ts-import-resolver": "^0.1.23" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-sqr3HuqmDJKawLjJTutmwivUJDbxJN/aaD1eftLosg2ekxxzSIrvhLYeZQUujkZ5/6yYE2yzBoxYH0/PoTH5vw=="],
+
+    "@bunup/shared": ["@bunup/shared@0.13.2", "", { "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-50gIbM2b9dy6Nej4pxr/bQCbZeEKSxhEBo7+SonZjek/UDAKuQzRBKGNQ5wPDBw6N2ilGp4fs5FIbN4R9swcwQ=="],
 
     "@emnapi/core": ["@emnapi/core@1.4.5", "https://mirrors.huaweicloud.com/repository/npm/@emnapi/core/-/core-1.4.5.tgz", { "dependencies": { "@emnapi/wasi-threads": "1.0.4", "tslib": "^2.4.0" } }, "sha512-XsLw1dEOpkSX/WucdqUhPWP7hDxSvZiY+fsUC14h+FtQ2Ifni4znbBt8punRX+Uj2JG/uDb8nEHVKvrVlvdZ5Q=="],
 
@@ -160,7 +162,7 @@
 
     "bun-types": ["bun-types@1.2.20", "https://mirrors.huaweicloud.com/repository/npm/bun-types/-/bun-types-1.2.20.tgz", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-pxTnQYOrKvdOwyiyd/7sMt9yFOenN004Y6O4lCcCUoKVej48FS5cvTw9geRaEcB9TsDZaJKAxPTVvi8tFsVuXA=="],
 
-    "bunup": ["bunup@0.12.0", "", { "dependencies": { "@bunup/dts": "0.12.0", "chokidar": "^4.0.3", "coffi": "^0.1.35", "lightningcss": "^1.30.1", "picocolors": "^1.1.1", "tinyexec": "^1.0.1", "tree-kill": "^1.2.2" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"], "bin": { "bunup": "dist/cli/index.js" } }, "sha512-kOFJG8tXmxb2W609jGVRSxusQuZzNqygeO5ZXmrBbsH5cpaatFuTljUWuRs9Rq0y0OseWhSGaHgSeWk4DquWRg=="],
+    "bunup": ["bunup@0.14.8", "", { "dependencies": { "@bunup/dts": "0.13.2", "@bunup/shared": "0.13.2", "chokidar": "^4.0.3", "coffi": "^0.1.35", "lightningcss": "^1.30.1", "picocolors": "^1.1.1", "tinyexec": "^1.0.1", "tree-kill": "^1.2.2", "zlye": "^0.4.4" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"], "bin": { "bunup": "dist/cli/index.js" } }, "sha512-3EGQyqMOwQBQXpp+J8/ixosDPdc3+QVxsR2ZxwKsO5Tt9WuKLhnOi3Dos7HeAySpfaDx0blXLJ69e+A6rGkMww=="],
 
     "chokidar": ["chokidar@4.0.3", "https://mirrors.huaweicloud.com/repository/npm/chokidar/-/chokidar-4.0.3.tgz", { "dependencies": { "readdirp": "^4.0.1" } }, "sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA=="],
 
@@ -239,6 +241,8 @@
     "world-countries": ["world-countries@5.1.0", "https://mirrors.huaweicloud.com/repository/npm/world-countries/-/world-countries-5.1.0.tgz", {}, "sha512-CXR6EBvTbArDlDDIWU3gfKb7Qk0ck2WNZ234b/A0vuecPzIfzzxH+O6Ejnvg1sT8XuiZjVlzOH0h08ZtaO7g0w=="],
 
     "yaml": ["yaml@2.8.1", "https://mirrors.huaweicloud.com/repository/npm/yaml/-/yaml-2.8.1.tgz", { "bin": { "yaml": "bin.mjs" } }, "sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw=="],
+
+    "zlye": ["zlye@0.4.4", "", { "dependencies": { "picocolors": "^1.1.1" }, "peerDependencies": { "typescript": ">=4.5.0" }, "optionalPeers": ["typescript"] }, "sha512-fwpeC841X3ElOLYRMKXbwX29pitNrsm6nRNvEhDMrRXDl3BhR2i03Bkr0GNrpyYgZJuEzUsBylXAYzgGPXXOCQ=="],
 
     "zod": ["zod@4.0.17", "https://mirrors.huaweicloud.com/repository/npm/zod/-/zod-4.0.17.tgz", {}, "sha512-1PHjlYRevNxxdy2JZ8JcNAw7rX8V9P1AKkP+x/xZfxB0K5FYfuV+Ug6P/6NVSR2jHQ+FzDDoDHS04nYUsOIyLQ=="],
 
