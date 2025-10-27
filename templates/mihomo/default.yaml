@@ -18,7 +18,7 @@ external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download
 profile:
   store-selected: true
   store-fake-ip: true
-unified-delay: true
+unified-delay: false
 tcp-concurrent: true
 geo-auto-update: true
 geo-update-interval: 24 # hours
