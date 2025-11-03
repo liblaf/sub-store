@@ -52,7 +52,7 @@
   "dependencies": {
     "@stricli/auto-complete": "^1",
     "@stricli/core": "^1",
-    "@twemoji/api": "^16",
+    "@twemoji/api": "^17.0.0",
     "consola": "^3",
     "dataloader": "^2",
     "ky": "^1",
