@@ -13,7 +13,8 @@
     },
     "./bin/sub-store": {
       "import": "./dist/bin/sub-store.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "keywords": [],
   "homepage": "https://github.com/liblaf/sub-store",
@@ -50,9 +51,8 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "@stricli/auto-complete": "^1",
     "@stricli/core": "^1",
-    "@twemoji/api": "^17.0.0",
+    "@twemoji/api": "^17",
     "consola": "^3",
     "dataloader": "^2",
     "ky": "^1",
@@ -65,7 +65,7 @@
     "@biomejs/biome": "^2",
     "@liblaf/config": "^0.1",
     "@types/bun": "^1",
-    "bunup": "^0.15.0",
+    "bunup": "^0.15",
     "prettier": "^3"
   },
   "peerDependencies": {

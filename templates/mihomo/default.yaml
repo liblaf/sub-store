@@ -94,6 +94,7 @@ rules:
   - RULE-SET,domain-domestic,DIRECT
   - RULE-SET,domain-local,DIRECT
   - RULE-SET,domain-ai,AI
+  - RULE-SET,domain-binance,Binance
   - RULE-SET,domain-download,Download
   - RULE-SET,domain-stream,Stream
   - RULE-SET,domain-telegram,PROXY
@@ -131,6 +132,12 @@ rule-providers:
     <<: *domain
     url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
     path: ./rules/ai.domain.mrs
+
+  # 🪙 Binance
+  domain-binance:
+    <<: *domain
+    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/binance.domain.mrs
+    path: ./rules/binance.domain.mrs
 
   # 🎯 Direct
   domain-direct:

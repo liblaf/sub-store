@@ -1,5 +1,4 @@
 import { defineConfig } from "bunup";
-import { exports, shims, unused } from "bunup/plugins";
 
 export default defineConfig({
   entry: ["src/index.ts", "src/bin/sub-store.ts"],
@@ -9,5 +8,6 @@ export default defineConfig({
   target: "bun",
   sourcemap: "linked",
   onSuccess: "bun run 'scripts/gen-schemas.ts'",
-  plugins: [shims(), exports(), unused()],
+  exports: true,
+  unused: true,
 });

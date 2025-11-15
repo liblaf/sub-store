@@ -24,8 +24,8 @@ jobs:
         run: |-
           name="$(jq --raw-output '.name' 'package.json')"
           version="$(jq --raw-output '.version' 'package.json')"
-          printf 'name=%s\n' "$name" >> "$GITHUB_OUTPUT"
-          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install Dependencies

@@ -16,7 +16,7 @@ export const PROXY: Group = {
 };
 
 export const INFO: Group = {
-  name: "INFO",
+  name: "Info",
   type: "url-test",
   emoji: "ℹ️",
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Airport.png",
@@ -32,6 +32,33 @@ export const AUTO: Group = {
   icon: "https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Auto.png",
   filter(outbound: Outbound): boolean {
     return good(outbound) && outbound.multiplier <= 2.0;
+  },
+};
+
+const BINANCE_EXCLUDE_REGIONS = new Set([
+  "CA",
+  "CN",
+  "CU",
+  "HK",
+  "IR",
+  "KP",
+  "MO",
+  "NL",
+  "TW",
+  "US",
+]);
+export const BINANCE: Group = {
+  name: "Binance",
+  type: "url-test",
+  emoji: "🪙",
+  // TODO: add icon
+  url: "https://api.binance.com/api/v3/ping",
+  filter(outbound: Outbound): boolean {
+    return (
+      good(outbound) &&
+      !!outbound.country &&
+      !BINANCE_EXCLUDE_REGIONS.has(outbound.country.cca2)
+    );
   },
 };
 
