@@ -7,29 +7,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8](https://github.com/liblaf/sub-store/releases/tag/v0.1.8) - 2025-11-15
+
+### ✨ Features
+
+- **group, mihomo, build:** Add Binance group and refine build configurations - [9887fea](https://github.com/liblaf/sub-store/commit/9887fea34c16c402932e09e1badcacda4e55d299) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **deps:** Add @stricli/auto-complete dependency - [5e29d86](https://github.com/liblaf/sub-store/commit/5e29d8608976fbb52b1260be7108897b783170ed) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#32](https://github.com/liblaf/sub-store/pull/32)
+
 ## [0.1.7](https://github.com/liblaf/sub-store/releases/tag/v0.1.7) - 2025-11-03
 
 ### 🐛 Bug Fixes
 
-- **(deps)** update dependency @twemoji/api to v17 (#29) - [af2c328](https://github.com/liblaf/sub-store/commit/af2c328a84cad77578be5b25800be65547fc6689) by [@renovate[bot]](https://github.com/apps/renovate) in [#29](https://github.com/liblaf/sub-store/pull/29)
+- **deps:** update dependency @twemoji/api to v17 (#29) - [af2c328](https://github.com/liblaf/sub-store/commit/af2c328a84cad77578be5b25800be65547fc6689) by [@renovate[bot]](https://github.com/apps/renovate) in [#29](https://github.com/liblaf/sub-store/pull/29)
 
 ### ❤️ Contributors
 
-- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#30](https://github.com/liblaf/sub-store/pull/30)
-- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#29](https://github.com/liblaf/sub-store/pull/29)
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
 - [@copier-update[bot]](https://github.com/apps/copier-update) made their first contribution in [#25](https://github.com/liblaf/sub-store/pull/25)
-- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf](https://github.com/liblaf)
 
 ## [0.1.6](https://github.com/liblaf/sub-store/releases/tag/v0.1.6) - 2025-09-07
 
 ### ✨ Features
 
-- **(mihomo)** enhance DNS configuration with fallback filtering - [8235fce](https://github.com/liblaf/sub-store/commit/8235fce67662dbff3b6eff8215386780375fdb22) by [@liblaf](https://github.com/liblaf)
-- **(mihomo)** add geox-url configuration and update CDN URLs - [8a57314](https://github.com/liblaf/sub-store/commit/8a5731477cb854eede10949a00ca12a79df8b57d) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** enhance DNS configuration with fallback filtering - [8235fce](https://github.com/liblaf/sub-store/commit/8235fce67662dbff3b6eff8215386780375fdb22) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** add geox-url configuration and update CDN URLs - [8a57314](https://github.com/liblaf/sub-store/commit/8a5731477cb854eede10949a00ca12a79df8b57d) by [@liblaf](https://github.com/liblaf)
 
 ### ♻ Code Refactoring
 
-- **(config)** migrate to shared liblaf configuration - [40b246b](https://github.com/liblaf/sub-store/commit/40b246b3d0762630c9504e4c0045d0c539a57c68) by [@liblaf](https://github.com/liblaf)
+- **config:** migrate to shared liblaf configuration - [40b246b](https://github.com/liblaf/sub-store/commit/40b246b3d0762630c9504e4c0045d0c539a57c68) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -41,16 +56,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-- **(mihomo-template)** add Telegram rule providers and routing rules - [4de1163](https://github.com/liblaf/sub-store/commit/4de1163c01613e1c436acdfca6f923e46ba3f53f) by [@liblaf](https://github.com/liblaf)
+- **mihomo-template:** add Telegram rule providers and routing rules - [4de1163](https://github.com/liblaf/sub-store/commit/4de1163c01613e1c436acdfca6f923e46ba3f53f) by [@liblaf](https://github.com/liblaf)
 
 ### 🐛 Bug Fixes
 
-- **(mihomo)** correct rule-provider URLs for ipcidr rules - [54e7915](https://github.com/liblaf/sub-store/commit/54e7915cc7844ec1bfb02047447f6b0288113d0c) by [@liblaf](https://github.com/liblaf)
-- **(template)** route download domains directly instead of through proxy - [37fc78b](https://github.com/liblaf/sub-store/commit/37fc78b7ab6113571aa616dce0f114ab2a553c1e) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** correct rule-provider URLs for ipcidr rules - [54e7915](https://github.com/liblaf/sub-store/commit/54e7915cc7844ec1bfb02047447f6b0288113d0c) by [@liblaf](https://github.com/liblaf)
+- **template:** route download domains directly instead of through proxy - [37fc78b](https://github.com/liblaf/sub-store/commit/37fc78b7ab6113571aa616dce0f114ab2a553c1e) by [@liblaf](https://github.com/liblaf)
 
 ### ♻ Code Refactoring
 
-- **(templates/mihomo)** migrate rule providers to liblaf/route-rules - [3a6bb17](https://github.com/liblaf/sub-store/commit/3a6bb17b79768725ad1faa2a49627136b0785b8a) by [@liblaf](https://github.com/liblaf)
+- **templates/mihomo:** migrate rule providers to liblaf/route-rules - [3a6bb17](https://github.com/liblaf/sub-store/commit/3a6bb17b79768725ad1faa2a49627136b0785b8a) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -61,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-- **(geoip)** add GeoIP-based country inference for outbound servers - [79804e5](https://github.com/liblaf/sub-store/commit/79804e5063c31f2ca0398b5d6d629e04d3bc4e31) by [@liblaf](https://github.com/liblaf)
+- **geoip:** add GeoIP-based country inference for outbound servers - [79804e5](https://github.com/liblaf/sub-store/commit/79804e5063c31f2ca0398b5d6d629e04d3bc4e31) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -84,8 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
-- **(infer)** recognize English "Traffic" in placeholder inferrer - [a1b2c14](https://github.com/liblaf/sub-store/commit/a1b2c14725060df8ef041bf50fbca5cfdfeda344) by [@liblaf](https://github.com/liblaf)
-- **(mihomo)** update default configuration template with DNS improvements and rule fixes - [67682f2](https://github.com/liblaf/sub-store/commit/67682f2f3497785815e6b047b7439d0c1c4468a8) by [@liblaf](https://github.com/liblaf)
+- **infer:** recognize English "Traffic" in placeholder inferrer - [a1b2c14](https://github.com/liblaf/sub-store/commit/a1b2c14725060df8ef041bf50fbca5cfdfeda344) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** update default configuration template with DNS improvements and rule fixes - [67682f2](https://github.com/liblaf/sub-store/commit/67682f2f3497785815e6b047b7439d0c1c4468a8) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -97,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
-- **(outbound)** add space in prettyName for provider tags - [63d4c59](https://github.com/liblaf/sub-store/commit/63d4c59618ac5374dc1697bfb346e9df670d13d8) by [@liblaf](https://github.com/liblaf)
+- **outbound:** add space in prettyName for provider tags - [63d4c59](https://github.com/liblaf/sub-store/commit/63d4c59618ac5374dc1697bfb346e9df670d13d8) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -108,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-- **(config)** support multiple profiles and generate schemas - [1e181d3](https://github.com/liblaf/sub-store/commit/1e181d36765fbea489d1664eb02f19de51a1762f) by [@liblaf](https://github.com/liblaf)
+- **config:** support multiple profiles and generate schemas - [1e181d3](https://github.com/liblaf/sub-store/commit/1e181d36765fbea489d1664eb02f19de51a1762f) by [@liblaf](https://github.com/liblaf)
 
 ### ❤️ Contributors
 
@@ -120,7 +135,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
-- **(deps)** update dependency zod to v4 (#3) - [d66eed2](https://github.com/liblaf/sub-store/commit/d66eed25f66dd0216cf562a228ea602cd7309b7d) by [@renovate[bot]](https://github.com/apps/renovate) in [#3](https://github.com/liblaf/sub-store/pull/3)
+- **deps:** update dependency zod to v4 (#3) - [d66eed2](https://github.com/liblaf/sub-store/commit/d66eed25f66dd0216cf562a228ea602cd7309b7d) by [@renovate[bot]](https://github.com/apps/renovate) in [#3](https://github.com/liblaf/sub-store/pull/3)
 
 ### ❤️ Contributors
 
@@ -147,11 +162,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ Features
 
-- **(cli)** add initial CLI implementation - [f3e04cc](https://github.com/liblaf/sub-store/commit/f3e04ccd09251a55d1fbfc181fc24a6955539d75) by [@liblaf](https://github.com/liblaf)
-- **(core)** implement modular architecture with mihomo support - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
-- **(geoip)** add IPAPI.is implementation - [1309238](https://github.com/liblaf/sub-store/commit/130923898fb6799be1b76700e79decf52c1fc9b1) by [@liblaf](https://github.com/liblaf)
-- **(mihomo)** add direct domains and improve template handling - [aff6a3d](https://github.com/liblaf/sub-store/commit/aff6a3d4ed4c113dd7fd31cff1e779d27c314d8f) by [@liblaf](https://github.com/liblaf)
-- **(outbound)** add placeholder detection and INFO group - [645acea](https://github.com/liblaf/sub-store/commit/645acea9a4c439a3cbd6d2b4c5760a4cdee3e14a) by [@liblaf](https://github.com/liblaf)
+- **cli:** add initial CLI implementation - [f3e04cc](https://github.com/liblaf/sub-store/commit/f3e04ccd09251a55d1fbfc181fc24a6955539d75) by [@liblaf](https://github.com/liblaf)
+- **core:** implement modular architecture with mihomo support - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
+- **geoip:** add IPAPI.is implementation - [1309238](https://github.com/liblaf/sub-store/commit/130923898fb6799be1b76700e79decf52c1fc9b1) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** add direct domains and improve template handling - [aff6a3d](https://github.com/liblaf/sub-store/commit/aff6a3d4ed4c113dd7fd31cff1e779d27c314d8f) by [@liblaf](https://github.com/liblaf)
+- **outbound:** add placeholder detection and INFO group - [645acea](https://github.com/liblaf/sub-store/commit/645acea9a4c439a3cbd6d2b4c5760a4cdee3e14a) by [@liblaf](https://github.com/liblaf)
 - add core provider and utility modules - [9495cda](https://github.com/liblaf/sub-store/commit/9495cda36664bad676350b08fb95a021afcd9613) by [@liblaf](https://github.com/liblaf)
 - implement mihomo configuration generation - [a8a108b](https://github.com/liblaf/sub-store/commit/a8a108be1eb2ad7bd2c677e89b437d09764507f9) by [@liblaf](https://github.com/liblaf)
 - add release-please configuration and workflow files - [d1e2c0e](https://github.com/liblaf/sub-store/commit/d1e2c0e493e49447255e99b66609c9e4ff0c6f5b) by [@liblaf](https://github.com/liblaf)
