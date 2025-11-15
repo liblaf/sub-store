@@ -27,7 +27,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install Dependencies
         run: |-
-          bun install
+          bun ci
           bun pm bin >> "$GITHUB_PATH"
       - name: Build
         run: bun pm pack --destination 'pack'
@@ -69,7 +69,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install Dependencies
         run: |-
-          bun install
+          bun ci
           bun pm bin >> "$GITHUB_PATH"
       - name: Run Tests
         run: >-
@@ -96,7 +96,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
       - name: Install Dependencies
         run: |-
-          bun install
+          bun ci
           bun pm bin >> "$GITHUB_PATH"
       - name: TypeScript Check
         run: bun run tsc --pretty --noEmit
