@@ -51,6 +51,7 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
+    "@stricli/auto-complete": "^1",
     "@stricli/core": "^1",
     "@twemoji/api": "^17",
     "consola": "^3",
