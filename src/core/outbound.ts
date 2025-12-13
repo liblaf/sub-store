@@ -8,6 +8,8 @@ export abstract class Outbound {
   // metadata
   public country: Country = COUNTRY_UNKNOWN;
   public info: boolean = false;
+  public emby: boolean = false;
+  public multiplier: number = 1.0;
   [key: string]: any;
 
   constructor(provider: Provider) {
