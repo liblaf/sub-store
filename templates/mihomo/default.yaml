@@ -39,18 +39,18 @@ dns:
   ipv6: true
   enhanced-mode: redir-host
   default-nameserver:
-    - 101.6.6.6 # TUNA DNS666
     - system
+    - 101.6.6.6 # TUNA DNS666
     - 119.29.29.29 # DNSPod Public DNS
     - 223.5.5.5 # 阿里云公共 DNS
   proxy-server-nameserver:
+    - system
     - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-    - system
   direct-nameserver:
-    - https://101.6.6.6/dns-query
     - system
+    - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
   direct-nameserver-follow-policy: false

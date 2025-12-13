@@ -11,5 +11,6 @@ export const routes: RouteMap<Context> = buildRouteMap({
 
 export const app: Application<Context> = buildApplication(routes, {
   name: "sub-store",
+  scanner: { caseStyle: "allow-kebab-for-camel" },
   versionInfo: { currentVersion: version },
 });
