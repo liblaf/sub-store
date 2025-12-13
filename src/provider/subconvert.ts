@@ -2,6 +2,9 @@ import ky from "ky";
 
 const BACKEND: string = process.env.SUBCONVERTER_URL || "https://url.v1.mk/sub";
 
+const SUBLINK_URL: string =
+  process.env.SUBLINK_URL || "https://sublink.liblaf.me/clash";
+
 export function subconvertUrl(url: string, target: string): URL {
   const req = new URL(BACKEND);
   req.searchParams.set("url", url);
@@ -13,4 +16,11 @@ export function subconvertUrl(url: string, target: string): URL {
 export async function subconvert(url: string, target: string): Promise<string> {
   const req: URL = subconvertUrl(url, target);
   return await ky.get(req).text();
+}
+
+export function sublinkClashUrl(url: string): URL {
+  const req = new URL(SUBLINK_URL);
+  req.searchParams.set("config", url);
+  req.searchParams.set("ua", "clash.meta");
+  return req;
 }

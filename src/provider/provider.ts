@@ -3,7 +3,7 @@ import ky from "ky";
 import type { Mihomo, MihomoNode } from "../formats";
 import { MihomoOutbound, mihomoParse } from "../formats";
 import { PROVIDER_SCHEMA, type ProviderOptions } from "./schema";
-import { subconvertUrl } from "./subconvert";
+import { sublinkClashUrl } from "./subconvert";
 
 export class Provider {
   public readonly name: string;
@@ -34,7 +34,7 @@ export class Provider {
 
   protected getMihomoURL(): string | URL | undefined {
     if (this.mihomo) return this.mihomo.url;
-    if (this.jms) return subconvertUrl(this.jms.url, "clash");
+    if (this.jms) return sublinkClashUrl(this.jms.url);
     this.warnFormat("mihomo");
     return undefined;
   }
