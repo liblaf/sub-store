@@ -55,6 +55,7 @@ dns:
     - https://dns.alidns.com/dns-query
   direct-nameserver-follow-policy: false
   nameserver:
+    - system
     - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
