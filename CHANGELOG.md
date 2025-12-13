@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11](https://github.com/liblaf/sub-store/releases/tag/v0.1.11) - 2025-12-13
+
+### ✨ Features
+
+- **templates:** Add Mihomo and Stash base YAML configurations - [e567f77](https://github.com/liblaf/sub-store/commit/e567f779d4f8ece14476340bdaf2c1fa3e76a8fc) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **core:** Explicitly declare `emby` and `multiplier` properties in `Outbound` class - [ad62c6a](https://github.com/liblaf/sub-store/commit/ad62c6a4b6e8e03fff1a8cff693fa839e8b8586b) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+
 ## [0.1.10](https://github.com/liblaf/sub-store/releases/tag/v0.1.10) - 2025-12-13
 
 ### 🐛 Bug Fixes
@@ -23,9 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
-- [@liblaf](https://github.com/liblaf) made their first contribution
-- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#41](https://github.com/liblaf/sub-store/pull/41)
-- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#39](https://github.com/liblaf/sub-store/pull/39)
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
 
 ## [0.1.9](https://github.com/liblaf/sub-store/releases/tag/v0.1.9) - 2025-11-15
 
