@@ -1,9 +1,22 @@
 import consola from "consola";
 import ky from "ky";
+import { z } from "zod";
 import type { Mihomo, MihomoNode } from "../formats";
 import { MihomoOutbound, mihomoParse } from "../formats";
-import { PROVIDER_SCHEMA, type ProviderOptions } from "./schema";
-import { sublinkClashUrl } from "./subconvert";
+import { sublinkClashUrl } from "../utils";
+
+export const PROVIDER_SCHEMA: z.ZodObject<{
+  name: z.ZodString;
+  free: z.ZodDefault<z.ZodBoolean>;
+  jms: z.ZodOptional<z.ZodObject<{ url: z.ZodURL }>>;
+  mihomo: z.ZodOptional<z.ZodObject<{ url: z.ZodURL }>>;
+}> = z.object({
+  name: z.string(),
+  free: z.boolean().default(false),
+  jms: z.object({ url: z.url() }).optional(),
+  mihomo: z.object({ url: z.url() }).optional(),
+});
+export type ProviderOptions = z.input<typeof PROVIDER_SCHEMA>;
 
 export class Provider {
   public readonly name: string;

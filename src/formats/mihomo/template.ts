@@ -4,13 +4,13 @@ import YAML from "yaml";
 import type { Group } from "../../group";
 import type { MihomoOutbound } from "./outbound";
 import { mihomoParse } from "./parse";
-import {
-  MIHOMO_PROXY_GROUP_SCHEMA,
-  type Mihomo,
-  type MihomoNode,
-  type MihomoProxyGroup,
-  type MihomoProxyGroupOptions,
+import type {
+  Mihomo,
+  MihomoNode,
+  MihomoProxyGroup,
+  MihomoProxyGroupOptions,
 } from "./schema";
+import { MIHOMO_PROXY_GROUP_SCHEMA } from "./schema";
 
 export class MihomoTemplate {
   template: Mihomo;
@@ -39,13 +39,35 @@ export class MihomoTemplate {
       groupProxy.proxies.push(rendered.name);
     }
     config = this.sanitize(config);
-    return YAML.stringify(config, { aliasDuplicateObjects: false });
+    return YAML.stringify(config, {
+      aliasDuplicateObjects: false,
+      sortMapEntries: true,
+    });
   }
 
   protected sanitize(config: Mihomo): Mihomo {
     config = R.omitBy(config, (_value, key: string): boolean =>
       key.startsWith("__"),
     );
+    const outboundsNames: Set<string> = new Set([
+      "DIRECT",
+      "REJECT",
+      "REJECT-DROP",
+      "PASS",
+    ]);
+    for (const outbound of config.proxies || [])
+      outboundsNames.add(outbound.name);
+    for (const group of config["proxy-groups"] || [])
+      outboundsNames.add(group.name);
+    if (config.rules) {
+      config.rules = config.rules.filter((rule: string): boolean => {
+        const parts: string[] = rule
+          .split(",")
+          .filter((p: string): boolean => p.trim() !== "no-resolve");
+        const outbound: string = parts[parts.length - 1]!.trim();
+        return outboundsNames.has(outbound);
+      });
+    }
     return config;
   }
 

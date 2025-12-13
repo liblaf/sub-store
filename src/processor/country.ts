@@ -1,14 +1,16 @@
 import consola from "consola";
 import countries, { type Country } from "world-countries";
-import { type ApiResponse, GeoIP } from "../geoip";
-import type { Outbound } from "../outbound";
-import { COUNTRY_UNKNOWN, lookupCountry } from "../utils";
-import { Inferrer } from "./abc";
+import type { Outbound } from "../core";
+import type { GeoIpApiResponse } from "../utils";
+import { COUNTRY_UNKNOWN, GeoIP, lookupCountry } from "../utils";
+import { Processor } from "./base";
 
-export class InferrerCountry extends Inferrer {
+export class ProcessorCountry extends Processor {
   private readonly geoip: GeoIP = new GeoIP();
 
-  public override async infer<T extends Outbound>(outbound: T): Promise<T> {
+  public override async processOne<O extends Outbound>(
+    outbound: O,
+  ): Promise<O> {
     if (outbound.emby || outbound.info) {
       outbound.country = COUNTRY_UNKNOWN;
       return outbound;
@@ -44,7 +46,7 @@ export class InferrerCountry extends Inferrer {
   }
 
   protected async inferFromServer<T extends Outbound>(outbound: T): Promise<T> {
-    const response: ApiResponse = await this.geoip.lookup(outbound.server);
+    const response: GeoIpApiResponse = await this.geoip.lookup(outbound.server);
     if (response.location?.country_code) {
       outbound.country =
         lookupCountry(response.location.country_code) || COUNTRY_UNKNOWN;

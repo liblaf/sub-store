@@ -1,20 +1,19 @@
-import countries from "world-countries";
+import countries, { type Country } from "world-countries";
 import { COUNTRY_UNKNOWN } from "../utils";
-import type { Group } from "./abc";
-import { AI, AUTO, BINANCE, DOWNLOAD, INFO, STREAM } from "./common";
+import type { Group } from "./base";
+import { AI, AUTO, BINANCE, INFO, STREAM } from "./common";
 import { newCountryGroup } from "./country";
-import { CITRUSLAB_EMBY } from "./extra";
 
-export function newGroups(): Group[] {
+export function defaultGroups(): Group[] {
   return [
     AUTO,
     INFO,
     AI,
     BINANCE,
-    CITRUSLAB_EMBY,
-    DOWNLOAD,
+    // CITRUSLAB_EMBY,
+    // DOWNLOAD,
     STREAM,
-    ...countries.map(newCountryGroup),
+    ...countries.map((c: Country): Group => newCountryGroup(c)),
     newCountryGroup(COUNTRY_UNKNOWN),
   ];
 }

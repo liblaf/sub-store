@@ -1,4 +1,4 @@
-export type { Group } from "./abc";
+export type { Group } from "./base";
 export { AI, AUTO, DOWNLOAD, good, INFO, PROXY, STREAM } from "./common";
 export { CITRUSLAB_EMBY } from "./extra";
-export { newGroups } from "./factory";
+export { defaultGroups } from "./factory";

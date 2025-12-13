@@ -64,16 +64,6 @@ dns:
   fallback-filter:
     geoip: true
     geoip-code: cn
-  nameserver-policy:
-    "ruleset:domain-direct": *direct-nameserver
-    "ruleset:domain-domestic": *direct-nameserver
-    "ruleset:domain-local": *direct-nameserver
-    "ruleset:domain-ai": *fallback-nameserver
-    "ruleset:domain-binance": *fallback-nameserver
-    "ruleset:domain-download": *fallback-nameserver
-    "ruleset:domain-global": *fallback-nameserver
-    "ruleset:domain-stream": *fallback-nameserver
-    "ruleset:domain-telegram": *fallback-nameserver
 
 sniffer:
   enable: true

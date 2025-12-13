@@ -1,4 +1,4 @@
-import type { Outbound } from "../outbound";
+import type { Outbound } from "../core";
 
 export type Group = {
   name: string;

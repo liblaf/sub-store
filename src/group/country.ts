@@ -1,11 +1,13 @@
 import twemoji from "@twemoji/api";
 import type { Country } from "world-countries";
-import type { Outbound } from "../outbound";
-import { COUNTRY_UNKNOWN } from "../utils";
-import type { Group } from "./abc";
+import type { Outbound } from "../core";
+import type { Group } from "./base";
 import { good } from "./common";
 
-export function newCountryGroup(country: Country): Group {
+export function newCountryGroup(
+  country: Country,
+  options?: { type?: "select" | "url-test" },
+): Group {
   const { cca2, flag } = country;
   const codePoint: string = twemoji.convert.toCodePoint(flag);
   const icon: string = "".concat(
@@ -17,7 +19,7 @@ export function newCountryGroup(country: Country): Group {
   );
   return {
     name: country.name.common,
-    type: cca2 === COUNTRY_UNKNOWN.cca2 ? "select" : "url-test",
+    type: options?.type ?? "url-test",
     emoji: flag,
     icon,
     filter(outbound: Outbound): boolean {

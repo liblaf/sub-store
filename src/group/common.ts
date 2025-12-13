@@ -1,5 +1,5 @@
-import type { Outbound } from "../outbound";
-import type { Group } from "./abc";
+import type { Outbound } from "../core";
+import type { Group } from "./base";
 
 export function good(outbound: Outbound): boolean {
   // connection quality of Hysteria2 is poor

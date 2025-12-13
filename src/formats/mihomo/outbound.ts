@@ -1,5 +1,5 @@
-import { Outbound } from "../../outbound";
-import type { Provider } from "../../provider";
+import type { Provider } from "../../core";
+import { Outbound } from "../../core";
 import type { MihomoNode, MihomoNodeOptions } from "./schema";
 import { MIHOMO_NODE_SCHEMA } from "./schema";
 

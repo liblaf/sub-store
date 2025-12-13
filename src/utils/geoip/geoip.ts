@@ -2,36 +2,36 @@ import type { LookupAddress } from "node:dns";
 import dns from "node:dns/promises";
 import DataLoader from "dataloader";
 import z from "zod";
-import { type ApiResponse, IpapiIs } from "./ipapi.is";
+import { type GeoIpApiResponse, IpapiIs } from "./ipapi.is";
 
 export class GeoIP {
   private api: IpapiIs;
-  private loader: DataLoader<string, ApiResponse>;
+  private loader: DataLoader<string, GeoIpApiResponse>;
 
   public constructor() {
     this.api = new IpapiIs();
     this.loader = new DataLoader(
-      async (servers: readonly string[]): Promise<ApiResponse[]> =>
+      async (servers: readonly string[]): Promise<GeoIpApiResponse[]> =>
         await this.batchLoadFn(servers),
     );
   }
 
-  public async lookup(server: string): Promise<ApiResponse> {
+  public async lookup(server: string): Promise<GeoIpApiResponse> {
     return await this.loader.load(server);
   }
 
   protected async batchLoadFn(
     servers: readonly string[],
-  ): Promise<ApiResponse[]> {
+  ): Promise<GeoIpApiResponse[]> {
     return await Promise.all(
       servers.map(
-        async (server: string): Promise<ApiResponse> =>
+        async (server: string): Promise<GeoIpApiResponse> =>
           await this.loadFn(server),
       ),
     );
   }
 
-  protected async loadFn(server: string): Promise<ApiResponse> {
+  protected async loadFn(server: string): Promise<GeoIpApiResponse> {
     let ips: string[] = [];
     if (isIpAddr(server)) {
       ips = [server];
@@ -41,9 +41,10 @@ export class GeoIP {
       });
       ips = addresses.map((addr: LookupAddress): string => addr.address);
     }
-    const responses: ApiResponse[] = await Promise.all(
+    const responses: GeoIpApiResponse[] = await Promise.all(
       ips.map(
-        async (ip: string): Promise<ApiResponse> => await this.api.lookup(ip),
+        async (ip: string): Promise<GeoIpApiResponse> =>
+          await this.api.lookup(ip),
       ),
     );
     for (const response of responses) {

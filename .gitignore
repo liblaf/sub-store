@@ -18,3 +18,6 @@ dist/
 .dev.vars
 .wrangler/
 worker-configuration.d.ts
+
+mihomo.yaml
+profile.yaml
