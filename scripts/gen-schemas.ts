@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod/v4";
-import { PROFILE_SCHEMA } from "../src/provider";
+import { PROFILE_SCHEMA } from "../src/profile";
 
 const SCHEMAS_DIR = "dist/schemas";
 const schema = z.toJSONSchema(PROFILE_SCHEMA, { io: "input" });
