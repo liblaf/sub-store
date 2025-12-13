@@ -7,6 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10](https://github.com/liblaf/sub-store/releases/tag/v0.1.10) - 2025-12-13
+
+### 🐛 Bug Fixes
+
+- **cli:** enable kebab-case command parsing for better UX - [9ac5863](https://github.com/liblaf/sub-store/commit/9ac5863d110072c9aa530a2f45a6bcdb76a9795a) by [@liblaf](https://github.com/liblaf)
+- **mihomo-template:** Add system nameserver to default and stash Mihomo templates - [6a3232f](https://github.com/liblaf/sub-store/commit/6a3232f7d7e394829c464e0c724f95ab4e082ce2) by [@liblaf](https://github.com/liblaf)
+- **rules:** remove emby rules - [a9e2909](https://github.com/liblaf/sub-store/commit/a9e2909c40dc7b146000d46dc142faae3b04eea8) by [@liblaf](https://github.com/liblaf)
+- correct import path in schema generation script - [416ebd5](https://github.com/liblaf/sub-store/commit/416ebd512ba6b0d985e38fe95d78862556c0966e) by [@liblaf](https://github.com/liblaf)
+
+### ♻ Code Refactoring
+
+- **provider:** Use `sublinkClashUrl` for Mihomo URL generation - [97ae044](https://github.com/liblaf/sub-store/commit/97ae0449bb2a7391fc9e06788aeb21acd2e19528) by [@liblaf](https://github.com/liblaf)
+- restructure core modules and update mihomo template - [9274e03](https://github.com/liblaf/sub-store/commit/9274e03d22b9338c6d5cd080a137a3d473e4b605) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#41](https://github.com/liblaf/sub-store/pull/41)
+- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#39](https://github.com/liblaf/sub-store/pull/39)
+
 ## [0.1.9](https://github.com/liblaf/sub-store/releases/tag/v0.1.9) - 2025-11-15
 
 ### 🐛 Bug Fixes
@@ -15,7 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
-- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@liblaf](https://github.com/liblaf)
 
 ## [0.1.8](https://github.com/liblaf/sub-store/releases/tag/v0.1.8) - 2025-11-15
 
