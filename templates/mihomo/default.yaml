@@ -87,8 +87,6 @@ mixed-port: 7892
 rules:
   - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # block QUIC
 
-  - DOMAIN-SUFFIX,shenmi.link,CitrusLab Emby
-
   # domain
   - RULE-SET,domain-direct,DIRECT
   - RULE-SET,domain-domestic,DIRECT
