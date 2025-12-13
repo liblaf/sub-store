@@ -19,5 +19,5 @@ dist/
 .wrangler/
 worker-configuration.d.ts
 
-mihomo.yaml
-profile.yaml
+/mihomo.yaml
+/profile.yaml
