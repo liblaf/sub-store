@@ -19,6 +19,17 @@
     "url": "https://github.com/liblaf"
   },
   "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {},
   "files": [
     "dist"
@@ -31,7 +42,7 @@
     "format:fix": "biome format --write",
     "lint": "biome check",
     "lint:fix": "biome check --write",
-    "prepack": "npm run build",
+    "prepack": "bun run build",
     "prepare": "bun run cf-typegen",
     "test": "bun test",
     "test:coverage": "bun test --coverage",

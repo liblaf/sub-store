@@ -2,6 +2,7 @@ import type { HonoOpenAPIRouterType } from "chanfana";
 import type { Env, Schema } from "hono";
 import { CreateProfile } from "./create";
 import { DeleteProfile } from "./delete";
+import { ListProfiles } from "./list";
 
 export function registerProfilesRoutes<
   E extends Env = Env,
@@ -10,7 +11,8 @@ export function registerProfilesRoutes<
 >(
   openapi: HonoOpenAPIRouterType<E, S, BasePath>,
 ): HonoOpenAPIRouterType<E, S, BasePath> {
-  openapi = CreateProfile.register(openapi);
-  openapi = DeleteProfile.register(openapi);
+  CreateProfile.register(openapi);
+  DeleteProfile.register(openapi);
+  ListProfiles.register(openapi);
   return openapi;
 }
