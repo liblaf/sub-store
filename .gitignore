@@ -1,9 +1,12 @@
 # ref: <https://github.com/github/gitignore/blob/main/Node.gitignore>
 
-# shared
+# Globally Useful gitignores
 *.log
 *.log.*
-playground/
+
+# Coverage directory
+coverage/
+*.lcov
 
 # Dependency directories
 node_modules/
@@ -11,13 +14,19 @@ node_modules/
 # Output of 'npm pack'
 *.tgz
 
-# Nuxt.js build / generate output
+# dotenv environment variable files
+.env
+.env.*
+!.env.example
+!.env.vault
+
+# build / generate output
 dist/
 
-# Cloudflare
+# Test Results
+junit.xml
+
+# Cloudflare Workers
 .dev.vars
 .wrangler/
 worker-configuration.d.ts
-
-/mihomo.yaml
-/profile.yaml

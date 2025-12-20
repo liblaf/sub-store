@@ -1,0 +1,1 @@
+export { ApiProvidersNameMihomoGet } from "./[name]";

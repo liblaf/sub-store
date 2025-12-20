@@ -1,0 +1,18 @@
+#:schema https://www.unpkg.com/wrangler/config-schema.json
+
+compatibility_date = "2025-12-20"
+compatibility_flags = ["nodejs_compat"]
+main = "./worker/index.ts"
+minify = true
+name = "sub-store"
+upload_source_maps = true
+
+[[kv_namespaces]]
+binding = "SUB"
+id = "9ee893b26f644ffa8310b02483aa9934"
+
+[observability]
+enabled = true
+
+[vars]
+SUBLINK_URL = "https://sublink.liblaf.me"

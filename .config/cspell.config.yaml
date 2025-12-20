@@ -15,8 +15,10 @@ maxFileSize: 500KB
 useGitignore: true
 words:
   - bunup
-  - cioc
+  - bwcounter
+  - chanfana
   - direnv
+  - dotenv
   - emby
   - geoip
   - geox
@@ -24,19 +26,7 @@ words:
   - ipapi
   - ipcidr
   - liblaf
-  - liblaf's
+  - llms
   - mihomo
-  - mijia
-  - mmdb
-  - numpy
-  - nuxt
-  - pydata
-  - pyvista
-  - quic
-  - redir
-  - scipy
-  - shenmi
   - stricli
-  - trimesh
-  - ustclog
   - uuidgen

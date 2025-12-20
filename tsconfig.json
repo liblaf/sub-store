@@ -1,4 +1,7 @@
 {
   "extends": "@liblaf/config/tsconfig",
+  "compilerOptions": {
+    "isolatedDeclarations": false
+  },
   "exclude": ["bunup.config.ts", "dist/", "node_modules/"]
 }
