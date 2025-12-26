@@ -23,5 +23,9 @@ enabled = true
 [placement]
 mode = "smart"
 
+[[services]]
+binding = "SUBLINK"
+service = "sublink-worker"
+
 [vars]
 SUBLINK_URL = "https://sublink.liblaf.me"

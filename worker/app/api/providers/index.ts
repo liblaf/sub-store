@@ -1,5 +1,6 @@
 export {
   ReadProviderArtifact,
+  ReadProviderArtifactMihomo,
   registerProviderArtifactRoutes,
   UploadProviderArtifact,
 } from "./artifacts";
