@@ -9,7 +9,7 @@ upload_source_maps = true
 
 [[kv_namespaces]]
 binding = "SUB"
-id = "9ee893b26f644ffa8310b02483aa9934"
+id = "9dda497161fe4e45879212a17dba8e3b"
 
 [observability]
 enabled = true
