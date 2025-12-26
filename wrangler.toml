@@ -1,6 +1,6 @@
 #:schema https://www.unpkg.com/wrangler/config-schema.json
 
-compatibility_date = "2025-12-20"
+compatibility_date = "2025-11-17"
 compatibility_flags = ["nodejs_compat"]
 main = "./worker/index.ts"
 minify = true
@@ -13,6 +13,15 @@ id = "9dda497161fe4e45879212a17dba8e3b"
 
 [observability]
 enabled = true
+
+[observability.logs]
+enabled = true
+
+[observability.traces]
+enabled = true
+
+[placement]
+mode = "smart"
 
 [vars]
 SUBLINK_URL = "https://sublink.liblaf.me"
