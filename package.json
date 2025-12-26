@@ -1,6 +1,6 @@
 {
   "name": "@liblaf/sub-store",
-  "version": "0.1.0",
+  "version": "0.1.11",
   "description": "",
   "keywords": [],
   "homepage": "https://github.com/liblaf/sub-store",
@@ -57,10 +57,10 @@
   },
   "dependencies": {
     "@scalar/hono-api-reference": "^0.9.30",
-    "@scalar/openapi-to-markdown": "^0.3.11",
-    "chanfana": "https://pkg.pr.new/cloudflare/chanfana@next",
-    "hono": "^4.11.1",
-    "zod": "^4.2.1"
+    "@scalar/openapi-to-markdown": "^0.3.12",
+    "chanfana": "^2.8.3",
+    "hono": "^4.11.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.10",
@@ -70,7 +70,7 @@
     "prettier": "^3.7.4",
     "prettier-plugin-packagejson": "^2.5.20",
     "typescript": "^5.9.3",
-    "wrangler": "^4.56.0"
+    "wrangler": "^4.54.0"
   },
   "peerDependencies": {
     "typescript": "^5"

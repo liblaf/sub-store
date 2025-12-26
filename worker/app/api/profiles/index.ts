@@ -1,4 +1,8 @@
-export { CreateProfile } from "./create";
-export { DeleteProfile } from "./delete";
-export { ListProfiles } from "./list";
+export {
+  CreateProfile,
+  DeleteProfile,
+  ListProfiles,
+  META,
+  ReadProfile,
+} from "./endpoints";
 export { registerProfilesRoutes } from "./route";
