@@ -1,5 +1,17 @@
 {
   "$schema": "https://biomejs.dev/schemas/latest/schema.json",
   "extends": ["@liblaf/config/biome"],
+  "linter": {
+    "rules": {
+      "style": {
+        "useImportType": {
+          "level": "warn",
+          "options": {
+            "style": "separatedType"
+          }
+        }
+      }
+    }
+  },
   "root": true
 }

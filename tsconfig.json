@@ -1,4 +1,10 @@
 {
   "extends": "@liblaf/config/tsconfig",
+  "compilerOptions": {
+    "isolatedDeclarations": false,
+    "paths": {
+      "@worker/*": ["./worker/*"]
+    }
+  },
   "exclude": ["bunup.config.ts", "dist/", "node_modules/"]
 }
