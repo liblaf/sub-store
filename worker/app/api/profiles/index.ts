@@ -1,4 +1,8 @@
 export {
+  registerProfileArtifactsRoutes,
+  UploadProfileArtifact,
+} from "./artifacts";
+export {
   CreateProfile,
   DeleteProfile,
   ListProfiles,

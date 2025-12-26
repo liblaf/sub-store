@@ -1,26 +1,21 @@
+import type { OpenAPIRoute, RequestMethod } from "@worker/app/_abc";
+import {
+  CreateEndpoint,
+  DeleteEndpoint,
+  ListEndpoint,
+  ReadEndpoint,
+} from "@worker/app/_abc";
+import type { Provider, Providers } from "@worker/kv";
+import { PROVIDER_SCHEMA, ProviderStore } from "@worker/kv";
 import type {
   FilterCondition,
   Filters,
   ListFilters,
   ListResult,
   MetaInput,
-  OpenAPIRoute,
   OpenAPIRouteSchema,
 } from "chanfana";
-import {
-  CreateEndpoint,
-  DeleteEndpoint,
-  InputValidationException,
-  ListEndpoint,
-  ReadEndpoint,
-} from "chanfana";
-import { env } from "hono/adapter";
-import type { Context } from "../../../_utils";
-import type { RequestMethod } from "../../_utils";
-import { getContext } from "../../_utils";
-import { getProviders, putProviders } from "./_kv";
-import type { Provider, Providers } from "./_schema";
-import { PROVIDER_SCHEMA } from "./_schema";
+import { InputValidationException } from "chanfana";
 
 export const META = {
   model: {
@@ -31,8 +26,8 @@ export const META = {
 } satisfies MetaInput;
 
 export class CreateProvider extends CreateEndpoint {
-  static method: RequestMethod = "post";
-  static path: string = "/api/providers/:name";
+  static override method: RequestMethod = "post";
+  static override path: string = "/api/providers/:name";
 
   override schema = {
     tags: ["Providers"],
@@ -42,18 +37,14 @@ export class CreateProvider extends CreateEndpoint {
   override _meta = META;
 
   override async create(data: Provider): Promise<Provider> {
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const providers: Providers = await getProviders(kv);
-    providers[data.name] = data;
-    await putProviders(kv, providers);
-    return data;
+    const store = new ProviderStore(this.kv);
+    return await store.create(data);
   }
 }
 
 export class ReadProvider extends ReadEndpoint {
-  static method: RequestMethod = "get";
-  static path: string = "/api/providers/:name";
+  static override method: RequestMethod = "get";
+  static override path: string = "/api/providers/:name";
 
   override schema = {
     tags: ["Providers"],
@@ -68,8 +59,8 @@ export class ReadProvider extends ReadEndpoint {
 }
 
 export class DeleteProvider extends DeleteEndpoint {
-  static method: RequestMethod = "delete";
-  static path: string = "/api/providers/:name";
+  static override method: RequestMethod = "delete";
+  static override path: string = "/api/providers/:name";
 
   override schema = {
     tags: ["Providers"],
@@ -86,18 +77,14 @@ export class DeleteProvider extends DeleteEndpoint {
     oldObj: Provider,
     _filters: Filters,
   ): Promise<Provider | null> {
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const providers: Providers = await getProviders(kv);
-    delete providers[oldObj.name];
-    await putProviders(kv, providers);
-    return oldObj;
+    const store = new ProviderStore(this.kv);
+    return await store.delete(oldObj.name);
   }
 }
 
 export class ListProviders extends ListEndpoint {
-  static method: RequestMethod = "get";
-  static path: string = "/api/providers";
+  static override method: RequestMethod = "get";
+  static override path: string = "/api/providers";
 
   override schema = {
     tags: ["Providers"],
@@ -108,9 +95,8 @@ export class ListProviders extends ListEndpoint {
 
   override async list(filters: ListFilters): Promise<ListResult<Provider>> {
     if (filters.filters.length > 0) throw new InputValidationException();
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const providers: Providers = await getProviders(kv);
+    const store = new ProviderStore(this.kv);
+    const providers: Providers = await store.list();
     const result: Provider[] = Object.values(providers);
     return { result };
   }
@@ -129,8 +115,6 @@ async function filterProvider(
   )
     throw new InputValidationException();
   const name: string = filter.value;
-  const c: Context = getContext(self);
-  const kv: KVNamespace = env(c).SUB;
-  const providers: Providers = await getProviders(kv);
-  return providers[name] || null;
+  const store = new ProviderStore(self.kv);
+  return await store.read(name);
 }

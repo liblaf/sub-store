@@ -2,12 +2,12 @@ import {
   createHtmlFromOpenApi,
   createMarkdownFromOpenApi,
 } from "@scalar/openapi-to-markdown";
+import { OpenAPIRoute } from "@worker/app/_abc";
 import type { HonoOpenAPIRouterType, OpenAPIRouteSchema } from "chanfana";
-import { OpenAPIRoute } from "chanfana";
 import type { Context, Env, Schema } from "hono";
 import z from "zod/v3";
-import type { RequestMethod } from "./_utils";
-import { register } from "./_utils";
+import type { RequestMethod } from "./_abc";
+import { registerRoute } from "./_utils";
 
 export function registerLlmsRoutes<
   E extends Env,
@@ -17,10 +17,10 @@ export function registerLlmsRoutes<
   openapi: HonoOpenAPIRouterType<E, S, BasePath>,
 ): HonoOpenAPIRouterType<E, S, BasePath> {
   class LlmsMarkdown extends OpenAPIRoute {
-    static method: RequestMethod = "get";
-    static path: string = "/llms.md";
+    static override method: RequestMethod = "get";
+    static override path: string = "/llms.md";
 
-    override schema: OpenAPIRouteSchema = {
+    override schema = {
       tags: ["LLMs"],
       summary: "Markdown for LLMs",
       description: "Markdown version of the API reference (for LLMs)",
@@ -29,12 +29,12 @@ export function registerLlmsRoutes<
           description: "OK",
           content: {
             "text/markdown": {
-              schema: z.any(),
+              schema: z.string(),
             },
           },
         },
       },
-    };
+    } satisfies OpenAPIRouteSchema;
 
     override async handle(c: Context): Promise<Response> {
       const response = await openapi.request("/openapi.json");
@@ -46,10 +46,10 @@ export function registerLlmsRoutes<
   }
 
   class LlmsHtml extends OpenAPIRoute {
-    static method: RequestMethod = "get";
-    static path: string = "/llms.html";
+    static override method: RequestMethod = "get";
+    static override path: string = "/llms.html";
 
-    override schema: OpenAPIRouteSchema = {
+    override schema = {
       tags: ["LLMs"],
       summary: "HTML for LLMs",
       description: "HTML version of the API reference (for LLMs)",
@@ -58,12 +58,12 @@ export function registerLlmsRoutes<
           description: "OK",
           content: {
             "text/html": {
-              schema: z.any(),
+              schema: z.string(),
             },
           },
         },
       },
-    };
+    } satisfies OpenAPIRouteSchema;
 
     override async handle(c: Context): Promise<Response> {
       const response = await openapi.request("/openapi.json");
@@ -73,7 +73,7 @@ export function registerLlmsRoutes<
     }
   }
 
-  register(openapi, LlmsMarkdown);
-  register(openapi, LlmsHtml);
+  registerRoute(openapi, LlmsMarkdown);
+  registerRoute(openapi, LlmsHtml);
   return openapi;
 }

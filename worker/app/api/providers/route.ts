@@ -1,6 +1,7 @@
+import { registerRoute } from "@worker/app/_utils";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import type { Env, Schema } from "hono";
-import { register } from "../../_utils";
+import { registerProviderArtifactRoutes } from "./artifacts";
 import {
   CreateProvider,
   DeleteProvider,
@@ -13,8 +14,9 @@ export function registerProvidersRoutes<
   S extends Schema = Schema,
   BasePath extends string = "/",
 >(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
-  register(openapi, CreateProvider);
-  register(openapi, ReadProvider);
-  register(openapi, DeleteProvider);
-  register(openapi, ListProviders);
+  registerRoute(openapi, CreateProvider);
+  registerRoute(openapi, ReadProvider);
+  registerRoute(openapi, DeleteProvider);
+  registerRoute(openapi, ListProviders);
+  registerProviderArtifactRoutes(openapi);
 }

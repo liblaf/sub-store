@@ -1,6 +1,6 @@
+import { auth } from "@worker/middleware";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import type { Env, Schema } from "hono";
-import { auth } from "../../middleware";
 import { registerProfilesRoutes } from "./profiles";
 import { registerProvidersRoutes } from "./providers/route";
 

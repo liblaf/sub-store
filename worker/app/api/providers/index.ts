@@ -1,4 +1,9 @@
 export {
+  ReadProviderArtifact,
+  registerProviderArtifactRoutes,
+  UploadProviderArtifact,
+} from "./artifacts";
+export {
   CreateProvider,
   DeleteProvider,
   ListProviders,

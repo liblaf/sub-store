@@ -1,22 +1,19 @@
-import type { Context } from "@worker/_utils";
-import type { RequestMethod } from "@worker/app/_abc";
+import type { Context, RequestMethod } from "@worker/app/_abc";
 import { OpenAPIRoute } from "@worker/app/_abc";
-import type { Profiles } from "@worker/kv";
-import { ProfileStore } from "@worker/kv";
+import type { Provider } from "@worker/kv";
+import { ProviderStore } from "@worker/kv";
 import type { OpenAPIRouteSchema } from "chanfana";
 import { contentJson, NotFoundException } from "chanfana";
 import z from "zod/v3";
-import { PARAMS_SCHEMA } from "./_schema";
 
-export class UploadProfileArtifact extends OpenAPIRoute {
+export class UploadProviderArtifact extends OpenAPIRoute {
   static override method: RequestMethod = "post";
-  static override path: string = "/api/profiles/:id/:filename";
+  static override path: string = "/api/providers/:name/:filename";
 
   override schema = {
-    tags: ["Profiles"],
-    summary: "Upload Profile Artifact",
+    tags: ["Providers"],
+    summary: "Upload Provider Artifact",
     request: {
-      params: PARAMS_SCHEMA,
       body: {
         content: {
           "application/json": { schema: z.any() },
@@ -24,6 +21,10 @@ export class UploadProfileArtifact extends OpenAPIRoute {
           "text/plain": { schema: z.string() },
         },
       },
+      params: z.object({
+        name: z.string(),
+        filename: z.string(),
+      }),
     },
     responses: {
       200: {
@@ -34,17 +35,16 @@ export class UploadProfileArtifact extends OpenAPIRoute {
           }),
         ),
       },
-      ...NotFoundException.schema(),
     },
   } satisfies OpenAPIRouteSchema;
 
   override async handle(c: Context): Promise<Response> {
     const { params } = await this.getValidatedData<typeof this.schema>();
-    const store = new ProfileStore(this.kv);
-    const profiles: Profiles = await store.list();
-    if (!profiles[params.id]) throw new NotFoundException();
     const content: string = await c.req.text();
-    await store.createArtifact(params.id, params.filename, content);
+    const store = new ProviderStore(this.kv);
+    const provider: Provider | null = await store.read(params.name);
+    if (!provider) throw new NotFoundException();
+    store.createArtifact(params.name, params.filename, content);
     return c.json({ success: true });
   }
 }

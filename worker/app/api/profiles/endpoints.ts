@@ -1,26 +1,21 @@
+import type { OpenAPIRoute, RequestMethod } from "@worker/app/_abc";
+import {
+  CreateEndpoint,
+  DeleteEndpoint,
+  ListEndpoint,
+  ReadEndpoint,
+} from "@worker/app/_abc";
+import type { Profile, Profiles, Providers } from "@worker/kv";
+import { PROFILE_SCHEMA, ProfileStore, ProviderStore } from "@worker/kv";
 import type {
   FilterCondition,
   Filters,
   ListFilters,
   ListResult,
   MetaInput,
-  OpenAPIRoute,
   OpenAPIRouteSchema,
 } from "chanfana";
-import {
-  CreateEndpoint,
-  DeleteEndpoint,
-  InputValidationException,
-  ListEndpoint,
-  ReadEndpoint,
-} from "chanfana";
-import { env } from "hono/adapter";
-import type { Context } from "../../../_utils";
-import type { RequestMethod } from "../../_utils";
-import { getContext } from "../../_utils";
-import { getProfiles, putProfiles } from "./_kv";
-import type { Profile, Profiles } from "./_schema";
-import { PROFILE_SCHEMA } from "./_schema";
+import { InputValidationException } from "chanfana";
 
 export const META = {
   model: {
@@ -31,8 +26,8 @@ export const META = {
 } satisfies MetaInput;
 
 export class CreateProfile extends CreateEndpoint {
-  static method: RequestMethod = "post";
-  static path: string = "/api/profiles/:id";
+  static override method: RequestMethod = "post";
+  static override path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -42,18 +37,19 @@ export class CreateProfile extends CreateEndpoint {
   override _meta = META;
 
   override async create(data: Profile): Promise<Profile> {
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const profiles: Profiles = await getProfiles(kv);
-    profiles[data.id] = data;
-    await putProfiles(kv, profiles);
-    return data;
+    const profiles = new ProfileStore(this.kv);
+    const providers: Providers = await new ProviderStore(this.kv).list();
+    for (const name of data.providers) {
+      if (!providers[name])
+        throw new InputValidationException(`Provider not found: ${name}`);
+    }
+    return await profiles.create(data);
   }
 }
 
 export class ReadProfile extends ReadEndpoint {
-  static method: RequestMethod = "get";
-  static path: string = "/api/profiles/:id";
+  static override method: RequestMethod = "get";
+  static override path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -68,8 +64,8 @@ export class ReadProfile extends ReadEndpoint {
 }
 
 export class DeleteProfile extends DeleteEndpoint {
-  static method: RequestMethod = "delete";
-  static path: string = "/api/profiles/:id";
+  static override method: RequestMethod = "delete";
+  static override path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -86,18 +82,14 @@ export class DeleteProfile extends DeleteEndpoint {
     oldObj: Profile,
     _filters: Filters,
   ): Promise<Profile | null> {
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const profiles: Profiles = await getProfiles(kv);
-    delete profiles[oldObj.id];
-    await putProfiles(kv, profiles);
-    return oldObj;
+    const store = new ProfileStore(this.kv);
+    return await store.delete(oldObj.id);
   }
 }
 
 export class ListProfiles extends ListEndpoint {
-  static method: RequestMethod = "get";
-  static path: string = "/api/profiles";
+  static override method: RequestMethod = "get";
+  static override path: string = "/api/profiles";
 
   override schema = {
     tags: ["Profiles"],
@@ -108,16 +100,15 @@ export class ListProfiles extends ListEndpoint {
 
   override async list(filters: ListFilters): Promise<ListResult<Profile>> {
     if (filters.filters.length > 0) throw new InputValidationException();
-    const c: Context = getContext(this);
-    const kv: KVNamespace = env(c).SUB;
-    const profiles: Profiles = await getProfiles(kv);
+    const store: ProfileStore = new ProfileStore(this.kv);
+    const profiles: Profiles = await store.list();
     const result: Profile[] = Object.values(profiles);
     return { result };
   }
 }
 
 async function filterProfile(
-  endpoint: OpenAPIRoute,
+  self: OpenAPIRoute,
   filters: Filters,
 ): Promise<Profile | null> {
   if (filters.filters.length !== 1) throw new InputValidationException();
@@ -129,8 +120,6 @@ async function filterProfile(
   )
     throw new InputValidationException();
   const id: string = filter.value;
-  const c: Context = getContext(endpoint);
-  const kv: KVNamespace = env(c).SUB;
-  const profiles: Profiles = await getProfiles(kv);
-  return profiles[id] ?? null;
+  const store: ProfileStore = new ProfileStore(self.kv);
+  return await store.read(id);
 }
