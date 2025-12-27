@@ -1,21 +1,20 @@
-import type { OpenAPIRoute, RequestMethod } from "@worker/app/_abc";
-import {
-  CreateEndpoint,
-  DeleteEndpoint,
-  ListEndpoint,
-  ReadEndpoint,
-} from "@worker/app/_abc";
-import type { Profile, Profiles, Providers } from "@worker/kv";
-import { PROFILE_SCHEMA, ProfileStore, ProviderStore } from "@worker/kv";
+import type { Profile, Profiles } from "@worker/kv/profile";
+import { PROFILE_SCHEMA, ProfileStore } from "@worker/kv/profile";
+import type { RequestMethod } from "@worker/utils/route";
 import type {
-  FilterCondition,
   Filters,
   ListFilters,
   ListResult,
   MetaInput,
   OpenAPIRouteSchema,
 } from "chanfana";
-import { InputValidationException } from "chanfana";
+import {
+  CreateEndpoint,
+  DeleteEndpoint,
+  InputValidationException,
+  ListEndpoint,
+  ReadEndpoint,
+} from "chanfana";
 
 export const META = {
   model: {
@@ -26,8 +25,8 @@ export const META = {
 } satisfies MetaInput;
 
 export class CreateProfile extends CreateEndpoint {
-  static override method: RequestMethod = "post";
-  static override path: string = "/api/profiles/:id";
+  static method: RequestMethod = "post";
+  static path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -38,18 +37,13 @@ export class CreateProfile extends CreateEndpoint {
 
   override async create(data: Profile): Promise<Profile> {
     const profiles = new ProfileStore(this.kv);
-    const providers: Providers = await new ProviderStore(this.kv).list();
-    for (const name of data.providers) {
-      if (!providers[name])
-        throw new InputValidationException(`Provider not found: ${name}`);
-    }
-    return await profiles.create(data);
+    return await profiles.create(data.id, data);
   }
 }
 
 export class ReadProfile extends ReadEndpoint {
-  static override method: RequestMethod = "get";
-  static override path: string = "/api/profiles/:id";
+  static method: RequestMethod = "get";
+  static path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -59,13 +53,14 @@ export class ReadProfile extends ReadEndpoint {
   override _meta = META;
 
   override async fetch(filters: ListFilters): Promise<Profile | null> {
-    return filterProfile(this, filters);
+    const store = new ProfileStore(this.kv);
+    return await store.filter(filters);
   }
 }
 
 export class DeleteProfile extends DeleteEndpoint {
-  static override method: RequestMethod = "delete";
-  static override path: string = "/api/profiles/:id";
+  static method: RequestMethod = "delete";
+  static path: string = "/api/profiles/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -75,7 +70,8 @@ export class DeleteProfile extends DeleteEndpoint {
   override _meta = META;
 
   override async getObject(filters: Filters): Promise<Profile | null> {
-    return filterProfile(this, filters);
+    const store = new ProfileStore(this.kv);
+    return await store.filter(filters);
   }
 
   override async delete(
@@ -88,8 +84,8 @@ export class DeleteProfile extends DeleteEndpoint {
 }
 
 export class ListProfiles extends ListEndpoint {
-  static override method: RequestMethod = "get";
-  static override path: string = "/api/profiles";
+  static method: RequestMethod = "get";
+  static path: string = "/api/profiles";
 
   override schema = {
     tags: ["Profiles"],
@@ -105,21 +101,4 @@ export class ListProfiles extends ListEndpoint {
     const result: Profile[] = Object.values(profiles);
     return { result };
   }
-}
-
-async function filterProfile(
-  self: OpenAPIRoute,
-  filters: Filters,
-): Promise<Profile | null> {
-  if (filters.filters.length !== 1) throw new InputValidationException();
-  const filter: FilterCondition = filters.filters[0]!;
-  if (
-    filter.field !== "id" ||
-    typeof filter.value !== "string" ||
-    filter.operator !== "EQ"
-  )
-    throw new InputValidationException();
-  const id: string = filter.value;
-  const store: ProfileStore = new ProfileStore(self.kv);
-  return await store.read(id);
 }

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "isolatedDeclarations": false,
     "paths": {
+      "@package.json": ["./package.json"],
       "@worker/*": ["./worker/*"]
     }
   },

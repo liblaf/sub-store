@@ -1,8 +1,5 @@
-import { PROFILE_ID_SCHEMA } from "@worker/kv";
-import { extendZodWithOpenApi } from "chanfana";
-import z from "zod/v3";
-
-extendZodWithOpenApi(z);
+import { PROFILE_ID_SCHEMA } from "@worker/kv/profile";
+import { z } from "zod/v3";
 
 export const PARAMS_SCHEMA = z.object({
   id: PROFILE_ID_SCHEMA,

@@ -1,16 +1,15 @@
-import type { Context } from "@worker/_utils";
-import type { RequestMethod } from "@worker/app/_abc";
-import { OpenAPIRoute } from "@worker/app/_abc";
-import type { Profiles } from "@worker/kv";
-import { ProfileStore } from "@worker/kv";
+import type { Profile } from "@worker/kv/profile";
+import { ProfileStore } from "@worker/kv/profile";
+import type { Context } from "@worker/types";
+import type { RequestMethod } from "@worker/utils/route";
 import type { OpenAPIRouteSchema } from "chanfana";
-import { contentJson, NotFoundException } from "chanfana";
+import { contentJson, NotFoundException, OpenAPIRoute } from "chanfana";
 import z from "zod/v3";
-import { PARAMS_SCHEMA } from "./_schema";
+import { PARAMS_SCHEMA } from "./schema";
 
 export class UploadProfileArtifact extends OpenAPIRoute {
-  static override method: RequestMethod = "post";
-  static override path: string = "/api/profiles/:id/:filename";
+  static method: RequestMethod = "post";
+  static path: string = "/api/profiles/:id/:filename";
 
   override schema = {
     tags: ["Profiles"],
@@ -40,11 +39,12 @@ export class UploadProfileArtifact extends OpenAPIRoute {
 
   override async handle(c: Context): Promise<Response> {
     const { params } = await this.getValidatedData<typeof this.schema>();
+    const { id, filename } = params;
     const store = new ProfileStore(this.kv);
-    const profiles: Profiles = await store.list();
-    if (!profiles[params.id]) throw new NotFoundException();
+    const profile: Profile | null = await store.read(id);
+    if (!profile) throw new NotFoundException();
     const content: string = await c.req.text();
-    await store.createArtifact(params.id, params.filename, content);
+    await store.artifacts.create(id, filename, content);
     return c.json({ success: true });
   }
 }

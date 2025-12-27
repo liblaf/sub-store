@@ -1,4 +1,6 @@
+import { description, version } from "@package.json";
 import { Scalar } from "@scalar/hono-api-reference";
+import type { Context } from "@worker/types";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import { ApiException, fromHono } from "chanfana";
 import type { Env, Schema } from "hono";
@@ -6,9 +8,7 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { HTTPResponseError } from "hono/types";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { description, version } from "../../package.json";
-import type { Context } from "../_utils";
-import { registerApiRoutes } from "./api";
+import { registerApiRoutes } from "./api/route";
 import { registerLlmsRoutes } from "./llms";
 
 export function createApp(): Hono<{ Bindings: CloudflareBindings }> {
@@ -52,10 +52,7 @@ export function registerRoutes<
   E extends Env = Env,
   S extends Schema = Schema,
   BasePath extends string = "/",
->(
-  openapi: HonoOpenAPIRouterType<E, S, BasePath>,
-): HonoOpenAPIRouterType<E, S, BasePath> {
+>(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
   registerLlmsRoutes(openapi);
   registerApiRoutes(openapi);
-  return openapi;
 }

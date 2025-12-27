@@ -2,23 +2,21 @@ import {
   createHtmlFromOpenApi,
   createMarkdownFromOpenApi,
 } from "@scalar/openapi-to-markdown";
-import { OpenAPIRoute } from "@worker/app/_abc";
+import type { RequestMethod } from "@worker/utils/route";
+import { register } from "@worker/utils/route";
 import type { HonoOpenAPIRouterType, OpenAPIRouteSchema } from "chanfana";
+import { OpenAPIRoute } from "chanfana";
 import type { Context, Env, Schema } from "hono";
 import z from "zod/v3";
-import type { RequestMethod } from "./_abc";
-import { registerRoute } from "./_utils";
 
 export function registerLlmsRoutes<
   E extends Env,
-  S extends Schema,
-  BasePath extends string,
->(
-  openapi: HonoOpenAPIRouterType<E, S, BasePath>,
-): HonoOpenAPIRouterType<E, S, BasePath> {
+  S extends Schema = Schema,
+  BasePath extends string = "/",
+>(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
   class LlmsMarkdown extends OpenAPIRoute {
-    static override method: RequestMethod = "get";
-    static override path: string = "/llms.md";
+    static method: RequestMethod = "get";
+    static path: string = "/llms.md";
 
     override schema = {
       tags: ["LLMs"],
@@ -46,8 +44,8 @@ export function registerLlmsRoutes<
   }
 
   class LlmsHtml extends OpenAPIRoute {
-    static override method: RequestMethod = "get";
-    static override path: string = "/llms.html";
+    static method: RequestMethod = "get";
+    static path: string = "/llms.html";
 
     override schema = {
       tags: ["LLMs"],
@@ -73,7 +71,6 @@ export function registerLlmsRoutes<
     }
   }
 
-  registerRoute(openapi, LlmsMarkdown);
-  registerRoute(openapi, LlmsHtml);
-  return openapi;
+  register(openapi, LlmsMarkdown);
+  register(openapi, LlmsHtml);
 }

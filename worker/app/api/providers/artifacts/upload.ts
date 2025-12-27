@@ -1,14 +1,14 @@
-import type { Context, RequestMethod } from "@worker/app/_abc";
-import { OpenAPIRoute } from "@worker/app/_abc";
-import type { Provider } from "@worker/kv";
-import { ProviderStore } from "@worker/kv";
+import type { Provider } from "@worker/kv/provider";
+import { ProviderStore } from "@worker/kv/provider";
+import type { Context } from "@worker/types";
+import type { RequestMethod } from "@worker/utils/route";
 import type { OpenAPIRouteSchema } from "chanfana";
-import { contentJson, NotFoundException } from "chanfana";
+import { contentJson, NotFoundException, OpenAPIRoute } from "chanfana";
 import z from "zod/v3";
 
 export class UploadProviderArtifact extends OpenAPIRoute {
-  static override method: RequestMethod = "post";
-  static override path: string = "/api/providers/:name/:filename";
+  static method: RequestMethod = "post";
+  static path: string = "/api/providers/:id/:filename";
 
   override schema = {
     tags: ["Providers"],
@@ -22,7 +22,7 @@ export class UploadProviderArtifact extends OpenAPIRoute {
         },
       },
       params: z.object({
-        name: z.string(),
+        id: z.string(),
         filename: z.string(),
       }),
     },
@@ -35,16 +35,18 @@ export class UploadProviderArtifact extends OpenAPIRoute {
           }),
         ),
       },
+      ...NotFoundException.schema(),
     },
   } satisfies OpenAPIRouteSchema;
 
   override async handle(c: Context): Promise<Response> {
     const { params } = await this.getValidatedData<typeof this.schema>();
+    const { id, filename } = params;
     const content: string = await c.req.text();
     const store = new ProviderStore(this.kv);
-    const provider: Provider | null = await store.read(params.name);
+    const provider: Provider | null = await store.read(id);
     if (!provider) throw new NotFoundException();
-    store.createArtifact(params.name, params.filename, content);
+    await store.artifacts.create(id, filename, content);
     return c.json({ success: true });
   }
 }

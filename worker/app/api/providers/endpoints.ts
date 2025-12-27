@@ -1,21 +1,20 @@
-import type { OpenAPIRoute, RequestMethod } from "@worker/app/_abc";
-import {
-  CreateEndpoint,
-  DeleteEndpoint,
-  ListEndpoint,
-  ReadEndpoint,
-} from "@worker/app/_abc";
-import type { Provider, Providers } from "@worker/kv";
-import { PROVIDER_SCHEMA, ProviderStore } from "@worker/kv";
+import type { Provider, Providers } from "@worker/kv/provider";
+import { PROVIDER_SCHEMA, ProviderStore } from "@worker/kv/provider";
+import type { RequestMethod } from "@worker/utils/route";
 import type {
-  FilterCondition,
   Filters,
   ListFilters,
   ListResult,
   MetaInput,
   OpenAPIRouteSchema,
 } from "chanfana";
-import { InputValidationException } from "chanfana";
+import {
+  CreateEndpoint,
+  DeleteEndpoint,
+  InputValidationException,
+  ListEndpoint,
+  ReadEndpoint,
+} from "chanfana";
 
 export const META = {
   model: {
@@ -26,8 +25,8 @@ export const META = {
 } satisfies MetaInput;
 
 export class CreateProvider extends CreateEndpoint {
-  static override method: RequestMethod = "post";
-  static override path: string = "/api/providers/:name";
+  static method: RequestMethod = "post";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -38,13 +37,13 @@ export class CreateProvider extends CreateEndpoint {
 
   override async create(data: Provider): Promise<Provider> {
     const store = new ProviderStore(this.kv);
-    return await store.create(data);
+    return await store.create(data.id, data);
   }
 }
 
 export class ReadProvider extends ReadEndpoint {
-  static override method: RequestMethod = "get";
-  static override path: string = "/api/providers/:name";
+  static method: RequestMethod = "get";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -54,13 +53,14 @@ export class ReadProvider extends ReadEndpoint {
   override _meta = META;
 
   override async fetch(filters: ListFilters): Promise<Provider | null> {
-    return filterProvider(this, filters);
+    const store = new ProviderStore(this.kv);
+    return await store.filter(filters);
   }
 }
 
 export class DeleteProvider extends DeleteEndpoint {
-  static override method: RequestMethod = "delete";
-  static override path: string = "/api/providers/:name";
+  static method: RequestMethod = "delete";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -70,7 +70,8 @@ export class DeleteProvider extends DeleteEndpoint {
   override _meta = META;
 
   override async getObject(filters: Filters): Promise<Provider | null> {
-    return filterProvider(this, filters);
+    const store = new ProviderStore(this.kv);
+    return await store.filter(filters);
   }
 
   override async delete(
@@ -78,13 +79,13 @@ export class DeleteProvider extends DeleteEndpoint {
     _filters: Filters,
   ): Promise<Provider | null> {
     const store = new ProviderStore(this.kv);
-    return await store.delete(oldObj.name);
+    return await store.delete(oldObj.id);
   }
 }
 
 export class ListProviders extends ListEndpoint {
-  static override method: RequestMethod = "get";
-  static override path: string = "/api/providers";
+  static method: RequestMethod = "get";
+  static path: string = "/api/providers";
 
   override schema = {
     tags: ["Providers"],
@@ -100,21 +101,4 @@ export class ListProviders extends ListEndpoint {
     const result: Provider[] = Object.values(providers);
     return { result };
   }
-}
-
-async function filterProvider(
-  self: OpenAPIRoute,
-  filters: Filters,
-): Promise<Provider | null> {
-  if (filters.filters.length !== 1) throw new InputValidationException();
-  const filter: FilterCondition = filters.filters[0]!;
-  if (
-    filter.field !== "name" ||
-    typeof filter.value !== "string" ||
-    filter.operator !== "EQ"
-  )
-    throw new InputValidationException();
-  const name: string = filter.value;
-  const store = new ProviderStore(self.kv);
-  return await store.read(name);
 }
