@@ -7,6 +7,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-12-27
+
+### 💥 BREAKING CHANGES
+
+- **(worker)** All existing API endpoints have been removed and replaced with a new `/api` structure. Consumers of the API must update their integrations to reflect the new paths, request parameters, and response formats. The underlying framework has been entirely swapped, which may impact any direct integrations with the worker's internal logic. The package version has been reset to 0.1.0 to signify this foundational change. - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
+- Route handlers now extend abstract base classes
+  which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
+
+### ✨ Features
+
+- **api:** implement profiles management endpoints - [aa3ebae](https://github.com/liblaf/sub-store/commit/aa3ebae451b2b8344972d053b4b64efe5bb834c3) by [@liblaf](https://github.com/liblaf)
+- **api:** implement profiles and providers API with CRUD and authentication - [f5a53a5](https://github.com/liblaf/sub-store/commit/f5a53a543dcd84b82f0aa007819f212888d6b5c6) by [@liblaf](https://github.com/liblaf)
+- **api:** Implement profile and provider CRUD and artifact upload - [81469f7](https://github.com/liblaf/sub-store/commit/81469f75145e0bd464e5cb0c974aa9857b864a3f) by [@liblaf](https://github.com/liblaf)
+- **providers/artifacts:** add mihomo.yaml artifact endpoint for providers - [be6c6f2](https://github.com/liblaf/sub-store/commit/be6c6f26afad281f50b35fb65ee6ff3c5d88f1ab) by [@liblaf](https://github.com/liblaf)
+- **worker:** Rebuild application with Hono and Chanfana, introducing new API and routing infrastructure - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **provider:** correct primary key for Provider model - [1fe270e](https://github.com/liblaf/sub-store/commit/1fe270eca275f11a1437e0899aef747b055304c6) by [@liblaf](https://github.com/liblaf)
+
+### ♻ Code Refactoring
+
+- **core:** Rearchitect KV stores and API routing - [edc9c99](https://github.com/liblaf/sub-store/commit/edc9c99ac3ecb91a19b17db20a9aba25146e28c5) by [@liblaf](https://github.com/liblaf)
+- migrate to abstract base classes and improve KV store architecture - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#48](https://github.com/liblaf/sub-store/pull/48)
+- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#47](https://github.com/liblaf/sub-store/pull/47)
+
 ## [0.1.11](https://github.com/liblaf/sub-store/releases/tag/v0.1.11) - 2025-12-13
 
 ### ✨ Features
@@ -19,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
-- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@liblaf](https://github.com/liblaf)
 
 ## [0.1.10](https://github.com/liblaf/sub-store/releases/tag/v0.1.10) - 2025-12-13
 
@@ -164,7 +196,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [@liblaf[bot]](https://github.com/apps/liblaf)
 - [@liblaf](https://github.com/liblaf)
 
-## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-08-16
+## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-12-27
 
 ### ✨ Features
 
