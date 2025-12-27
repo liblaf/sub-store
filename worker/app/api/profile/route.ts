@@ -1,7 +1,7 @@
 import { register } from "@worker/utils/route";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import type { Env, Schema } from "hono";
-import { registerProfileArtifactRoutes } from "./artifacts/route";
+import { registerProfileArtifactRoutes } from "./artifact/route";
 import {
   CreateProfile,
   DeleteProfile,

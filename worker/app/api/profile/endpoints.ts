@@ -26,7 +26,7 @@ export const META = {
 
 export class CreateProfile extends CreateEndpoint {
   static method: RequestMethod = "post";
-  static path: string = "/api/profiles/:id";
+  static path: string = "/api/profile/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -43,7 +43,7 @@ export class CreateProfile extends CreateEndpoint {
 
 export class ReadProfile extends ReadEndpoint {
   static method: RequestMethod = "get";
-  static path: string = "/api/profiles/:id";
+  static path: string = "/api/profile/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -60,7 +60,7 @@ export class ReadProfile extends ReadEndpoint {
 
 export class DeleteProfile extends DeleteEndpoint {
   static method: RequestMethod = "delete";
-  static path: string = "/api/profiles/:id";
+  static path: string = "/api/profile/:id";
 
   override schema = {
     tags: ["Profiles"],
@@ -85,7 +85,7 @@ export class DeleteProfile extends DeleteEndpoint {
 
 export class ListProfiles extends ListEndpoint {
   static method: RequestMethod = "get";
-  static path: string = "/api/profiles";
+  static path: string = "/api/profile";
 
   override schema = {
     tags: ["Profiles"],

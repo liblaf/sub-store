@@ -1,8 +1,8 @@
 import { auth } from "@worker/middleware/auth";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import type { Env, Schema } from "hono";
-import { registerProfileRoutes } from "./profiles/route";
-import { registerProvidersRoutes } from "./providers/route";
+import { registerProfileRoutes } from "./profile/route";
+import { registerProviderRoutes } from "./provider/route";
 
 export function registerApiRoutes<
   E extends Env,
@@ -11,5 +11,5 @@ export function registerApiRoutes<
 >(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
   openapi.use("/api/*", auth);
   registerProfileRoutes(openapi);
-  registerProvidersRoutes(openapi);
+  registerProviderRoutes(openapi);
 }
