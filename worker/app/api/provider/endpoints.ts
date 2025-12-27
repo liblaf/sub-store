@@ -20,7 +20,7 @@ export const META = {
   model: {
     tableName: "providers",
     schema: PROVIDER_SCHEMA,
-    primaryKeys: ["name"],
+    primaryKeys: ["id"],
   },
 } satisfies MetaInput;
 
