@@ -13,7 +13,7 @@ import { env } from "hono/adapter";
 
 export type WorkerFetchMetadata = {
   fromCache: boolean;
-  mtime?: number;
+  mtime: number;
 };
 
 export type WorkerFetchResult<T> = LocalFetchResult<T> & {

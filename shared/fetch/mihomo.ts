@@ -4,7 +4,7 @@ import { LocalFetcher } from "./abc";
 import { fetchMihomoDirect } from "./direct/mihomo";
 import type { LocalFetchResult } from "./types";
 
-export class LocalMihomoFetcher extends LocalFetcher<string> {
+export class MihomoLocalFetcher extends LocalFetcher<string> {
   override async fetch(provider: Provider): Promise<LocalFetchResult<string>> {
     if (provider.mihomo) {
       return await fetchMihomoDirect(provider.mihomo);

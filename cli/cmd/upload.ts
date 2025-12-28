@@ -1,5 +1,5 @@
 import { SubStoreClient } from "@cli/client";
-import { LocalMihomoFetcher } from "@shared/fetch/mihomo";
+import { MihomoLocalFetcher } from "@shared/fetch/mihomo";
 import type { Provider } from "@shared/schema/provider";
 import { buildCommand } from "@stricli/core";
 
@@ -36,7 +36,7 @@ export default buildCommand({
     };
     await client.createProvider(provider);
 
-    const fetcher = new LocalMihomoFetcher();
+    const fetcher = new MihomoLocalFetcher();
     const { content, userinfo } = await fetcher.fetch(provider);
     await client.uploadProviderArtifact(id, "mihomo.yaml", content);
     await client.uploadProviderArtifact(id, "userinfo.json", userinfo);

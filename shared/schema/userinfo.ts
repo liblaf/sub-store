@@ -7,7 +7,7 @@ export const USERINFO_SCHEMA = z
     total: z.number().optional(),
     expire: z.number().optional(),
   })
-  .catchall(z.string());
+  .passthrough();
 export type Userinfo = z.infer<typeof USERINFO_SCHEMA>;
 
 export function parseUserinfo(header: string | null): Userinfo {
@@ -35,6 +35,6 @@ export function parseUserinfo(header: string | null): Userinfo {
 
 export function serializeUserinfo(userinfo: Userinfo): string {
   return Object.entries(userinfo)
-    .map(([key, value]: [string, number | string]): string => `${key}=${value}`)
+    .map(([key, value]: [string, unknown]): string => `${key}=${value}`)
     .join("; ");
 }

@@ -1,7 +1,7 @@
 import type { Provider } from "@shared/schema/provider";
 import { PROVIDER_ID_SCHEMA } from "@shared/schema/provider";
 import { serializeUserinfo } from "@shared/schema/userinfo";
-import { WorkerMihomoFetcher } from "@worker/fetch/mihomo";
+import { MihomoWorkerFetcher } from "@worker/fetch/mihomo";
 import { ProviderStore } from "@worker/kv/provider";
 import type { Context } from "@worker/types";
 import type { RequestMethod } from "@worker/utils/route";
@@ -40,7 +40,7 @@ export class DownloadProviderMihomo extends OpenAPIRoute {
     const store = new ProviderStore(this.kv);
     const provider: Provider | null = await store.read(id);
     if (!provider) throw new NotFoundException();
-    const fetcher = new WorkerMihomoFetcher(c);
+    const fetcher = new MihomoWorkerFetcher(c);
     const { content, userinfo, metadata } = await fetcher.fetch(provider);
     c.header("Content-Type", "application/yaml");
     c.header("Subscription-Userinfo", serializeUserinfo(userinfo));
