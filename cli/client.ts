@@ -1,18 +1,8 @@
 import type { Profile, Profiles } from "@shared/schema/profile";
 import type { Provider, Providers } from "@shared/schema/provider";
+import { defaultClient } from "@shared/utils";
 import consola from "consola";
 import type { KyInstance, KyResponse } from "ky";
-import ky from "ky";
-
-export function createClient(): KyInstance {
-  const url: string = process.env.SUB_STORE_URL ?? "https://sub.liblaf.me";
-  const token: string = process.env.SUB_STORE_TOKEN!;
-  return ky.create({
-    headers: { Authorization: `Bearer ${token}` },
-    prefixUrl: url,
-    redirect: "follow",
-  });
-}
 
 export class SubStoreClient {
   private client: KyInstance;
@@ -21,10 +11,10 @@ export class SubStoreClient {
     url: string = process.env.SUB_STORE_URL ?? "https://sub.liblaf.me",
     token: string = process.env.SUB_STORE_TOKEN!,
   ) {
-    this.client = ky.create({
+    const client: KyInstance = defaultClient();
+    this.client = client.extend({
       headers: { Authorization: `Bearer ${token}` },
       prefixUrl: url,
-      redirect: "follow",
     });
   }
 

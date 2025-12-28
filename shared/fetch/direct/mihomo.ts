@@ -1,8 +1,8 @@
 import type { Userinfo } from "@shared/schema/userinfo";
 import { parseUserinfo } from "@shared/schema/userinfo";
+import { defaultClient } from "@shared/utils";
 import yaml from "js-yaml";
 import type { KyInstance, KyResponse } from "ky";
-import ky from "ky";
 import type { LocalFetchResult } from "../types";
 
 type ClashConfig = {
@@ -13,7 +13,7 @@ export async function fetchMihomoDirect(
   input: string | URL,
   client?: KyInstance,
 ): Promise<LocalFetchResult<string>> {
-  client = client ?? ky.create({ redirect: "follow" });
+  client = client ?? defaultClient();
   const response: KyResponse = await client.get(input, {
     headers: { "User-Agent": "clash.meta" },
   });

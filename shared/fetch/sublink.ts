@@ -1,5 +1,5 @@
+import { defaultClient } from "@shared/utils";
 import type { KyInstance } from "ky";
-import ky from "ky";
 import { fetchMihomoDirect } from "./direct/mihomo";
 import type { LocalFetchResult } from "./types";
 
@@ -11,10 +11,10 @@ export class Sublink {
   ) {}
 
   get client(): KyInstance {
-    return ky.create({
+    const client: KyInstance = defaultClient();
+    return client.extend({
       fetch: this.fetcher?.fetch.bind(this.fetcher),
       prefixUrl: this.url,
-      redirect: "follow",
     });
   }
 

@@ -40,6 +40,7 @@ export class Subscribe extends OpenAPIRoute {
     const { content, metadata } = await store.artifacts.text(id, filename);
     if (!content || !metadata) throw new NotFoundException();
     await this.userinfo(c, profile);
+    c.header("Cache-Control", "public, max-age=300");
     c.header("X-Last-Modified", new Date(metadata.mtime).toUTCString());
     if (filename.endsWith(".json"))
       c.header("Content-Type", "application/json");
