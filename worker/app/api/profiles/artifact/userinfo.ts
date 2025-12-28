@@ -24,7 +24,7 @@ type UserinfoWithMetadata = z.infer<typeof USERINFO_WITH_METADATA_SCHEMA>;
 
 export class ProfileUserinfo extends OpenAPIRoute {
   static method: RequestMethod = "get";
-  static path: string = "/api/profiles/:id";
+  static path: string = "/api/profiles/:id/userinfo.json";
 
   override schema = {
     tags: ["Profiles"],
