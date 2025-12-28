@@ -30,3 +30,5 @@ junit.xml
 .dev.vars
 .wrangler/
 worker-configuration.d.ts
+
+/outputs/

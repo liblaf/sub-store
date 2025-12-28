@@ -1,7 +1,7 @@
+import { SubStoreClient } from "@cli/utils/client";
 import { LocalMihomoFetcher } from "@shared/fetch/mihomo";
 import type { Provider } from "@shared/schema/provider";
 import { buildCommand } from "@stricli/core";
-import ky, { type KyInstance } from "ky";
 
 type Flags = {
   provider: string;
@@ -25,15 +25,7 @@ export default buildCommand({
     },
   },
   async func(flags: Flags): Promise<void> {
-    const BASE_URL: string =
-      process.env.SUB_STORE_URL ?? "https://sub.liblaf.me";
-    const TOKEN: string = process.env.SUB_STORE_TOKEN!;
-    const client: KyInstance = ky.create({
-      headers: { Authorization: `Bearer ${TOKEN}` },
-      prefixUrl: `${BASE_URL}/`,
-      redirect: "follow",
-    });
-
+    const client = new SubStoreClient();
     const id: string = flags.provider;
     const provider: Provider = {
       id,
@@ -42,23 +34,11 @@ export default buildCommand({
       singbox: flags.singbox,
       xray: flags.xray,
     };
-    await create(client, provider);
+    await client.createProvider(provider);
 
-    await uploadMihomo(client, provider);
+    const fetcher = new LocalMihomoFetcher();
+    const { content, userinfo } = await fetcher.fetch(provider);
+    await client.uploadProviderArtifact(id, "mihomo.yaml", content);
+    await client.uploadProviderArtifact(id, "userinfo.json", userinfo);
   },
 });
-
-async function create(client: KyInstance, provider: Provider): Promise<void> {
-  await client.post(`api/providers/${provider.id}`, { json: provider });
-}
-
-async function uploadMihomo(
-  client: KyInstance,
-  provider: Provider,
-): Promise<void> {
-  const { id } = provider;
-  const fetcher = new LocalMihomoFetcher();
-  const { content, userinfo } = await fetcher.fetch(provider);
-  await client.post(`api/providers/${id}/mihomo.yaml`, { body: content });
-  await client.post(`api/providers/${id}/userinfo.json`, { json: userinfo });
-}

@@ -6,7 +6,9 @@
       "@cli/*": ["./cli/*"],
       "@package.json": ["./package.json"],
       "@shared/*": ["./shared/*"],
-      "@worker/*": ["./worker/*"]
+      "@worker/*": ["./worker/*"],
+      "@templates/*": ["./templates/*"],
+      "@core/*": ["./core/*"]
     }
   },
   "exclude": ["bunup.config.ts", "dist/", "node_modules/"]
