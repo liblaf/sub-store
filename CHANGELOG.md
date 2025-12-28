@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-12-27
+## [0.2.0](https://github.com/liblaf/sub-store/releases/tag/v0.2.0) - 2025-12-28
 
 ### 💥 BREAKING CHANGES
 
@@ -20,12 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **api:** implement profiles management endpoints - [aa3ebae](https://github.com/liblaf/sub-store/commit/aa3ebae451b2b8344972d053b4b64efe5bb834c3) by [@liblaf](https://github.com/liblaf)
 - **api:** implement profiles and providers API with CRUD and authentication - [f5a53a5](https://github.com/liblaf/sub-store/commit/f5a53a543dcd84b82f0aa007819f212888d6b5c6) by [@liblaf](https://github.com/liblaf)
 - **api:** Implement profile and provider CRUD and artifact upload - [81469f7](https://github.com/liblaf/sub-store/commit/81469f75145e0bd464e5cb0c974aa9857b864a3f) by [@liblaf](https://github.com/liblaf)
+- **api, schema:** Add provider user info endpoint and refactor shared schemas - [5bbae33](https://github.com/liblaf/sub-store/commit/5bbae331ee4795e726ad39fdd393113524d37371) by [@liblaf](https://github.com/liblaf)
+- **cli, core:** Introduce SubStore CLI client and enhanced template rendering - [6d9f4e2](https://github.com/liblaf/sub-store/commit/6d9f4e234941531389af10b4ed6d72d28934ed14) by [@liblaf](https://github.com/liblaf)
+- **core:** Introduce subscription management CLI and API - [f88ed92](https://github.com/liblaf/sub-store/commit/f88ed92cd6964c68b9bae134a97eb15feab4a00d) by [@liblaf](https://github.com/liblaf)
+- **profiles:** Add API endpoint for profile user information - [30117ae](https://github.com/liblaf/sub-store/commit/30117aeeb13fef1ddcc1eb3f097173e0ac2cf160) by [@liblaf](https://github.com/liblaf)
+- **provider:** Add Mihomo configuration download endpoint - [3287c45](https://github.com/liblaf/sub-store/commit/3287c45880a526bb825e2985dde711807c734b27) by [@liblaf](https://github.com/liblaf)
 - **providers/artifacts:** add mihomo.yaml artifact endpoint for providers - [be6c6f2](https://github.com/liblaf/sub-store/commit/be6c6f26afad281f50b35fb65ee6ff3c5d88f1ab) by [@liblaf](https://github.com/liblaf)
+- **proxy-generation:** Implement dynamic proxy configuration generation and CLI merge command - [16a6ea3](https://github.com/liblaf/sub-store/commit/16a6ea3b19e6c44433f104ead3f72826f2bb773c) by [@liblaf](https://github.com/liblaf)
 - **worker:** Rebuild application with Hono and Chanfana, introducing new API and routing infrastructure - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
+- **worker/userinfo:** Centralize profile userinfo aggregation logic - [6826d03](https://github.com/liblaf/sub-store/commit/6826d0353614a945fb1ff5a935130c446d9c7615) by [@liblaf](https://github.com/liblaf)
 
 ### 🐛 Bug Fixes
 
+- **api:** Correct client URL resolution and OpenAPI request body schema - [c6fdd80](https://github.com/liblaf/sub-store/commit/c6fdd80c4dfd99fad41bc7f6c7847465cded5dff) by [@liblaf](https://github.com/liblaf)
+- **api:** correct userinfo endpoint path for profiles - [9eef48d](https://github.com/liblaf/sub-store/commit/9eef48d8fc7031b97289d3cc1e3e4f21c5840814) by [@liblaf](https://github.com/liblaf)
+- **fetch:** improve robustness and modularity of provider artifact fetching and caching - [e0a5472](https://github.com/liblaf/sub-store/commit/e0a54727e1d75e4fa635caa0000c85280dadd6ed) by [@liblaf](https://github.com/liblaf)
+- **mihomo:** Remove internal properties early in template sanitization - [448154a](https://github.com/liblaf/sub-store/commit/448154a2474dff86aeb8ec8ae1aa9e8b1f6bbd49) by [@liblaf](https://github.com/liblaf)
+- **profiles:** Align `mtime` type in `ProfileUserinfo` API response - [0223c65](https://github.com/liblaf/sub-store/commit/0223c653dcf623e9cc3e6b09fd463ad877015264) by [@liblaf](https://github.com/liblaf)
 - **provider:** correct primary key for Provider model - [1fe270e](https://github.com/liblaf/sub-store/commit/1fe270eca275f11a1437e0899aef747b055304c6) by [@liblaf](https://github.com/liblaf)
+- **shared/fetch/sublink:** bind custom fetcher's fetch method to its instance - [06b43b4](https://github.com/liblaf/sub-store/commit/06b43b439630a05a2dd1f0a6b56a6967635be888) by [@liblaf](https://github.com/liblaf)
+- **worker/api/providers:** Improve Mihomo artifact error reporting and response handling - [ef4d3e2](https://github.com/liblaf/sub-store/commit/ef4d3e27e94f8c07c8cf29ef6742b48a3323161d) by [@liblaf](https://github.com/liblaf)
 
 ### ♻ Code Refactoring
 
@@ -35,8 +49,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### ❤️ Contributors
 
 - [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#51](https://github.com/liblaf/sub-store/pull/51)
 - [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#48](https://github.com/liblaf/sub-store/pull/48)
-- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#47](https://github.com/liblaf/sub-store/pull/47)
 
 ## [0.1.11](https://github.com/liblaf/sub-store/releases/tag/v0.1.11) - 2025-12-13
 
@@ -196,7 +210,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [@liblaf[bot]](https://github.com/apps/liblaf)
 - [@liblaf](https://github.com/liblaf)
 
-## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-12-27
+## [0.1.0](https://github.com/liblaf/sub-store/releases/tag/v0.1.0) - 2025-08-16
 
 ### ✨ Features
 
