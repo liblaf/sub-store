@@ -17,7 +17,7 @@ const USERINFO_WITH_METADATA_SCHEMA = z.object({
   userinfo: USERINFO_SCHEMA,
   metadata: z.object({
     fromCache: z.boolean(),
-    mtime: z.string().datetime(),
+    mtime: z.number(),
   }),
 });
 type UserinfoWithMetadata = z.infer<typeof USERINFO_WITH_METADATA_SCHEMA>;
@@ -66,16 +66,7 @@ export class ProfileUserinfo extends OpenAPIRoute {
           ): Promise<[Provider, UserinfoWithMetadata] | undefined> => {
             try {
               const { userinfo, metadata } = await fetcher.fetch(provider);
-              return [
-                provider,
-                {
-                  userinfo,
-                  metadata: {
-                    fromCache: metadata.fromCache,
-                    mtime: new Date(metadata.mtime).toISOString(),
-                  },
-                },
-              ];
+              return [provider, { userinfo, metadata }];
             } catch (err) {
               c.header("X-Error", `Provider ${provider.id}: ${err}`, {
                 append: true,
