@@ -4,6 +4,7 @@
     "isolatedDeclarations": false,
     "paths": {
       "@package.json": ["./package.json"],
+      "@shared/*": ["./shared/*"],
       "@worker/*": ["./worker/*"]
     }
   },

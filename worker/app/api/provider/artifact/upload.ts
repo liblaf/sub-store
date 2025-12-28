@@ -1,4 +1,4 @@
-import type { Provider } from "@worker/kv/provider";
+import type { Provider } from "@shared/schema/provider";
 import { ProviderStore } from "@worker/kv/provider";
 import type { Context } from "@worker/types";
 import type { RequestMethod } from "@worker/utils/route";

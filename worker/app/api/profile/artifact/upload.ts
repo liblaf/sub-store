@@ -1,4 +1,4 @@
-import type { Profile } from "@worker/kv/profile";
+import type { Profile } from "@shared/schema/profile";
 import { ProfileStore } from "@worker/kv/profile";
 import type { Context } from "@worker/types";
 import type { RequestMethod } from "@worker/utils/route";

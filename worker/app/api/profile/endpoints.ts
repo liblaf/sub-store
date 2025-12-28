@@ -1,5 +1,6 @@
-import type { Profile, Profiles } from "@worker/kv/profile";
-import { PROFILE_SCHEMA, ProfileStore } from "@worker/kv/profile";
+import type { Profile, Profiles } from "@shared/schema/profile";
+import { PROFILE_SCHEMA } from "@shared/schema/profile";
+import { ProfileStore } from "@worker/kv/profile";
 import type { RequestMethod } from "@worker/utils/route";
 import type {
   Filters,

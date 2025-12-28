@@ -1,5 +1,6 @@
-import type { Provider, Providers } from "@worker/kv/provider";
-import { PROVIDER_SCHEMA, ProviderStore } from "@worker/kv/provider";
+import type { Provider, Providers } from "@shared/schema/provider";
+import { PROVIDER_SCHEMA } from "@shared/schema/provider";
+import { ProviderStore } from "@worker/kv/provider";
 import type { RequestMethod } from "@worker/utils/route";
 import type {
   Filters,
