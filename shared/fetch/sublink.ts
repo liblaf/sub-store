@@ -1,11 +1,11 @@
 import type { KyInstance } from "ky";
 import ky from "ky";
-import type { FetchMihomoResult } from "../inner/mihomo";
-import { fetchMihomoDirect } from "../inner/mihomo";
+import { fetchMihomoDirect } from "./direct/mihomo";
+import type { LocalFetchResult } from "./types";
 
 export class Sublink {
   constructor(
-    private url: string = process.env.SUB_LINK_URL ??
+    private url: string = process.env.SUBLINK_URL ??
       "https://sublink.liblaf.me",
     private fetcher?: Fetcher,
   ) {}
@@ -18,7 +18,7 @@ export class Sublink {
     });
   }
 
-  async clash(url: string): Promise<FetchMihomoResult> {
+  async clash(url: string): Promise<LocalFetchResult<string>> {
     const input = new URL(`${this.url}/clash`);
     input.searchParams.set("config", url);
     input.searchParams.set("ua", "clash.meta");

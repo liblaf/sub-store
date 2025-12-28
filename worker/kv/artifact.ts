@@ -13,7 +13,14 @@ export class ArtifactStore {
     private prefix: string,
   ) {}
 
-  async create(id: string, filename: string, content: string): Promise<void> {
+  async create(
+    id: string,
+    filename: string,
+    content: string | any,
+  ): Promise<void> {
+    if (typeof content !== "string") {
+      content = JSON.stringify(content);
+    }
     const key: string = this.key(id, filename);
     const metadata = { mtime: Date.now() };
     await this.kv.put(key, content, { metadata });

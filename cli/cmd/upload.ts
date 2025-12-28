@@ -1,5 +1,4 @@
-import { fetchMihomo } from "@shared/fetch/mihomo";
-import { Sublink } from "@shared/fetch/utils/sublink";
+import { LocalMihomoFetcher } from "@shared/fetch/mihomo";
 import type { Provider } from "@shared/schema/provider";
 import { buildCommand } from "@stricli/core";
 import ky, { type KyInstance } from "ky";
@@ -45,8 +44,7 @@ export default buildCommand({
     };
     await create(client, provider);
 
-    const sublink = new Sublink();
-    await uploadMihomo(client, provider, sublink);
+    await uploadMihomo(client, provider);
   },
 });
 
@@ -57,10 +55,10 @@ async function create(client: KyInstance, provider: Provider): Promise<void> {
 async function uploadMihomo(
   client: KyInstance,
   provider: Provider,
-  sublink: Sublink,
 ): Promise<void> {
   const { id } = provider;
-  const { content, userinfo } = await fetchMihomo(provider, sublink);
+  const fetcher = new LocalMihomoFetcher();
+  const { content, userinfo } = await fetcher.fetch(provider);
   await client.post(`api/providers/${id}/mihomo.yaml`, { body: content });
   await client.post(`api/providers/${id}/userinfo.json`, { json: userinfo });
 }
