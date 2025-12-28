@@ -75,6 +75,9 @@ export class MihomoTemplate {
   }
 
   sanitize(config: MihomoConfig): MihomoConfig {
+    config = _.omitBy(config, (_value: any, key: string): boolean => {
+      return key.startsWith("__");
+    });
     const rules: string[] = config.rules ?? [];
     const array: string[] = ["DIRECT", "REJECT", "REJECT-DROP", "PASS"];
     for (const outbound of config.proxies ?? []) array.push(outbound.name);
