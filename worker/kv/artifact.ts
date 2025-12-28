@@ -2,9 +2,9 @@ export type ArtifactMetadata = {
   mtime: number;
 };
 
-export type ArtifactWithMetadata = {
-  value: string;
-  metadata: ArtifactMetadata;
+export type ArtifactWithMetadata<T = string> = {
+  content: T | null;
+  metadata: ArtifactMetadata | null;
 };
 
 export class ArtifactStore {
@@ -19,15 +19,23 @@ export class ArtifactStore {
     await this.kv.put(key, content, { metadata });
   }
 
-  async read(
-    id: string,
-    filename: string,
-  ): Promise<ArtifactWithMetadata | null> {
+  async text(id: string, filename: string): Promise<ArtifactWithMetadata> {
     const key: string = this.key(id, filename);
     const { value, metadata } =
       await this.kv.getWithMetadata<ArtifactMetadata>(key);
-    if (value === null || metadata === null) return null;
-    return { value, metadata };
+    return { content: value, metadata };
+  }
+
+  async json<T>(
+    id: string,
+    filename: string,
+  ): Promise<ArtifactWithMetadata<T>> {
+    const key: string = this.key(id, filename);
+    const { value, metadata } = await this.kv.getWithMetadata<
+      T,
+      ArtifactMetadata
+    >(key, "json");
+    return { content: value, metadata };
   }
 
   async delete(id: string, filename: string): Promise<void> {
