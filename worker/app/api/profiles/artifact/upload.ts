@@ -16,13 +16,6 @@ export class UploadProfileArtifact extends OpenAPIRoute {
     summary: "Upload Profile Artifact",
     request: {
       params: PARAMS_SCHEMA,
-      body: {
-        content: {
-          "application/json": { schema: z.any() },
-          "application/yaml": { schema: z.any() },
-          "text/plain": { schema: z.string() },
-        },
-      },
     },
     responses: {
       200: {

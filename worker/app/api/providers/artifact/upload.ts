@@ -14,13 +14,6 @@ export class UploadProviderArtifact extends OpenAPIRoute {
     tags: ["Providers"],
     summary: "Upload Provider Artifact",
     request: {
-      body: {
-        content: {
-          "application/json": { schema: z.any() },
-          "application/yaml": { schema: z.any() },
-          "text/plain": { schema: z.string() },
-        },
-      },
       params: z.object({
         id: z.string(),
         filename: z.string(),

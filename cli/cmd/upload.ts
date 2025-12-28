@@ -31,7 +31,7 @@ export default buildCommand({
     const TOKEN: string = process.env.SUB_STORE_TOKEN!;
     const client: KyInstance = ky.create({
       headers: { Authorization: `Bearer ${TOKEN}` },
-      prefixUrl: BASE_URL,
+      prefixUrl: `${BASE_URL}/`,
       redirect: "follow",
     });
 
@@ -51,7 +51,7 @@ export default buildCommand({
 });
 
 async function create(client: KyInstance, provider: Provider): Promise<void> {
-  await client.post(`/api/providers/${provider.id}`, { json: provider });
+  await client.post(`api/providers/${provider.id}`, { json: provider });
 }
 
 async function uploadMihomo(
@@ -61,6 +61,6 @@ async function uploadMihomo(
 ): Promise<void> {
   const { id } = provider;
   const { content, userinfo } = await fetchMihomo(provider, sublink);
-  await client.post(`/api/providers/${id}/mihomo.yaml`, { body: content });
-  await client.post(`/api/providers/${id}/userinfo.json`, { json: userinfo });
+  await client.post(`api/providers/${id}/mihomo.yaml`, { body: content });
+  await client.post(`api/providers/${id}/userinfo.json`, { json: userinfo });
 }
