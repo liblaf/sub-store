@@ -12,7 +12,7 @@ export class Sublink {
 
   get client(): KyInstance {
     return ky.create({
-      fetch: this.fetcher?.fetch,
+      fetch: this.fetcher?.fetch.bind(this.fetcher),
       prefixUrl: this.url,
       redirect: "follow",
     });
