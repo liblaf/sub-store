@@ -1,5 +1,6 @@
 import type { Profile, Profiles } from "@shared/schema/profile";
 import type { Provider, Providers } from "@shared/schema/provider";
+import consola from "consola";
 import type { KyInstance, KyResponse } from "ky";
 import ky from "ky";
 
@@ -67,7 +68,15 @@ export class SubStoreClient {
     id: string,
     filename: string,
   ): Promise<KyResponse> {
-    return await this.client.get(`api/providers/${id}/${filename}`);
+    const response: KyResponse = await this.client.get(
+      `api/providers/${id}/${filename}`,
+    );
+    if (response.headers.get("X-From-Cache") === "true") {
+      consola.warn(
+        `providers/${id}/${filename} is from cache, it may be outdated.`,
+      );
+    }
+    return response;
   }
 
   async uploadProviderArtifact(

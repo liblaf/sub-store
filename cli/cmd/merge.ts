@@ -1,5 +1,6 @@
 import * as fs from "node:fs/promises";
-import { SubStoreClient } from "@cli/utils/client";
+import path from "node:path";
+import { SubStoreClient } from "@cli/client";
 import { MihomoOutboundWrapper } from "@core/formats/mihomo/outbound";
 import { parseMihomoConfig } from "@core/formats/mihomo/parse";
 import type { MihomoConfig, MihomoOutbound } from "@core/formats/mihomo/schema";
@@ -64,9 +65,11 @@ export default buildCommand({
         }),
         groupers,
       );
-      await fs.mkdir(`outputs/${profile.id}`, { recursive: true });
-      await fs.writeFile(`outputs/${profile.id}/${flags.filename}`, content);
-      consola.success(`-> outputs/${profile.id}/${flags.filename}`);
+      const filepath: string = path.join("outputs", profile.id, flags.filename);
+      await fs.mkdir(path.dirname(filepath), { recursive: true });
+      await fs.writeFile(filepath, content);
+      await template.test(filepath);
+      consola.success(`-> ${filepath}`);
       await client.uploadProfileArtifact(profile.id, flags.filename, content);
     }
   },

@@ -1,3 +1,4 @@
+#!/usr/bin/env bun
 import app from "@cli/app";
 import { context } from "@cli/types";
 import { run } from "@stricli/core";

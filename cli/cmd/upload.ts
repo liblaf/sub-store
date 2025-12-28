@@ -1,4 +1,4 @@
-import { SubStoreClient } from "@cli/utils/client";
+import { SubStoreClient } from "@cli/client";
 import { LocalMihomoFetcher } from "@shared/fetch/mihomo";
 import type { Provider } from "@shared/schema/provider";
 import { buildCommand } from "@stricli/core";

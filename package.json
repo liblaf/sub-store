@@ -20,15 +20,14 @@
   },
   "type": "module",
   "exports": {
-    "./hello": {
-      "import": {
-        "types": "./dist/hello.d.ts",
-        "default": "./dist/hello.js"
-      }
+    "./sub-store": {
+      "import": "./dist/sub-store.js"
     },
     "./package.json": "./package.json"
   },
-  "bin": {},
+  "bin": {
+    "sub-store": "./dist/sub-store.js"
+  },
   "files": [
     "dist"
   ],
