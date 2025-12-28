@@ -9,7 +9,7 @@ import { PARAMS_SCHEMA } from "./schema";
 
 export class UploadProfileArtifact extends OpenAPIRoute {
   static method: RequestMethod = "post";
-  static path: string = "/api/profile/:id/:filename";
+  static path: string = "/api/profiles/:id/:filename";
 
   override schema = {
     tags: ["Profiles"],

@@ -6,7 +6,7 @@ import z from "zod/v3";
 
 export class ProviderUserinfo extends OpenAPIRoute {
   static method: RequestMethod = "get";
-  static path: string = "/api/provider/:id/userinfo.json";
+  static path: string = "/api/providers/:id/userinfo.json";
 
   override schema = {
     tags: ["Providers"],
@@ -19,8 +19,6 @@ export class ProviderUserinfo extends OpenAPIRoute {
   } satisfies OpenAPIRouteSchema;
 
   override async handle(c: Context): Promise<Response> {
-    const { params } = await this.getValidatedData<typeof this.schema>();
-    const { id } = params;
-    return c.json({});
+    return c.text("Not Implemented", 501);
   }
 }

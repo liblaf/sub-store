@@ -27,7 +27,7 @@ export const META = {
 
 export class CreateProvider extends CreateEndpoint {
   static method: RequestMethod = "post";
-  static path: string = "/api/provider/:id";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -44,7 +44,7 @@ export class CreateProvider extends CreateEndpoint {
 
 export class ReadProvider extends ReadEndpoint {
   static method: RequestMethod = "get";
-  static path: string = "/api/provider/:id";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -61,7 +61,7 @@ export class ReadProvider extends ReadEndpoint {
 
 export class DeleteProvider extends DeleteEndpoint {
   static method: RequestMethod = "delete";
-  static path: string = "/api/provider/:id";
+  static path: string = "/api/providers/:id";
 
   override schema = {
     tags: ["Providers"],
@@ -86,7 +86,7 @@ export class DeleteProvider extends DeleteEndpoint {
 
 export class ListProviders extends ListEndpoint {
   static method: RequestMethod = "get";
-  static path: string = "/api/provider";
+  static path: string = "/api/providers";
 
   override schema = {
     tags: ["Providers"],

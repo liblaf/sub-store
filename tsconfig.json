@@ -3,6 +3,7 @@
   "compilerOptions": {
     "isolatedDeclarations": false,
     "paths": {
+      "@cli/*": ["./cli/*"],
       "@package.json": ["./package.json"],
       "@shared/*": ["./shared/*"],
       "@worker/*": ["./worker/*"]
