@@ -63,14 +63,13 @@ export class DownloadProviderMihomo extends OpenAPIRoute {
       store,
       provider,
     );
-    const headers = new Headers();
-    headers.set("Content-Type", "application/yaml");
-    headers.set("Subscription-Userinfo", serializeUserinfo(userinfo));
-    headers.set("X-From-Cache", `${metadata.fromCache}`);
+    c.header("Content-Type", "application/yaml");
+    c.header("Subscription-Userinfo", serializeUserinfo(userinfo));
+    c.header("X-From-Cache", `${metadata.fromCache}`);
     if (metadata.mtime) {
-      headers.set("X-Last-Modified", new Date(metadata.mtime).toUTCString());
+      c.header("X-Last-Modified", new Date(metadata.mtime).toUTCString());
     }
-    return new Response(content, { headers });
+    return c.text(content);
   }
 
   async fetchMihomo(
@@ -89,6 +88,7 @@ export class DownloadProviderMihomo extends OpenAPIRoute {
       };
     } catch (err) {
       errors.push(err);
+      c.header("X-Error", `${err}`, { append: true });
     }
     try {
       const { content, metadata } = await store.artifacts.text(
@@ -107,6 +107,7 @@ export class DownloadProviderMihomo extends OpenAPIRoute {
       };
     } catch (err) {
       errors.push(err);
+      c.header("X-Error", `${err}`, { append: true });
     }
     throw new MultiException(
       errors.map((err: unknown): ApiException => {
