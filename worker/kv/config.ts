@@ -53,7 +53,10 @@ export class ConfigStore<T> {
     return data[id] ?? null;
   }
 
-  protected put(data: Record<string, T>): Promise<void> {
-    return this.kv.put(this.key, JSON.stringify(data));
+  protected async put(data: Record<string, T>): Promise<void> {
+    const value: string = JSON.stringify(data);
+    const old: string | null = await this.kv.get(this.key);
+    if (value === old) return;
+    await this.kv.put(this.key, value);
   }
 }

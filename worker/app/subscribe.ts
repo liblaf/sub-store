@@ -8,8 +8,11 @@ import { ProfileUserinfoWorkerFetcher } from "@worker/fetch/userinfo";
 import { ProfileStore } from "@worker/kv/profile";
 import type { Context } from "@worker/types";
 import type { RequestMethod } from "@worker/utils/route";
-import type { OpenAPIRouteSchema } from "chanfana";
+import { register } from "@worker/utils/route";
+import type { HonoOpenAPIRouterType, OpenAPIRouteSchema } from "chanfana";
 import { NotFoundException, OpenAPIRoute } from "chanfana";
+import type { Env, Schema } from "hono";
+import { cache } from "hono/cache";
 import * as _ from "lodash-es";
 import { z } from "zod/v3";
 
@@ -40,7 +43,6 @@ export class Subscribe extends OpenAPIRoute {
     const { content, metadata } = await store.artifacts.text(id, filename);
     if (!content || !metadata) throw new NotFoundException();
     await this.userinfo(c, profile);
-    c.header("Cache-Control", "public, max-age=300");
     c.header("X-Last-Modified", new Date(metadata.mtime).toUTCString());
     if (filename.endsWith(".json"))
       c.header("Content-Type", "application/json");
@@ -67,4 +69,16 @@ export class Subscribe extends OpenAPIRoute {
     }
     c.header("Subscription-Userinfo", serializeUserinfo(userinfo));
   }
+}
+
+export function registerSubscribeRoutes<
+  E extends Env = Env,
+  S extends Schema = Schema,
+  BasePath extends string = "/",
+>(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
+  openapi.use(
+    "/subscribe/*",
+    cache({ cacheName: "subscribe", cacheControl: "public, max-age=300" }),
+  );
+  register(openapi, Subscribe);
 }

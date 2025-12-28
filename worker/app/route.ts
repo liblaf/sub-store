@@ -1,7 +1,6 @@
 import { description, version } from "@package.json";
 import { Scalar } from "@scalar/hono-api-reference";
 import type { Context } from "@worker/types";
-import { register } from "@worker/utils/route";
 import type { HonoOpenAPIRouterType } from "chanfana";
 import { ApiException, fromHono } from "chanfana";
 import type { Env, Schema } from "hono";
@@ -11,7 +10,7 @@ import type { HTTPResponseError } from "hono/types";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { registerApiRoutes } from "./api/route";
 import { registerLlmsRoutes } from "./llms";
-import { Subscribe } from "./subscribe";
+import { registerSubscribeRoutes } from "./subscribe";
 
 export function createApp(): Hono<{ Bindings: CloudflareBindings }> {
   const app = new Hono<{ Bindings: CloudflareBindings }>();
@@ -57,5 +56,5 @@ export function registerRoutes<
 >(openapi: HonoOpenAPIRouterType<E, S, BasePath>): void {
   registerLlmsRoutes(openapi);
   registerApiRoutes(openapi);
-  register(openapi, Subscribe);
+  registerSubscribeRoutes(openapi);
 }
