@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/liblaf/sub-store/releases/tag/v0.2.1) - 2025-12-28
+
+### 🐛 Bug Fixes
+
+- **worker:** Prevent redundant KV writes and refactor subscription route caching - [d5787c7](https://github.com/liblaf/sub-store/commit/d5787c799df9720023be3e1b1d5c5bfbbc20b506) by [@liblaf](https://github.com/liblaf)
+- Standardize Ky client creation and configuration - [58c5770](https://github.com/liblaf/sub-store/commit/58c5770d87694a1936aa94812a892066b809d566) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+
 ## [0.2.0](https://github.com/liblaf/sub-store/releases/tag/v0.2.0) - 2025-12-28
 
 ### 💥 BREAKING CHANGES
@@ -48,9 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
-- [@liblaf](https://github.com/liblaf) made their first contribution
-- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#51](https://github.com/liblaf/sub-store/pull/51)
-- [@renovate[bot]](https://github.com/apps/renovate) made their first contribution in [#48](https://github.com/liblaf/sub-store/pull/48)
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
 
 ## [0.1.11](https://github.com/liblaf/sub-store/releases/tag/v0.1.11) - 2025-12-13
 
