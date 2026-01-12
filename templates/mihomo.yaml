@@ -101,7 +101,7 @@ rules:
   - RULE-SET,domain-local,DIRECT
   - RULE-SET,domain-ai,AI
   - RULE-SET,domain-binance,Binance
-  - RULE-SET,domain-download,Download
+  # - RULE-SET,domain-download,Download
   - RULE-SET,domain-stream,Stream
   - RULE-SET,domain-telegram,PROXY
   - RULE-SET,domain-global,PROXY
