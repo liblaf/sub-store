@@ -7,7 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.1](https://github.com/liblaf/sub-store/releases/tag/v0.2.1) - 2025-12-28
+## [0.2.2](https://github.com/liblaf/sub-store/releases/tag/v0.2.2) - 2026-01-14
+
+### 🐛 Bug Fixes
+
+- trigger release - [fcfdfd2](https://github.com/liblaf/sub-store/commit/fcfdfd2c8e1bbbc3909729046dab80f613ba9f38) by [@liblaf](https://github.com/liblaf)
+
+### 🛠 Builds
+
+- update dependencies and improve IP address validation - [5d2ce49](https://github.com/liblaf/sub-store/commit/5d2ce49bce78e1100a04b5a3e621ae5ae2f9b821) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf) made their first contribution in [#55](https://github.com/liblaf/sub-store/pull/55)
+
+## [0.2.1](https://github.com/liblaf/sub-store/releases/tag/v0.2.1) - 2026-01-04
 
 ### 🐛 Bug Fixes
 
@@ -16,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
-- [@liblaf](https://github.com/liblaf) made their first contribution
+- [@liblaf[bot]](https://github.com/apps/liblaf)
+- [@liblaf](https://github.com/liblaf)
 
 ## [0.2.0](https://github.com/liblaf/sub-store/releases/tag/v0.2.0) - 2025-12-28
 
