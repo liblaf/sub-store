@@ -3,15 +3,10 @@ import ky from "ky";
 import * as _ from "lodash-es";
 import { z } from "zod";
 
-const RESPONSE_SCHEMA = z
-  .object({
-    ip: z.string().ip(),
-    location: z
-      .object({ country_code: z.string().length(2) })
-      .passthrough()
-      .optional(),
-  })
-  .passthrough();
+const RESPONSE_SCHEMA = z.looseObject({
+  ip: z.union([z.ipv4(), z.ipv6()]),
+  location: z.looseObject({ country_code: z.string().length(2) }).optional(),
+});
 export type GeoIpApiResponse = z.infer<typeof RESPONSE_SCHEMA>;
 
 const BULK_RESPONSE_SCHEMA = z.record(z.string(), RESPONSE_SCHEMA);

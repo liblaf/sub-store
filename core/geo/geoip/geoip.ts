@@ -61,5 +61,5 @@ export class GeoIP {
 }
 
 function isIpAddr(data: string): boolean {
-  return z.string().ip().safeParse(data).success;
+  return z.ipv4().safeParse(data).success || z.ipv6().safeParse(data).success;
 }

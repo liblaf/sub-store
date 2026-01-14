@@ -7,7 +7,7 @@ import { register } from "@worker/utils/route";
 import type { HonoOpenAPIRouterType, OpenAPIRouteSchema } from "chanfana";
 import { OpenAPIRoute } from "chanfana";
 import type { Context, Env, Schema } from "hono";
-import z from "zod/v3";
+import z from "zod";
 
 export function registerLlmsRoutes<
   E extends Env,

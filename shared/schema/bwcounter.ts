@@ -1,4 +1,4 @@
-import { z } from "zod/v3";
+import { z } from "zod";
 
 export const BWCOUNTER_SCHEMA = z.object({
   monthly_bw_limit_b: z.number().int(),

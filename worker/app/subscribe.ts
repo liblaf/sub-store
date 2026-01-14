@@ -14,7 +14,7 @@ import { NotFoundException, OpenAPIRoute } from "chanfana";
 import type { Env, Schema } from "hono";
 import { cache } from "hono/cache";
 import * as _ from "lodash-es";
-import { z } from "zod/v3";
+import { z } from "zod";
 
 export class Subscribe extends OpenAPIRoute {
   static method: RequestMethod = "get";

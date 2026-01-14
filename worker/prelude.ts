@@ -1,6 +1,6 @@
 import { extendZodWithOpenApi, OpenAPIRoute } from "chanfana";
 import { env } from "hono/adapter";
-import { z } from "zod/v3";
+import { z } from "zod";
 import type { Context } from "./types";
 
 extendZodWithOpenApi(z);

@@ -1,4 +1,4 @@
-import { z } from "zod/v3";
+import { z } from "zod";
 
 export const PROFILE_ID_SCHEMA = z.string().uuid();
 export type ProfileId = z.infer<typeof PROFILE_ID_SCHEMA>;

@@ -4,7 +4,7 @@ import type { Context } from "@worker/types";
 import type { RequestMethod } from "@worker/utils/route";
 import type { OpenAPIRouteSchema } from "chanfana";
 import { contentJson, NotFoundException, OpenAPIRoute } from "chanfana";
-import z from "zod/v3";
+import z from "zod";
 import { PARAMS_SCHEMA } from "./schema";
 
 export class UploadProfileArtifact extends OpenAPIRoute {
