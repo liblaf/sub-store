@@ -13,7 +13,7 @@ const BULK_RESPONSE_SCHEMA = z.record(z.string(), RESPONSE_SCHEMA);
 type BulkApiResponse = z.infer<typeof BULK_RESPONSE_SCHEMA>;
 
 export class IpapiIs {
-  endpoint: string = "https://api.ipapi.is/";
+  endpoint: string = process.env.IPAPI_IS_URL ?? "https://api.ipapi.is/";
   private loader: DataLoader<string, GeoIpApiResponse>;
   private key?: string;
 
