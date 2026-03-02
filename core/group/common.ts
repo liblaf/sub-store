@@ -65,7 +65,7 @@ export class Binance extends FilterGrouper {
 }
 
 export class Ai extends FilterGrouper {
-  static AI_EXCLUDE_REGIONS: Set<string> = new Set(["HK", "MO"]);
+  static AI_EXCLUDE_REGIONS: Set<string> = new Set(["HK", "MO", "TW"]);
 
   override meta: GroupMeta = {
     name: "AI",
