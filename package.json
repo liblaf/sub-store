@@ -53,8 +53,8 @@
     "trailingComma": "none"
   },
   "dependencies": {
-    "@scalar/hono-api-reference": "^0.9.32",
-    "@scalar/openapi-to-markdown": "^0.3.18",
+    "@scalar/hono-api-reference": "^0.10.0",
+    "@scalar/openapi-to-markdown": "^0.4.0",
     "@stricli/core": "^1.2.5",
     "@twemoji/api": "^17.0.2",
     "chanfana": "^3.0.0",
