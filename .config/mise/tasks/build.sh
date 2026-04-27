@@ -8,7 +8,7 @@ tmpdir="$PWD/tmp"
 wrangler_flags=(--binding 'KV')
 if [[ ${REMOTE-} == 'true' ]]; then wrangler_flags+=(--remote); fi
 
-readarray -t profiles < <(find "$tmpdir/profiles" -name '*.yaml' -print0)
+readarray -d '' -t profiles < <(find "$tmpdir/profiles" -name '*.yaml' -print0)
 for profile in "${profiles[@]}"; do
   id="$(yq eval '.id' "$profile")"
   name="$(basename --suffix='.yaml' -- "$profile")"

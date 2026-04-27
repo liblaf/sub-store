@@ -16,4 +16,5 @@ for key in "${profile_keys[@]}"; do
   mkdir --parents --verbose "$(dirname -- "$file")"
   echo "'KV:$key' -> '$file'" 1>&2
   wrangler kv key get "$key" --text "${wrangler_flags[@]}" "$@" > "$file"
+  prettier --write "$file"
 done
