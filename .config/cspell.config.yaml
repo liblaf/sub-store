@@ -29,8 +29,10 @@ words:
   - oxfmt
   - oxlint
   - pipx
+  - platformdirs
   - quic
   - redir
   - rumdl
   - taiki
   - tsgolint
+  - zashboard

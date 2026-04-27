@@ -46,24 +46,28 @@
   },
   "dependencies": {
     "@commander-js/extra-typings": "^14.0.0",
-    "chanfana": "^3.3.0",
     "commander": "^14.0.3",
-    "cross-dirs": "^1.1.0",
-    "hono": "^4.12.15",
+    "consola": "^3.4.2",
+    "filesize": "^11.0.17",
     "ky": "^2.0.2",
+    "lodash-es": "^4.18.1",
     "platformdirs": "^4.3.8-rc3",
     "world-countries": "^5.1.0",
-    "yaml": "^2.8.3",
-    "zod": "^4.3.6"
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@liblaf/config": "0.3.1",
+    "@types/bun": "^1.3.13",
+    "@types/lodash-es": "^4.17.12",
     "bunup": "0.16.31",
+    "chanfana": "^3.3.0",
+    "hono": "^4.12.15",
     "oxfmt": "0.46.0",
     "oxlint": "1.61.0",
     "oxlint-tsgolint": "0.22.0",
     "typescript": "6.0.3",
-    "wrangler": "4.85.0"
+    "wrangler": "4.85.0",
+    "zod": "^4.3.6"
   },
   "readme": "./README.md"
 }

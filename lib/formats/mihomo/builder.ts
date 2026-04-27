@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 
+import * as _ from "lodash-es";
 import YAML from "yaml";
 
 import { Builder } from "@/lib/core/builder";
@@ -56,7 +57,7 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     proxies: ProxyWrapper<MihomoProxy>[],
     groups: Group<MihomoProxy>[],
   ): Promise<string> {
-    const config: MihomoConfig = await loadTemplate(this.template);
+    let config: MihomoConfig = await loadTemplate(this.template);
     config.proxies = proxies.map(
       (wrapper: ProxyWrapper<MihomoProxy>): MihomoProxy => ({
         ...wrapper.wrapped,
@@ -84,6 +85,9 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
         icon: group.icon,
       });
     }
+    config = _.omitBy(config, (_value: any, key: string): boolean =>
+      key.startsWith("__"),
+    ) as MihomoConfig;
     return YAML.stringify(config, { aliasDuplicateObjects: false });
   }
 

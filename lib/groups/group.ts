@@ -1,11 +1,12 @@
+import type { ProxyWrapper } from "@/lib/core/proxy";
 import { CCA2_TO_COUNTRY } from "@/lib/pipeline/infer/country";
 
 import { BUILTIN_GROUPS } from "./builtins";
 import { groupByCountry, groupFromCca2 } from "./country";
-import type { ProxyWrapper, Group } from "./types";
+import type { Group } from "./types";
 
-export function group<T extends ProxyWrapper>(proxies: T[], groups: string[]): Group[] {
-  return groups.flatMap((name: string): Group[] => {
+export function group<T>(proxies: ProxyWrapper<T>[], groups: string[]): Group<T>[] {
+  return groups.flatMap((name: string): Group<T>[] => {
     const lower: string = name.toLowerCase();
     switch (lower) {
       case "countries":

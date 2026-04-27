@@ -5,4 +5,7 @@ import type { DefineConfigItem } from "bunup";
 export default defineConfig({
   ...base,
   entry: ["./cli/bin/sub-store.ts"],
+  unused: {
+    ignore: ["commander"],
+  },
 }) as DefineConfigItem;

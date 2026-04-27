@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import consola from "consola";
 import ky from "ky";
 import type { KyInstance, Options } from "ky";
 import { userCacheDir } from "platformdirs";
@@ -26,13 +27,20 @@ export class Fetcher {
     if (cached) {
       const date: number = Date.parse(cached.headers.get("Date")!);
       const age: number = Date.now() - date;
-      if (age < 60 * 60 * 1000) return cached; // 1 hour
+      if (age < 60 * 60 * 1000) {
+        // 1 hour
+        consola.success(`Cache hit: ${url}`);
+        return cached;
+      }
+      consola.info(`Cache expired: ${url}`);
+    } else {
+      consola.info(`Cache miss: ${url}`);
     }
     let response: Response;
     try {
       response = await this.ky(url, options);
     } catch (err) {
-      console.error(err);
+      consola.error(err);
       if (cached) return cached;
       throw err;
     }
@@ -42,7 +50,7 @@ export class Fetcher {
 
   protected async loadCache(key: string): Promise<Response | null> {
     const file: string = path.join(this.dir, key);
-    if (!(await fs.exists(this.dir))) return null;
+    if (!(await fs.exists(file))) return null;
     const { body, init } = JSON.parse(await fs.readFile(file, "utf-8")) as CacheResponse;
     return new Response(body, init);
   }
