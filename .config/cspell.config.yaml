@@ -29,6 +29,7 @@ words:
   - oxfmt
   - oxlint
   - pipx
+  - platformdirs
   - quic
   - redir
   - rumdl

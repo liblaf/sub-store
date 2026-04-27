@@ -1,5 +1,4 @@
-import type { Context } from "hono";
-import type { MiddlewareHandler } from "hono";
+import type { MiddlewareHandler, Context } from "hono";
 import { env } from "hono/adapter";
 import { bearerAuth } from "hono/bearer-auth";
 

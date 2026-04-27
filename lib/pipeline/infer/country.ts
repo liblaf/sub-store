@@ -1,3 +1,4 @@
+import consola from "consola";
 import type { Country } from "world-countries";
 import countries from "world-countries";
 
@@ -38,6 +39,7 @@ export function inferCountry<T extends ProxyWrapper>(proxies: T[]): T[] {
     }
     for (const [cca2, pattern] of Object.entries(PATTERNS)) {
       if (pattern.test(proxy.name)) {
+        consola.success(`${proxy.name} ~ ${pattern}`);
         proxy.country = cca2ToCountry[cca2]!;
         return proxy;
       }
