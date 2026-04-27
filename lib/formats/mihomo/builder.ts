@@ -12,7 +12,7 @@ import { usageFromBwcounter, usageFromHeader } from "@/lib/core/usage";
 import type { Usage } from "@/lib/core/usage";
 import type { Group } from "@/lib/groups";
 import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
-import { fetcher, subconvert, getName, getPretty } from "@/lib/utils";
+import { fetcher, subconvert, getName, getPretty, icon } from "@/lib/utils";
 import BUILTIN_TEMPLATE from "@/templates/mihomo.yaml";
 
 import type { MihomoConfig, MihomoProxy } from "./schema";
@@ -71,7 +71,7 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
         proxies: groups.map(getName),
         url: "https://cp.cloudflare.com",
         "expected-status": 204,
-        icon: "TODO",
+        icon: icon("Proxy"),
       },
     ];
     for (const group of groups) {

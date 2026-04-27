@@ -3,7 +3,7 @@ import type { ProxyWrapper } from "@/lib/core/proxy";
 import type { GroupFactory, Group } from "./types";
 
 function icon(name: string): string {
-  return `https://sub.liblaf.me/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/${name}.png`;
+  return `https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/${name}.png`;
 }
 
 export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
@@ -45,7 +45,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   crypto<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const CRYPTO_EXCLUDE_CCA2 = new Set(["CN", "HK", "US"]);
+    const CRYPTO_EXCLUDE_CCA2 = new Set(["CA", "CN", "HK", "JP", "MY", "NL", "US"]);
     return {
       name: "Crypto",
       type: "url-test",
