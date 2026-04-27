@@ -18,12 +18,14 @@ for profile in "${profiles[@]}"; do
   output="$tmpdir/artifacts/$name/mihomo.yaml"
   bun run './cli/bin/sub-store.ts' mihomo --output "$output" --profile "$profile"
   mihomo -f "$output" -t
-  wrangler kv key put "$key" --path "$output" "${wrangler_flags[@]}"
+  wrangler kv key put "$key" "${wrangler_flags[@]}" \
+    --path "$output" --metadata "$(< "$output.metadata.json")"
 
   # stash
   key="artifacts/$id/stash.yaml"
   output="$tmpdir/artifacts/$name/stash.yaml"
   bun run './cli/bin/sub-store.ts' stash --output "$output" --profile "$profile"
   mihomo -f "$output" -t
-  wrangler kv key put "$key" --path "$output" "${wrangler_flags[@]}"
+  wrangler kv key put "$key" "${wrangler_flags[@]}" \
+    --path "$output" --metadata "$(< "$output.metadata.json")"
 done

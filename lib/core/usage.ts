@@ -1,3 +1,4 @@
+import consola from "consola";
 import { filesize } from "filesize";
 
 import { fetcher } from "../utils";
@@ -9,79 +10,71 @@ export type Bwcounter = {
 };
 
 export type SubscriptionUserinfo = {
-  upload: number;
-  download: number;
-  total: number;
-  expire: number;
+  upload?: number;
+  download?: number;
+  total?: number;
+  expire?: number;
 };
 
-export type Usage = Partial<Bwcounter> & Partial<SubscriptionUserinfo>;
-
-export async function usageFromBwcounter(url?: string | null): Promise<Usage> {
-  if (!url) return {};
+export async function usageFromBwcounter(
+  url?: string | null,
+): Promise<SubscriptionUserinfo | undefined> {
+  if (!url) return undefined;
   let response: Response;
   try {
     response = await fetcher.fetch(url);
   } catch (err) {
-    console.error(err);
-    return {};
+    consola.error(err);
+    return undefined;
   }
-  return await response.json();
-}
-
-export function usageFromHeader(header?: string | null): Usage {
-  const usage: Usage = {};
-  if (!header) return usage;
-  header.split(";").forEach((part: string): void => {
-    const [key, value]: string[] = part
-      .trim()
-      .split("=")
-      .map((s: string): string => s.trim());
-    if (!(key && value)) return;
-    const num: number = Number.parseFloat(value);
-    if (Number.isNaN(num)) return;
-    usage[key as keyof Usage] = num;
-  });
-  return usage;
-}
-
-export function usageToHeader(usage: Usage): string {
-  const subscriptionUserinfo: SubscriptionUserinfo = {
-    upload: usage.upload ?? 0,
-    download: usage.download ?? usage.bw_counter_b ?? 0,
-    total: usage.total ?? usage.monthly_bw_limit_b ?? 0,
-    expire: usage.expire ?? 0,
+  const bwcounter: Bwcounter = await response.json();
+  const now: Date = new Date();
+  const expire: Date = new Date(now.getFullYear(), now.getMonth(), bwcounter.bw_reset_day_of_month);
+  if (expire < now) expire.setMonth(expire.getMonth() + 1);
+  return {
+    download: bwcounter.bw_counter_b,
+    total: bwcounter.monthly_bw_limit_b,
+    expire: expire.getTime() / 1000,
   };
-  return Object.entries(subscriptionUserinfo)
+}
+
+export function usageFromHeader(header?: string | null): SubscriptionUserinfo | undefined {
+  if (!header) return undefined;
+  const obj = Object.fromEntries(
+    header
+      .split(";")
+      .map((s: string): string => s.trim())
+      .filter(Boolean)
+      .map((s: string): [string, string] => {
+        const [key, value] = s.split("=");
+        return [key!.trim(), value!.trim()];
+      })
+      .filter(([key, value]: [string, string]): boolean => !!(key && value))
+      .map(([key, value]: [string, string]): [string, number] => {
+        return [key, Number.parseFloat(value)];
+      }),
+  ) as SubscriptionUserinfo;
+  return obj;
+}
+
+export function usageToHeader(usage?: SubscriptionUserinfo | null): string {
+  if (!usage) return "";
+  return Object.entries(usage)
     .map(([key, value]: [string, number]): string => `${key}=${value}`)
     .join("; ");
 }
 
-export function* usageToProxyNames(usage: Usage): Generator<string> {
-  let used: number | undefined;
-  if (usage.upload !== undefined && usage.download !== undefined) {
-    used = usage.upload + usage.download;
-  } else if (usage.bw_counter_b !== undefined) {
-    used = usage.bw_counter_b;
+export function* usageToProxyNames(usage?: SubscriptionUserinfo | null): Generator<string> {
+  if (!usage) return;
+  if (usage.total) {
+    const { upload, download, total } = usage;
+    const used: number = (upload ?? 0) + (download ?? 0);
+    const percentage: number = (used / total) * 100;
+    yield `Traffic: ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
+    yield `Remaining: ${filesize(total - used)} / ${filesize(total)} (${(100 - percentage).toFixed(0)}%)`;
   }
-  let total: number | undefined = usage.total ?? usage.monthly_bw_limit_b;
-  if (used !== undefined) {
-    if (total !== undefined) {
-      const percentage: number = (used / total) * 100;
-      yield `Traffic: ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
-      yield `Remaining: ${filesize(total - used)} / ${filesize(total)} (${(100 - percentage).toFixed(0)}%)`;
-    } else {
-      yield `Traffic: ${filesize(used)}`;
-    }
+  if (usage.expire) {
+    let expire: Date = new Date(usage.expire * 1000);
+    yield `Expire: ${expire.toLocaleDateString("en-CA")}`; // YYYY-MM-DD
   }
-
-  let date: Date | undefined;
-  if (usage.expire !== undefined) {
-    date = new Date(usage.expire * 1000);
-  } else if (usage.bw_reset_day_of_month !== undefined) {
-    const now: Date = new Date();
-    date = new Date(now.getFullYear(), now.getMonth(), usage.bw_reset_day_of_month);
-    if (date < now) date.setMonth(date.getMonth() + 1);
-  }
-  if (date) yield `Expire: ${date.toLocaleDateString("en-CA")}`; // YYYY-MM-DD
 }

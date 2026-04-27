@@ -1,15 +1,11 @@
 import twemoji from "@twemoji/api";
 import type { Country } from "world-countries";
-import countries from "world-countries";
 
 import type { ProxyWrapper } from "@/lib/core/proxy";
-import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
+import { COUNTRY_UNKNOWN, CCA2_TO_COUNTRY } from "@/lib/pipeline/infer/country";
 
+import { icon } from "../utils";
 import type { Group } from "./types";
-
-const CCA2_TO_COUNTRY: Record<string, Country> = Object.fromEntries(
-  countries.map((country: Country): [string, Country] => [country.cca2, country]),
-);
 
 export function groupByCountry<T>(proxies: ProxyWrapper<T>[]): Group<T>[] {
   const cca2ToGroup: Record<string, Group<T>> = {};
@@ -41,12 +37,47 @@ function emptyGroupFromCountry<T>(country: Country): Group<T> {
     proxies: [],
     url: "https://cp.cloudflare.com",
     "expected-status": 204,
-    icon: [
-      twemoji.base,
-      twemoji.size,
-      "/",
-      twemoji.convert.toCodePoint(country.flag),
-      twemoji.ext,
-    ].join(""),
+    icon: iconFromCountry(country),
   };
+}
+
+const CCA2_TO_ICON: Record<string, string> = {
+  AR: "Argentina",
+  AU: "Australia",
+  BR: "Brazil",
+  CA: "Canada",
+  CN: "China",
+  DE: "Germany",
+  EG: "Egypt",
+  FI: "Finland",
+  FR: "France",
+  HK: "Hong_Kong",
+  IN: "India",
+  JP: "Japan",
+  KR: "Korea",
+  MO: "Macao",
+  MY: "Malaysia",
+  PH: "Philippines",
+  RU: "Russia",
+  SG: "Singapore",
+  TH: "Thailand",
+  TR: "Turkey",
+  TW: "Taiwan",
+  UA: "Ukraine",
+  UK: "United_Kingdom",
+  UN: "United_Nations",
+  US: "United_States",
+};
+
+function iconFromCountry(country: Country): string {
+  if (country.cca2 in CCA2_TO_ICON) {
+    return icon(CCA2_TO_ICON[country.cca2]!);
+  }
+  return [
+    twemoji.base,
+    twemoji.size,
+    "/",
+    twemoji.convert.toCodePoint(country.flag),
+    twemoji.ext,
+  ].join("");
 }

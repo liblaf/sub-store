@@ -3,6 +3,10 @@ import type { OpenAPIRouteSchema } from "chanfana";
 import type { Context } from "hono";
 import { z } from "zod";
 
+type Metadata = {
+  headers: Record<string, string>;
+};
+
 export class RouteSubscribe extends OpenAPIRoute {
   override schema = {
     request: {
@@ -27,9 +31,15 @@ export class RouteSubscribe extends OpenAPIRoute {
 
   override async handle(c: Context<{ Bindings: Env }>): Promise<Response> {
     const { params, query } = await this.getValidatedData<typeof this.schema>();
-    const sub: string | null = await c.env.KV.get(`artifacts/${query.id}/${params.filename}`);
-    if (!sub) throw new NotFoundException();
+    const result: KVNamespaceGetWithMetadataResult<string, Metadata> =
+      await c.env.KV.getWithMetadata(`artifacts/${query.id}/${params.filename}`);
+    if (!result.value) throw new NotFoundException();
+    if (result.metadata?.headers) {
+      for (const [key, value] of Object.entries(result.metadata.headers)) {
+        c.header(key, value);
+      }
+    }
     if (params.filename.endsWith(".yaml")) c.header("Content-Type", "application/yaml");
-    return c.text(sub);
+    return c.text(result.value);
   }
 }

@@ -25,7 +25,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       proxies: proxies.filter((proxy: ProxyWrapper<T>): boolean => proxy.info),
       url: "https://cp.cloudflare.com",
       "expected-status": 204,
-      icon: icon("Airport"),
+      icon: icon("Lab"),
     };
   },
 

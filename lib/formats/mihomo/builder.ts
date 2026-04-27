@@ -9,7 +9,7 @@ import type { ProviderOptions } from "@/lib/core/provider";
 import type { ProxyWrapper } from "@/lib/core/proxy";
 import { createProxyWrapper } from "@/lib/core/proxy";
 import { usageFromBwcounter, usageFromHeader } from "@/lib/core/usage";
-import type { Usage } from "@/lib/core/usage";
+import type { SubscriptionUserinfo } from "@/lib/core/usage";
 import type { Group } from "@/lib/groups";
 import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
 import { fetcher, subconvert } from "@/lib/utils";
@@ -34,11 +34,11 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
           wrapped: proxy,
         }),
     );
-    let usage: Usage = {
-      ...(await usageFromBwcounter(provider.bwcounter)),
-      ...usageFromHeader(response.headers.get("Subscription-Userinfo")),
-    };
-    return { proxies, usage };
+    const date: Date = new Date(response.headers.get("Date") ?? Date.now());
+    let usage: SubscriptionUserinfo | undefined =
+      usageFromHeader(response.headers.get("Subscription-Userinfo")) ??
+      (await usageFromBwcounter(provider.bwcounter));
+    return { proxies, metadata: { date, usage } };
   }
 
   public override proxyFromName(name: string): ProxyWrapper<MihomoProxy> {
