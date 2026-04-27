@@ -1,15 +1,10 @@
 {
+  "$schema": "https://www.schemastore.org/tsconfig.json",
   "extends": "@liblaf/config/tsconfig",
   "compilerOptions": {
-    "isolatedDeclarations": false,
     "paths": {
-      "@cli/*": ["./cli/*"],
-      "@package.json": ["./package.json"],
-      "@shared/*": ["./shared/*"],
-      "@worker/*": ["./worker/*"],
-      "@templates/*": ["./templates/*"],
-      "@core/*": ["./core/*"]
+      "@/*": ["./*"]
     }
   },
-  "exclude": ["bunup.config.ts", "dist/", "node_modules/"]
+  "exclude": ["**/dist/", "**/node_modules/"]
 }

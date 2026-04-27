@@ -18,7 +18,6 @@ node_modules/
 .env
 .env.*
 !.env.example
-!.env.vault
 
 # build / generate output
 dist/
@@ -30,5 +29,3 @@ junit.xml
 .dev.vars
 .wrangler/
 worker-configuration.d.ts
-
-/outputs/

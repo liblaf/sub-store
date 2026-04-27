@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
-import app from "@cli/app";
-import { context } from "@cli/types";
-import { run } from "@stricli/core";
+import { program } from "@commander-js/extra-typings";
 
-await run(app, process.argv.slice(2), context);
+import { mihomo } from "@/cli/cmd/mihomo";
+import { description, version } from "@/package.json";
+
+program.name("sub-store").description(description).version(version).addCommand(mihomo);
+await program.parseAsync();
