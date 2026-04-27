@@ -3,6 +3,7 @@ interface ProxyWrapper {
 }
 
 export function nameStripCommonAffixes<T extends ProxyWrapper>(proxies: T[]): T[] {
+  if (proxies.length < 2) return proxies;
   const names: string[] = proxies.map((proxy: T): string => proxy.name);
   const prefix: string = longestCommonPrefix(names);
   const suffix: string = longestCommonSuffix(names);

@@ -14,6 +14,7 @@ const CCA2_TO_COUNTRY: Record<string, Country> = Object.fromEntries(
 export function groupByCountry<T>(proxies: ProxyWrapper<T>[]): Group<T>[] {
   const cca2ToGroup: Record<string, Group<T>> = {};
   for (const proxy of proxies) {
+    if (proxy.info) continue;
     const group: Group<T> = (cca2ToGroup[proxy.country.cca2] ??= emptyGroupFromCountry(
       proxy.country,
     ));
@@ -27,7 +28,9 @@ export function groupByCountry<T>(proxies: ProxyWrapper<T>[]): Group<T>[] {
 export function groupFromCca2<T>(proxies: ProxyWrapper<T>[], cca2: string): Group<T> {
   const country: Country = CCA2_TO_COUNTRY[cca2] ?? COUNTRY_UNKNOWN;
   const group: Group<T> = emptyGroupFromCountry(country);
-  group.proxies = proxies.filter((proxy: ProxyWrapper<T>): boolean => proxy.country.cca2 === cca2);
+  group.proxies = proxies.filter(
+    (proxy: ProxyWrapper<T>): boolean => !proxy.info && proxy.country.cca2 === cca2,
+  );
   return group;
 }
 

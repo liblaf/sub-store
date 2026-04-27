@@ -12,10 +12,10 @@ import { usageFromBwcounter, usageFromHeader } from "@/lib/core/usage";
 import type { Usage } from "@/lib/core/usage";
 import type { Group } from "@/lib/groups";
 import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
-import { fetcher, subconvert, getName, getPretty, icon } from "@/lib/utils";
+import { fetcher, subconvert, icon } from "@/lib/utils";
 import BUILTIN_TEMPLATE from "@/templates/mihomo.yaml";
 
-import type { MihomoConfig, MihomoProxy } from "./schema";
+import type { MihomoConfig, MihomoProxy, MihomoProxyGroup } from "./schema";
 
 export class MihomoBuilder extends Builder<MihomoProxy> {
   public override async fetch(provider: ProviderOptions): Promise<FetchResult<MihomoProxy>> {
@@ -68,7 +68,7 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
       {
         name: "PROXY",
         type: "select",
-        proxies: groups.map(getName),
+        proxies: [],
         url: "https://cp.cloudflare.com",
         "expected-status": 204,
         icon: icon("Proxy"),
@@ -76,14 +76,8 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     ];
     for (const group of groups) {
       if (group.proxies.length === 0) continue;
-      config["proxy-groups"].push({
-        name: group.name,
-        type: group.type,
-        proxies: group.proxies.map(getPretty),
-        url: group.url,
-        "expected-status": group["expected-status"],
-        icon: group.icon,
-      });
+      config["proxy-groups"][0]!.proxies.push(group.name);
+      config["proxy-groups"].push(this.renderGroup(group));
     }
     config = _.omitBy(config, (_value: any, key: string): boolean =>
       key.startsWith("__"),
@@ -95,6 +89,17 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     if (provider.mihomo) return provider.mihomo;
     if (provider.mixed) return subconvert("clash", provider.mixed);
     throw new Error("TODO");
+  }
+
+  protected renderGroup(group: Group<MihomoProxy>): MihomoProxyGroup {
+    return {
+      name: group.name,
+      type: group.type,
+      proxies: group.proxies.map((wrapper: ProxyWrapper<MihomoProxy>): string => wrapper.pretty),
+      url: group.url,
+      "expected-status": group["expected-status"],
+      icon: group.icon,
+    };
   }
 }
 
