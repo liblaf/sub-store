@@ -11,6 +11,7 @@ export const MIHOMO_PROXY_GROUP_SCHEMA = z.looseObject({
   type: z.enum(["select", "url-test"]),
   proxies: z.array(z.string()),
   url: z.string().optional(),
+  lazy: z.boolean().optional(),
   "expected-status": z.union([z.number(), z.string()]).optional(),
   icon: z.string().optional(),
 });

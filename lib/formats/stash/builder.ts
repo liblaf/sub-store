@@ -13,12 +13,12 @@ import type { Usage } from "@/lib/core/usage";
 import type { Group } from "@/lib/groups";
 import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
 import { fetcher, subconvert } from "@/lib/utils";
-import BUILTIN_TEMPLATE from "@/templates/mihomo.yaml";
+import BUILTIN_TEMPLATE from "@/templates/stash.yaml";
 
-import type { MihomoConfig, MihomoProxy, MihomoProxyGroup } from "./schema";
+import type { StashConfig, StashProxy, StashProxyGroup } from "./schema";
 
-export class MihomoBuilder extends Builder<MihomoProxy> {
-  public override async fetch(provider: ProviderOptions): Promise<FetchResult<MihomoProxy>> {
+export class StashBuilder extends Builder<StashProxy> {
+  public override async fetch(provider: ProviderOptions): Promise<FetchResult<StashProxy>> {
     const url: string = this.getUrl(provider);
     const response: Response = await fetcher.fetch(url, {
       headers: {
@@ -26,9 +26,9 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
       },
     });
     const text: string = await response.text();
-    const config: MihomoConfig = YAML.parse(text);
-    const proxies: ProxyWrapper<MihomoProxy>[] = config.proxies.map(
-      (proxy: MihomoProxy): ProxyWrapper<MihomoProxy> =>
+    const config: StashConfig = YAML.parse(text);
+    const proxies: ProxyWrapper<StashProxy>[] = config.proxies.map(
+      (proxy: StashProxy): ProxyWrapper<StashProxy> =>
         createProxyWrapper({
           name: proxy.name,
           wrapped: proxy,
@@ -41,25 +41,25 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     return { proxies, usage };
   }
 
-  public override proxyFromName(name: string): ProxyWrapper<MihomoProxy> {
+  public override proxyFromName(name: string): ProxyWrapper<StashProxy> {
     return createProxyWrapper({
       name,
       wrapped: {
         name,
         type: "direct",
-      } satisfies MihomoProxy,
+      } satisfies StashProxy,
       country: COUNTRY_UNKNOWN,
       info: true,
     });
   }
 
   public override async render(
-    proxies: ProxyWrapper<MihomoProxy>[],
-    groups: Group<MihomoProxy>[],
+    proxies: ProxyWrapper<StashProxy>[],
+    groups: Group<StashProxy>[],
   ): Promise<string> {
-    let config: MihomoConfig = await loadTemplate(this.template);
+    let config: StashConfig = await loadTemplate(this.template);
     config.proxies = proxies.map(
-      (wrapper: ProxyWrapper<MihomoProxy>): MihomoProxy => ({
+      (wrapper: ProxyWrapper<StashProxy>): StashProxy => ({
         ...wrapper.wrapped,
         name: wrapper.pretty,
       }),
@@ -71,7 +71,7 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     }
     config = _.omitBy(config, (_value: any, key: string): boolean =>
       key.startsWith("__"),
-    ) as MihomoConfig;
+    ) as StashConfig;
     return YAML.stringify(config, { aliasDuplicateObjects: false });
   }
 
@@ -81,20 +81,27 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
     throw new Error("TODO");
   }
 
-  protected renderGroup(group: Group<MihomoProxy>): MihomoProxyGroup {
+  protected renderGroup(group: Group<StashProxy>): StashProxyGroup {
+    // TODO: If a proxy is referenced by multiple policy groups, the delay
+    // testing results for this proxy will be shared among the policy groups. If
+    // you want a proxy to use different delay testing parameters in different
+    // policy groups, manually create multiple proxies.
+    // ref: <https://stash.wiki/en/proxy-protocols/proxy-benchmark>
     return {
       name: group.name,
       type: group.type,
-      proxies: group.proxies.map((wrapper: ProxyWrapper<MihomoProxy>): string => wrapper.pretty),
-      url: group.url,
+      proxies: group.proxies.map((wrapper: ProxyWrapper<StashProxy>): string => wrapper.pretty),
+      "benchmark-url": group.url,
       lazy: true,
-      "expected-status": group["expected-status"],
       icon: group.icon,
+      // for compatibility with mihomo
+      url: group.url,
+      "expected-status": group["expected-status"],
     };
   }
 }
 
-async function loadTemplate(template: string): Promise<MihomoConfig> {
-  if (template === "builtin://mihomo.yaml") return BUILTIN_TEMPLATE;
+async function loadTemplate(template: string): Promise<StashConfig> {
+  if (template === "builtin://stash.yaml") return BUILTIN_TEMPLATE;
   return YAML.parse(await fs.readFile(template, "utf-8"));
 }

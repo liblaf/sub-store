@@ -1,0 +1,140 @@
+# ref: <https://stash.wiki/en/configuration/example-config>
+
+mode: rule
+
+log-level: warning
+
+dns:
+  default-nameserver:
+    - system
+    - 101.6.6.6 # TUNA DNS666
+    - 119.29.29.29 # DNSPod Public DNS
+    - 223.5.5.5 # 阿里云公共 DNS
+  nameserver:
+    - system
+    - https://doh.pub/dns-query
+  fake-ip-filter:
+    # Stun Services
+    - "+.stun.*.*"
+    - "+.stun.*.*.*"
+    - "+.stun.*.*.*.*"
+    - "+.stun.*.*.*.*.*"
+    # Google Voices
+    - "lens.l.google.com"
+    # Nintendo Switch
+    - "*.n.n.srv.nintendo.net"
+    # PlayStation
+    - "+.stun.playstation.net"
+    # XBox
+    - "xbox.*.*.microsoft.com"
+    - "*.*.xboxlive.com"
+    # Microsoft
+    - "*.msftncsi.com"
+    - "*.msftconnecttest.com"
+    # Bilibili CDN
+    - "*.mcdn.bilivideo.cn"
+
+proxies: []
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies: []
+    benchmark-url: https://cp.cloudflare.com
+    lazy: true
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+
+__rule-providers-anchors:
+  domain: &domain
+    type: http
+    behavior: domain
+    format: mrs
+    interval: 86400
+  ipcidr: &ipcidr
+    type: http
+    behavior: ipcidr
+    format: mrs
+    interval: 86400
+
+rule-providers:
+  # 🤖 AI
+  domain-ai:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
+
+  # 🪙 Crypto
+  domain-crypto:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/crypto.domain.mrs
+
+  # 🎯 Direct
+  domain-direct:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
+
+  # 📍 Domestic
+  domain-domestic:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
+  ipcidr-domestic:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
+
+  # 📥 Download
+  domain-download:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
+
+  # 🌐 Global
+  domain-global:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+  ipcidr-global:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
+
+  # ♾️ Local
+  domain-local:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
+  ipcidr-local:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
+
+  # 📺 Stream
+  domain-stream:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
+  ipcidr-stream:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
+
+  # ✈️ Telegram
+  domain-telegram:
+    <<: *domain
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
+  ipcidr-telegram:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
+
+rules:
+  # domain
+  - RULE-SET,domain-direct,DIRECT
+  - RULE-SET,domain-domestic,DIRECT
+  - RULE-SET,domain-local,DIRECT
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # reject QUIC
+  - RULE-SET,domain-ai,AI
+  - RULE-SET,domain-crypto,Crypto
+  # - RULE-SET,domain-download,Download
+  # - RULE-SET,domain-stream,Stream
+  - RULE-SET,domain-telegram,PROXY
+  - RULE-SET,domain-global,PROXY
+
+  # ipcidr
+  - RULE-SET,ipcidr-domestic,DIRECT
+  - RULE-SET,ipcidr-local,DIRECT
+  # - RULE-SET,ipcidr-stream,Stream
+  - RULE-SET,ipcidr-telegram,PROXY
+  - RULE-SET,ipcidr-global,PROXY
+
+  - MATCH,PROXY

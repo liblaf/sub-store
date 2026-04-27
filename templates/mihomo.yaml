@@ -1,7 +1,6 @@
 # ref: <https://wiki.metacubex.one/config/>
 
 allow-lan: true
-bind-address: "*"
 lan-allowed-ips:
   - 100.64.0.0/10 # tailscale
   - 127.0.0.0/8 # loopback
@@ -10,33 +9,23 @@ lan-allowed-ips:
 skip-auth-prefixes:
   - 127.0.0.0/8 # loopback
   - ::1/128 # loopback
+mode: rule
 log-level: warning
-ipv6: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
 external-ui-url: https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip
 profile:
   store-selected: true
   store-fake-ip: true
-unified-delay: false
+unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
-geo-update-interval: 24 # hours
-geox-url:
-  geoip: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
-  geosite: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
-  mmdb: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb
-  asn: https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb
 
 # ref: <https://dns.icoa.cn/>
 dns:
   enable: true
   cache-algorithm: arc
-  prefer-h3: false
   ipv6: true
-  enhanced-mode: redir-host
-  use-hosts: true
-  use-system-hosts: true
   respect-rules: true
   default-nameserver:
     - system
@@ -45,36 +34,19 @@ dns:
     - 223.5.5.5 # 阿里云公共 DNS
   proxy-server-nameserver:
     - system
-    - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-  direct-nameserver: &direct-nameserver
+  direct-nameserver:
     - system
-    - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-  direct-nameserver-follow-policy: false
   nameserver:
     - system
-    - https://101.6.6.6/dns-query
     - https://doh.pub/dns-query
     - https://dns.alidns.com/dns-query
-  fallback: &fallback-nameserver
+  fallback:
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
-  fallback-filter:
-    geoip: true
-    geoip-code: cn
-  nameserver-policy:
-    "ruleset:domain-direct": *direct-nameserver
-    "ruleset:domain-domestic": *direct-nameserver
-    "ruleset:domain-local": *direct-nameserver
-    "ruleset:domain-ai": *fallback-nameserver
-    "ruleset:domain-binance": *fallback-nameserver
-    "ruleset:domain-download": *fallback-nameserver
-    "ruleset:domain-global": *fallback-nameserver
-    "ruleset:domain-stream": *fallback-nameserver
-    "ruleset:domain-telegram": *fallback-nameserver
 
 sniffer:
   enable: true
@@ -92,15 +64,36 @@ sniffer:
 
 mixed-port: 7892
 
-rules:
-  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # block QUIC
+tun:
+  enable: false
+  stack: mixed
+  auto-route: true
+  auto-redirect: true
+  auto-detect-interface: true
+  dns-hijack:
+    - udp://any:53
+    - tcp://any:53
+  strict-route: true
 
+proxies: []
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies: []
+    url: https://cp.cloudflare.com
+    lazy: true
+    expected-status: 204
+    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+
+rules:
   # domain
   - RULE-SET,domain-direct,DIRECT
   - RULE-SET,domain-domestic,DIRECT
   - RULE-SET,domain-local,DIRECT
+  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # reject QUIC
   - RULE-SET,domain-ai,AI
-  - RULE-SET,domain-binance,Crypto
+  - RULE-SET,domain-crypto,Crypto
   # - RULE-SET,domain-download,Download
   # - RULE-SET,domain-stream,Stream
   - RULE-SET,domain-telegram,PROXY
@@ -116,11 +109,6 @@ rules:
   - MATCH,PROXY
 
 __rule-providers-anchors:
-  classical: &classical
-    type: http
-    behavior: classical
-    format: text
-    interval: 86400
   domain: &domain
     type: http
     behavior: domain
@@ -136,73 +124,73 @@ rule-providers:
   # 🤖 AI
   domain-ai:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
-    path: ./rules/ai.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
+    path: ./ruleset/ai.domain.mrs
 
-  # 🪙 Binance
-  domain-binance:
+  # 🪙 Crypto
+  domain-crypto:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/binance.domain.mrs
-    path: ./rules/binance.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/crypto.domain.mrs
+    path: ./ruleset/crypto.domain.mrs
 
   # 🎯 Direct
   domain-direct:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
-    path: ./rules/direct.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
+    path: ./ruleset/direct.domain.mrs
 
   # 📍 Domestic
   domain-domestic:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
-    path: ./rules/domestic.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
+    path: ./ruleset/domestic.domain.mrs
   ipcidr-domestic:
     <<: *ipcidr
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
-    path: ./rules/domestic.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
+    path: ./ruleset/domestic.ipcidr.mrs
 
   # 📥 Download
   domain-download:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
-    path: ./rules/download.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
+    path: ./ruleset/download.domain.mrs
 
   # 🌐 Global
   domain-global:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
-    path: ./rules/global.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+    path: ./ruleset/global.domain.mrs
   ipcidr-global:
     <<: *ipcidr
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
-    path: ./rules/global.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
+    path: ./ruleset/global.ipcidr.mrs
 
   # ♾️ Local
   domain-local:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
-    path: ./rules/local.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
+    path: ./ruleset/local.domain.mrs
   ipcidr-local:
     <<: *ipcidr
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
-    path: ./rules/local.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
+    path: ./ruleset/local.ipcidr.mrs
 
   # 📺 Stream
   domain-stream:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
-    path: ./rules/stream.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
+    path: ./ruleset/stream.domain.mrs
   ipcidr-stream:
     <<: *ipcidr
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
-    path: ./rules/stream.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
+    path: ./ruleset/stream.ipcidr.mrs
 
   # ✈️ Telegram
   domain-telegram:
     <<: *domain
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
-    path: ./rules/telegram.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
+    path: ./ruleset/telegram.domain.mrs
   ipcidr-telegram:
     <<: *ipcidr
-    url: https://testingcf.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
-    path: ./rules/telegram.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
+    path: ./ruleset/telegram.ipcidr.mrs

@@ -14,26 +14,27 @@ ignoreRandomStrings: true
 maxFileSize: 32KB
 useGitignore: true
 words:
+  - bilibili
+  - bilivideo
   - bunup
   - bwcounter
   - chanfana
   - dotenv
-  - geoip
-  - geox
   - ipcidr
   - koolson
   - liblaf
+  - mcdn
   - mihomo
   - mijia
   - mkdocs
-  - mmdb
+  - msftconnecttest
+  - msftncsi
   - oxfmt
   - oxlint
   - pipx
   - platformdirs
   - quic
   - qure
-  - redir
   - rumdl
   - taiki
   - tsgolint

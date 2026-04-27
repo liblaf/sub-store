@@ -41,6 +41,7 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "prepack": "bun run build",
+    "prepare": "bun run generate-types",
     "type-check": "tsc --noEmit",
     "update": "bun update --latest && bun install"
   },
@@ -65,7 +66,7 @@
     "hono": "^4.12.15",
     "oxfmt": "0.47.0",
     "oxlint": "1.62.0",
-    "oxlint-tsgolint": "0.22.0",
+    "oxlint-tsgolint": "0.22.1",
     "typescript": "6.0.3",
     "wrangler": "4.85.0",
     "zod": "^4.3.6"
