@@ -32,8 +32,10 @@ export class Fetcher {
         consola.success(`Cache hit: ${url}`);
         return cached;
       }
+      consola.info(`Cache expired: ${url}`);
+    } else {
+      consola.info(`Cache miss: ${url}`);
     }
-    consola.info(`Cache miss: ${url}`);
     let response: Response;
     try {
       response = await this.ky(url, options);
@@ -48,7 +50,7 @@ export class Fetcher {
 
   protected async loadCache(key: string): Promise<Response | null> {
     const file: string = path.join(this.dir, key);
-    if (!(await fs.exists(this.dir))) return null;
+    if (!(await fs.exists(file))) return null;
     const { body, init } = JSON.parse(await fs.readFile(file, "utf-8")) as CacheResponse;
     return new Response(body, init);
   }

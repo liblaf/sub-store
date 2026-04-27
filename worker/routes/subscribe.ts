@@ -1,7 +1,7 @@
 import { NotFoundException, OpenAPIRoute } from "chanfana";
 import type { OpenAPIRouteSchema } from "chanfana";
 import type { Context } from "hono";
-import z from "zod";
+import { z } from "zod";
 
 export class RouteSubscribe extends OpenAPIRoute {
   override schema = {

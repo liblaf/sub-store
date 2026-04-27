@@ -3,6 +3,9 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [base],
+  env: {
+    node: true,
+  },
   rules: {
     "eslint/no-duplicate-imports": ["error", { allowSeparateTypeImports: true }],
   },
@@ -11,12 +14,4 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
   },
-  overrides: [
-    {
-      files: ["./cli/**", "./lib/**"],
-      env: {
-        node: true,
-      },
-    },
-  ],
 });

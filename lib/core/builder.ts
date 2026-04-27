@@ -6,6 +6,7 @@ import { nameStripCommonAffixes, namePretty, nameOverride } from "@/lib/pipeline
 import type { Profile } from "./profile";
 import type { ProviderOptions } from "./provider";
 import type { ProxyWrapper } from "./proxy";
+import { usageToProxyNames } from "./usage";
 import type { Usage } from "./usage";
 
 export type BuildOptions = {
@@ -36,7 +37,13 @@ export abstract class Builder<T = unknown> {
         let { proxies, usage }: FetchResult<T> = await this.fetch(provider);
         proxies = nameStripCommonAffixes(proxies);
         proxies = nameOverride(proxies, provider.override?.["proxy-name"] ?? []);
-        // TODO: add info proxies
+        const names: Set<string> = new Set(
+          proxies.map((proxy: ProxyWrapper<T>): string => proxy.name),
+        );
+        for (const name of usageToProxyNames(usage)) {
+          if (names.has(name)) continue;
+          proxies.push(this.proxyFromName(name));
+        }
         proxies = namePretty(proxies, provider.name);
         return { proxies, usage };
       }),
