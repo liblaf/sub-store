@@ -1,0 +1,20 @@
+#!/bin/bash
+# [MISE] depends = ["get-profiles"]
+set -o errexit
+set -o nounset
+set -o pipefail
+
+tmpdir="$PWD/tmp"
+wrangler_flags=(--binding 'KV')
+if [[ ${REMOTE-} == 'true' ]]; then wrangler_flags+=(--remote); fi
+
+readarray -t profiles < <(find "$tmpdir/profiles" -name '*.yaml' -print0)
+for profile in "${profiles[@]}"; do
+  id="$(yq eval '.id' "$profile")"
+  key="artifacts/$id/mihomo.yaml"
+  name="$(basename --suffix='.yaml' -- "$profile")"
+  output="$tmpdir/artifacts/$name/mihomo.yaml"
+  bun run './cli/bin/sub-store.ts' mihomo --output "$output" --profile "$profile"
+  mihomo -f "$output" -t
+  wrangler kv key put "$key" --path "$output" "${wrangler_flags[@]}"
+done

@@ -100,16 +100,16 @@ rules:
   - RULE-SET,domain-domestic,DIRECT
   - RULE-SET,domain-local,DIRECT
   - RULE-SET,domain-ai,AI
-  - RULE-SET,domain-binance,Binance
+  - RULE-SET,domain-binance,Crypto
   # - RULE-SET,domain-download,Download
-  - RULE-SET,domain-stream,Stream
+  # - RULE-SET,domain-stream,Stream
   - RULE-SET,domain-telegram,PROXY
   - RULE-SET,domain-global,PROXY
 
   # ipcidr
   - RULE-SET,ipcidr-domestic,DIRECT
   - RULE-SET,ipcidr-local,DIRECT
-  - RULE-SET,ipcidr-stream,Stream
+  # - RULE-SET,ipcidr-stream,Stream
   - RULE-SET,ipcidr-telegram,PROXY
   - RULE-SET,ipcidr-global,PROXY
 

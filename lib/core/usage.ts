@@ -68,10 +68,10 @@ export function* usageToProxyNames(usage: Usage): Generator<string> {
   if (used !== undefined) {
     if (total !== undefined) {
       const percentage: number = (used / total) * 100;
-      yield `Used: ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
+      yield `Traffic: ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
       yield `Remaining: ${filesize(total - used)} / ${filesize(total)} (${(100 - percentage).toFixed(0)}%)`;
     } else {
-      yield `Used: ${filesize(used)}`;
+      yield `Traffic: ${filesize(used)}`;
     }
   }
 

@@ -26,13 +26,13 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   ai<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const AI_EXCLUDE_COUNTRIES = new Set(["CN", "RU"]);
+    const AI_EXCLUDE_CCA2 = new Set(["CN", "HK"]);
     return {
       name: "AI",
       type: "url-test",
       proxies: proxies.filter(
         (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !(proxy.country.cca2 in AI_EXCLUDE_COUNTRIES),
+          !proxy.info && !(proxy.country.cca2 in AI_EXCLUDE_CCA2),
       ),
       url: "https://chatgpt.com/favicon.ico",
       "expected-status": 200,
@@ -41,13 +41,13 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   crypto<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const CRYPTO_EXCLUDE_COUNTRIES = new Set(["CN", "RU"]);
+    const CRYPTO_EXCLUDE_CCA2 = new Set(["CN", "HK", "US"]);
     return {
       name: "Crypto",
       type: "url-test",
       proxies: proxies.filter(
         (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !(proxy.country.cca2 in CRYPTO_EXCLUDE_COUNTRIES),
+          !proxy.info && !(proxy.country.cca2 in CRYPTO_EXCLUDE_CCA2),
       ),
       url: "https://api.binance.com/api/v3/ping",
       "expected-status": 200,
