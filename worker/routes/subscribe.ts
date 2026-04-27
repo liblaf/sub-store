@@ -27,7 +27,7 @@ export class RouteSubscribe extends OpenAPIRoute {
 
   override async handle(c: Context<{ Bindings: Env }>): Promise<Response> {
     const { params, query } = await this.getValidatedData<typeof this.schema>();
-    const sub: string | null = await c.env.KV.get(query.id);
+    const sub: string | null = await c.env.KV.get(`artifacts/${query.id}/${params.filename}`);
     if (!sub) throw new NotFoundException();
     if (params.filename.endsWith(".yaml")) c.header("Content-Type", "application/yaml");
     return c.text(sub);
