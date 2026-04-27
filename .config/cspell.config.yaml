@@ -21,6 +21,7 @@ words:
   - geoip
   - geox
   - ipcidr
+  - koolson
   - liblaf
   - mihomo
   - mijia
@@ -31,6 +32,7 @@ words:
   - pipx
   - platformdirs
   - quic
+  - qure
   - redir
   - rumdl
   - taiki
