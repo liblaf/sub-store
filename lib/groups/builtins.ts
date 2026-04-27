@@ -2,6 +2,10 @@ import type { ProxyWrapper } from "@/lib/core/proxy";
 
 import type { GroupFactory, Group } from "./types";
 
+function icon(name: string): string {
+  return `https://sub.liblaf.me/raw.githubusercontent.com/Koolson/Qure/refs/heads/master/IconSet/Color/${name}.png`;
+}
+
 export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   auto<T>(proxies: ProxyWrapper<T>[]): Group<T> {
     return {
@@ -10,7 +14,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       proxies: proxies.filter((proxy: ProxyWrapper<T>): boolean => !proxy.info),
       url: "https://cp.cloudflare.com",
       "expected-status": 204,
-      icon: "TODO",
+      icon: icon("Auto"),
     };
   },
 
@@ -21,7 +25,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       proxies: proxies.filter((proxy: ProxyWrapper<T>): boolean => proxy.info),
       url: "https://cp.cloudflare.com",
       "expected-status": 204,
-      icon: "TODO",
+      icon: icon("Airport"),
     };
   },
 
@@ -32,11 +36,11 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       type: "url-test",
       proxies: proxies.filter(
         (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !(proxy.country.cca2 in AI_EXCLUDE_CCA2),
+          !proxy.info && !AI_EXCLUDE_CCA2.has(proxy.country.cca2),
       ),
       url: "https://chatgpt.com/favicon.ico",
       "expected-status": 200,
-      icon: "TODO",
+      icon: icon("AI"),
     };
   },
 
@@ -47,11 +51,11 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       type: "url-test",
       proxies: proxies.filter(
         (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !(proxy.country.cca2 in CRYPTO_EXCLUDE_CCA2),
+          !proxy.info && !CRYPTO_EXCLUDE_CCA2.has(proxy.country.cca2),
       ),
       url: "https://api.binance.com/api/v3/ping",
       "expected-status": 200,
-      icon: "TODO",
+      icon: icon("Cryptocurrency"),
     };
   },
 };

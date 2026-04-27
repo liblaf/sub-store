@@ -1,3 +1,4 @@
+import twemoji from "@twemoji/api";
 import type { Country } from "world-countries";
 import countries from "world-countries";
 
@@ -37,6 +38,12 @@ function emptyGroupFromCountry<T>(country: Country): Group<T> {
     proxies: [],
     url: "https://cp.cloudflare.com",
     "expected-status": 204,
-    icon: "TODO",
+    icon: [
+      twemoji.base,
+      twemoji.size,
+      "/",
+      twemoji.convert.toCodePoint(country.flag),
+      twemoji.ext,
+    ].join(""),
   };
 }

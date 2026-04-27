@@ -13,6 +13,7 @@ export const COUNTRY_UNKNOWN: Country = {
     common: "Unknown",
   },
   cca2: "UN",
+  flag: "🇺🇳",
 } as Country;
 
 export const CCA2_TO_COUNTRY: Record<string, Country> = Object.fromEntries(
@@ -35,6 +36,7 @@ export function inferCountry<T extends ProxyWrapper>(proxies: T[]): T[] {
       return proxy;
     }
     for (const country of countries) {
+      if (country.cca2 === "CN") continue;
       for (const pattern of patternsFromCountry(country)) {
         if (pattern?.test(proxy.name)) {
           consola.success(`${proxy.name} ~ ${prettyCountry(country)}`);
