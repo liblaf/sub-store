@@ -23,7 +23,7 @@ export const CCA2_TO_COUNTRY: Record<string, Country> = Object.fromEntries(
   ]),
 );
 
-const PATTERNS: Record<string, RegExp> = {};
+const PATTERNS: Record<string, RegExp> = { TW: /台湾/ };
 
 export function inferCountry<T extends ProxyWrapper>(proxies: T[]): T[] {
   return proxies.map((proxy: T): T => {

@@ -38,8 +38,12 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
         (proxy: ProxyWrapper<T>): boolean =>
           !proxy.info && !AI_EXCLUDE_CCA2.has(proxy.country.cca2),
       ),
-      url: "https://chatgpt.com/favicon.ico",
-      "expected-status": 200,
+      url: "https://cp.cloudflare.com",
+      "expected-status": 204,
+      // TODO: OpenAI endpoints are not reliable for this availability check; choose a more stable URL for testing AI access.
+      // url: "https://auth.openai.com/log-in",
+      // url: "https://chatgpt.com/favicon.ico",
+      // "expected-status": 200,
       icon: icon("AI"),
     };
   },
