@@ -17,7 +17,7 @@
         "yaml": "^2.8.3",
       },
       "devDependencies": {
-        "@liblaf/config": "0.3.1",
+        "@liblaf/config": "0.3.2",
         "@types/bun": "1.3.13",
         "@types/lodash-es": "4.17.12",
         "bunup": "0.16.31",
@@ -179,7 +179,7 @@
 
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.9", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.0.3", "@jridgewell/sourcemap-codec": "^1.4.10" } }, "sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ=="],
 
-    "@liblaf/config": ["@liblaf/config@0.3.1", "", { "peerDependencies": { "bunup": "^0.16", "oxfmt": "^0.46", "oxlint": "^1", "oxlint-tsgolint": "^0.22", "typescript": "^6" }, "optionalPeers": ["bunup", "oxfmt", "oxlint", "oxlint-tsgolint"] }, "sha512-KhXog9uV647R+FWP3QJMRCiWoxUvc5LFn9aymejJ1HXlJpqNh7lju9d+TBfkMhJWAx2qO7c2atDmlK2+6OQt9g=="],
+    "@liblaf/config": ["@liblaf/config@0.3.2", "", { "peerDependencies": { "bunup": "^0.16", "oxfmt": "^0.46", "oxlint": "^1", "oxlint-tsgolint": "^0.22", "typescript": "^6" }, "optionalPeers": ["bunup", "oxfmt", "oxlint", "oxlint-tsgolint"] }, "sha512-880ORpsNBiuLf5FeoyngqBv9H70CNg4Ak9eKqk3uchueCGYF6XpNm9Ml7F0zJrcDjHgPFYn2HHLH8h3wDPJJ7g=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.4", "", { "dependencies": { "@tybys/wasm-util": "^0.10.1" }, "peerDependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1" } }, "sha512-3NQNNgA1YSlJb/kMH1ildASP9HW7/7kYnRI2szWJaofaS1hWmbGI4H+d3+22aGzXXN9IJ+n+GiFVcGipJP18ow=="],
 
