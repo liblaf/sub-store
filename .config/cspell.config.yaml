@@ -20,13 +20,15 @@ words:
   - bwcounter
   - chanfana
   - dotenv
+  - geoip
+  - geox
   - ipcidr
-  - koolson
   - liblaf
   - mcdn
   - mihomo
   - mijia
   - mkdocs
+  - mmdb
   - msftconnecttest
   - msftncsi
   - oxfmt
@@ -34,8 +36,6 @@ words:
   - pipx
   - platformdirs
   - quic
-  - qure
   - rumdl
   - taiki
   - tsgolint
-  - zashboard

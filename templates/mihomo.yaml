@@ -20,6 +20,11 @@ profile:
 unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
+geox-url: # ref: <https://github.com/MetaCubeX/mihomo/blob/a84724665eb7f989809abe463c05f5723bd24975/config/config.go#L570-L575>
+  geoip: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
+  geosite: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
+  mmdb: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb
+  asn: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb
 
 # ref: <https://dns.icoa.cn/>
 dns:
