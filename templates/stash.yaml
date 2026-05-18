@@ -118,6 +118,9 @@ rule-providers:
     url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
 
 rules:
+  # Stash does not support multiple ports
+  - NOT,((OR,((DST-PORT,53),(DST-PORT,80),(DST-PORT,853),(DST-PORT,443)))),DIRECT
+
   # domain
   - RULE-SET,domain-direct,DIRECT
   - RULE-SET,domain-domestic,DIRECT

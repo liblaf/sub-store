@@ -92,6 +92,8 @@ proxy-groups:
     icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
 
 rules:
+  - NOT,((DST-PORT,53/80/853/443)),DIRECT
+
   # domain
   - RULE-SET,domain-direct,DIRECT
   - RULE-SET,domain-domestic,DIRECT
