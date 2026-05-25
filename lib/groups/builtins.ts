@@ -30,7 +30,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   ai<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const AI_EXCLUDE_CCA2 = new Set(["CN", "HK"]);
+    const AI_EXCLUDE_CCA2 = new Set(["CN", "HK", "TW"]);
     return {
       name: "AI",
       type: "url-test",
