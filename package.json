@@ -61,7 +61,7 @@
     "@liblaf/config": "0.3.2",
     "@types/bun": "1.3.14",
     "@types/lodash-es": "4.17.12",
-    "bunup": "0.16.31",
+    "bunup": "0.16.32",
     "chanfana": "3.3.0",
     "hono": "4.12.23",
     "oxfmt": "0.52.0",
