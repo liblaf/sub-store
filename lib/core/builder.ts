@@ -86,7 +86,8 @@ export abstract class Builder<T = unknown> {
   protected addMetaProxies(proxies: ProxyWrapper<T>[], metadata: Metadata): ProxyWrapper<T>[] {
     for (const name of metadataToProxyNames(metadata)) {
       if (proxies.some((proxy: ProxyWrapper<T>): boolean => proxy.name === name)) continue;
-      proxies.push(this.proxyFromName(name));
+      const proxy: ProxyWrapper<T> = this.proxyFromName(name);
+      proxies.push(proxy);
     }
     return proxies;
   }
@@ -110,5 +111,5 @@ function mergeMetadata(metadataList: Metadata[]): Metadata {
 
 function* metadataToProxyNames(metadata: Metadata): Generator<string> {
   yield* usageToProxyNames(metadata.usage);
-  yield `Updated: ${metadata.date.toLocaleDateString("en-CA")}`;
+  yield `🔄 ${metadata.date.toLocaleDateString("en-CA")}`;
 }

@@ -37,7 +37,7 @@
     "build": "bunup",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "generate-types": "wrangler types 'worker/worker-configuration.d.ts' --env-file '.env.example'",
+    "generate-types": "wrangler types 'worker/worker-configuration.d.ts'",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "prepack": "bun run build",
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",
-    "@twemoji/api": "^17.0.2",
+    "@twemoji/api": "^17.0.3",
     "commander": "^15.0.0",
     "consola": "^3.4.2",
     "filesize": "^11.0.17",
@@ -55,7 +55,7 @@
     "lodash-es": "^4.18.1",
     "platformdirs": "^4.3.8-rc3",
     "world-countries": "^5.1.0",
-    "yaml": "^2.8.4"
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@liblaf/config": "0.3.2",
@@ -68,7 +68,7 @@
     "oxlint": "1.68.0",
     "oxlint-tsgolint": "0.23.0",
     "typescript": "6.0.3",
-    "wrangler": "4.97.0",
+    "wrangler": "4.98.0",
     "zod": "4.4.3"
   },
   "readme": "./README.md"

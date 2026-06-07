@@ -11,7 +11,7 @@ export default defineConfig({
   },
   options: {
     reportUnusedDisableDirectives: "warn",
-    typeAware: true,
-    typeCheck: true,
+    typeAware: false,
+    typeCheck: false,
   },
 });

@@ -1,5 +1,5 @@
 import consola from "consola";
-import { filesize } from "filesize";
+import { partial } from "filesize";
 
 import { fetcher } from "../utils";
 
@@ -67,14 +67,15 @@ export function usageToHeader(usage?: SubscriptionUserinfo | null): string {
 export function* usageToProxyNames(usage?: SubscriptionUserinfo | null): Generator<string> {
   if (!usage) return;
   if (usage.total) {
+    const filesize = partial({ precision: 3 });
     const { upload, download, total } = usage;
     const used: number = (upload ?? 0) + (download ?? 0);
     const percentage: number = (used / total) * 100;
-    yield `Traffic: ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
-    yield `Remaining: ${filesize(total - used)} / ${filesize(total)} (${(100 - percentage).toFixed(0)}%)`;
+    yield `📊 ${filesize(used)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
+    yield `🔋 ${filesize(total - used)} / ${filesize(total)} (${(100 - percentage).toFixed(0)}%)`;
   }
   if (usage.expire) {
     let expire: Date = new Date(usage.expire * 1000);
-    yield `Expire: ${expire.toLocaleDateString("en-CA")}`; // YYYY-MM-DD
+    yield `⏳ ${expire.toLocaleDateString("en-CA")}`; // YYYY-MM-DD
   }
 }
