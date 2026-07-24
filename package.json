@@ -68,7 +68,7 @@
     "oxlint": "1.74.0",
     "oxlint-tsgolint": "0.25.0",
     "typescript": "7.0.2",
-    "wrangler": "4.112.0",
+    "wrangler": "4.113.0",
     "zod": "4.4.3"
   },
   "readme": "./README.md"
