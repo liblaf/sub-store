@@ -65,7 +65,7 @@
     "chanfana": "3.3.0",
     "hono": "4.12.31",
     "oxfmt": "0.59.0",
-    "oxlint": "1.74.0",
+    "oxlint": "1.75.0",
     "oxlint-tsgolint": "0.25.0",
     "typescript": "7.0.2",
     "wrangler": "4.113.0",
