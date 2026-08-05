@@ -5,6 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 main = "./worker/index.ts"
 minify = true
 name = "sub-store"
+send_metrics = false
 upload_source_maps = true
 
 [[kv_namespaces]]

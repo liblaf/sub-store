@@ -30,13 +30,11 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   ai<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const AI_EXCLUDE_CCA2 = new Set(["CN", "HK", "TW"]);
     return {
       name: "AI",
       type: "url-test",
       proxies: proxies.filter(
-        (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !AI_EXCLUDE_CCA2.has(proxy.country.cca2),
+        (proxy: ProxyWrapper<T>): boolean => !proxy.info && proxy.country.cca2 === "US",
       ),
       url: "https://api.openai.com",
       "expected-status": "421",

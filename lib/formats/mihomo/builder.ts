@@ -88,6 +88,8 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
       proxies: group.proxies.map((wrapper: ProxyWrapper<MihomoProxy>): string => wrapper.pretty),
       url: group.url,
       lazy: true,
+      timeout: 1200,
+      "max-failed-times": 1,
       "expected-status": group["expected-status"],
       icon: group.icon,
     };
