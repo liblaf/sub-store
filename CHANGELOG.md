@@ -7,7 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.3.0](https://github.com/liblaf/sub-store/releases/tag/v0.3.0) - 2026-06-19
+## [v0.3.1](https://github.com/liblaf/sub-store/releases/tag/v0.3.1) - 2026-08-08
+
+### 🐛 Bug Fixes
+
+- restrict AI proxy group to US nodes - [4684096](https://github.com/liblaf/sub-store/commit/46840964aed0c8a3de6cfbed389778a9884273ae) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf](https://github.com/liblaf)
+- [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
+
+## [v0.3.0](https://github.com/liblaf/sub-store/releases/tag/v0.3.0) - 2026-06-21
 
 ### 💥 BREAKING CHANGES
 
@@ -46,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please) made their first contribution in [#80](https://github.com/liblaf/sub-store/pull/80)
 - [@renovate[bot]](https://github.com/apps/renovate)
 - [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier) made their first contribution in [#114](https://github.com/liblaf/sub-store/pull/114)
 - [@liblaf](https://github.com/liblaf)
