@@ -63,7 +63,7 @@
     "@types/lodash-es": "4.17.12",
     "bunup": "0.16.32",
     "chanfana": "3.4.0",
-    "hono": "4.13.3",
+    "hono": "4.13.4",
     "oxfmt": "0.64.0",
     "oxlint": "1.79.0",
     "oxlint-tsgolint": "7.0.2001",
