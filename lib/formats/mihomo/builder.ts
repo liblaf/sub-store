@@ -1,6 +1,3 @@
-import fs from "node:fs/promises";
-
-import * as _ from "lodash-es";
 import YAML from "yaml";
 
 import { Builder } from "@/lib/core/builder";
@@ -8,25 +5,30 @@ import type { FetchResult } from "@/lib/core/builder";
 import type { ProviderOptions } from "@/lib/core/provider";
 import type { ProxyWrapper } from "@/lib/core/proxy";
 import { createProxyWrapper } from "@/lib/core/proxy";
+import { createTemplateContext, renderTemplate } from "@/lib/core/template";
 import { usageFromBwcounter, usageFromHeader } from "@/lib/core/usage";
-import type { SubscriptionUserinfo } from "@/lib/core/usage";
-import type { Group } from "@/lib/groups";
-import { COUNTRY_UNKNOWN } from "@/lib/pipeline/infer/country";
+import type { Usage } from "@/lib/core/usage";
 import { fetcher, subconvert } from "@/lib/utils";
 import BUILTIN_TEMPLATE from "@/templates/mihomo.yaml";
 
-import type { MihomoConfig, MihomoProxy, MihomoProxyGroup } from "./schema";
+import { validateWithMihomo } from "../validate";
+import { MIHOMO_CONFIG_SCHEMA } from "./schema";
+import type { MihomoConfig, MihomoProxy } from "./schema";
 
 export class MihomoBuilder extends Builder<MihomoProxy> {
   public override async fetch(provider: ProviderOptions): Promise<FetchResult<MihomoProxy>> {
     const url: string = this.getUrl(provider);
-    const response: Response = await fetcher.fetch(url, {
-      headers: {
-        "User-Agent": "clash.meta",
+    const response: Response = await fetcher.fetch(
+      url,
+      {
+        headers: {
+          "User-Agent": "clash.meta",
+        },
       },
-    });
+      validateProviderResponse,
+    );
     const text: string = await response.text();
-    const config: MihomoConfig = YAML.parse(text);
+    const config = MIHOMO_PROVIDER_SCHEMA.parse(YAML.parse(text));
     const proxies: ProxyWrapper<MihomoProxy>[] = config.proxies.map(
       (proxy: MihomoProxy): ProxyWrapper<MihomoProxy> =>
         createProxyWrapper({
@@ -35,68 +37,42 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
         }),
     );
     const date: Date = new Date(response.headers.get("Date") ?? Date.now());
-    let usage: SubscriptionUserinfo | undefined =
+    const usage: Usage | undefined =
       usageFromHeader(response.headers.get("Subscription-Userinfo")) ??
       (await usageFromBwcounter(provider.bwcounter));
     return { proxies, metadata: { date, usage } };
   }
 
-  public override proxyFromName(name: string): ProxyWrapper<MihomoProxy> {
-    return createProxyWrapper({
-      name,
-      wrapped: {
-        name,
-        type: "direct",
-      } satisfies MihomoProxy,
-      country: COUNTRY_UNKNOWN,
-      info: true,
-    });
-  }
-
   public override async render(
     proxies: ProxyWrapper<MihomoProxy>[],
-    groups: Group<MihomoProxy>[],
+    infoProxies: ProxyWrapper<MihomoProxy>[],
   ): Promise<string> {
-    let config: MihomoConfig = await loadTemplate(this.template);
-    config.proxies = proxies.map(
-      (wrapper: ProxyWrapper<MihomoProxy>): MihomoProxy => ({
-        ...wrapper.wrapped,
-        name: wrapper.pretty,
-      }),
-    );
-    for (const group of groups) {
-      if (group.proxies.length === 0) continue;
-      config["proxy-groups"][0]!.proxies.push(group.name);
-      config["proxy-groups"].push(this.renderGroup(group));
-    }
-    config = _.omitBy(config, (_value: any, key: string): boolean =>
-      key.startsWith("__"),
-    ) as MihomoConfig;
-    return YAML.stringify(config, { aliasDuplicateObjects: false });
+    const body: string = await renderTemplate<MihomoConfig>({
+      builtin: {
+        url: "builtin://mihomo.yaml",
+        value: BUILTIN_TEMPLATE,
+      },
+      context: createTemplateContext("mihomo", proxies, infoProxies),
+      schema: MIHOMO_CONFIG_SCHEMA,
+      template: this.template,
+    });
+    await validateWithMihomo(body);
+    return body;
   }
 
   protected getUrl(provider: ProviderOptions): string {
     if (provider.mihomo) return provider.mihomo;
     if (provider.mixed) return subconvert("clash", provider.mixed);
-    throw new Error("TODO");
+    throw new Error(`Provider ${provider.name} has no subscription source`);
   }
 
-  protected renderGroup(group: Group<MihomoProxy>): MihomoProxyGroup {
-    return {
-      name: group.name,
-      type: group.type,
-      proxies: group.proxies.map((wrapper: ProxyWrapper<MihomoProxy>): string => wrapper.pretty),
-      url: group.url,
-      lazy: true,
-      timeout: 1200,
-      "max-failed-times": 1,
-      "expected-status": group["expected-status"],
-      icon: group.icon,
-    };
+  protected override createInfoProxy(name: string): MihomoProxy {
+    return { name, type: "direct", udp: true };
   }
 }
 
-async function loadTemplate(template: string): Promise<MihomoConfig> {
-  if (template === "builtin://mihomo.yaml") return BUILTIN_TEMPLATE;
-  return YAML.parse(await fs.readFile(template, "utf-8"));
+async function validateProviderResponse(response: Response): Promise<void> {
+  MIHOMO_PROVIDER_SCHEMA.parse(YAML.parse(await response.text()));
 }
+
+const MIHOMO_PROVIDER_SCHEMA = MIHOMO_CONFIG_SCHEMA.pick({ proxies: true });

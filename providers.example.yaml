@@ -1,0 +1,11 @@
+id: 0123456789ABCDEFGHJK
+providers:
+  - name: Example
+    mihomo: https://example.com/subscription.yaml
+    bwcounter: https://example.com/bwcounter.json
+    override:
+      proxy-name:
+        - pattern: ^Old Name$
+          target: New Name
+  - name: Mixed Example
+    mixed: https://example.com/subscription

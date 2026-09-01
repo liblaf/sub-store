@@ -5,139 +5,171 @@ mode: rule
 log-level: warning
 
 dns:
+  # Stash queries all the DNS servers simultaneously and caches DNS queries using the LRU algorithm. On mobile devices, configuring 1-2 DNS servers is sufficient for most use cases.
   default-nameserver:
     - system
-    - 101.6.6.6 # TUNA DNS666
     - 119.29.29.29 # DNSPod Public DNS
-    - 223.5.5.5 # 阿里云公共 DNS
   nameserver:
-    - system
-    - https://doh.pub/dns-query
-  fake-ip-filter:
-    # Stun Services
-    - "+.stun.*.*"
-    - "+.stun.*.*.*"
-    - "+.stun.*.*.*.*"
-    - "+.stun.*.*.*.*.*"
-    # Google Voices
-    - "lens.l.google.com"
-    # Nintendo Switch
-    - "*.n.n.srv.nintendo.net"
-    # PlayStation
-    - "+.stun.playstation.net"
-    # XBox
-    - "xbox.*.*.microsoft.com"
-    - "*.*.xboxlive.com"
-    # Microsoft
-    - "*.msftncsi.com"
-    - "*.msftconnecttest.com"
-    # Bilibili CDN
-    - "*.mcdn.bilivideo.cn"
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+  nameserver-policy:
+    geosite:cn:
+      - system
+      - https://doh.pub/dns-query # DNSPod Public DNS
+  follow-rule: true
 
-proxies: []
+proxies:
+  $flatten:
+    - $map:
+        $eval: proxies
+      each(proxy):
+        $eval: proxy.stash
+    - $map:
+        $eval: infoProxies
+      each(proxy):
+        $eval: proxy.stash
+
+__proxy-group-anchors:
+  url-test: &url-test
+    tolerance: 50 # milliseconds
+    interval: 300 # seconds
+    lazy: true
+    benchmark-url: https://cp.cloudflare.com
+    benchmark-timeout: 2 # seconds
+    benchmark-disabled: false
+  select: &select
+    interval: 300 # seconds
+    lazy: true
+    benchmark-url: https://cp.cloudflare.com
+    benchmark-timeout: 2 # seconds
+    benchmark-disabled: false
 
 proxy-groups:
-  - name: PROXY
-    type: select
-    proxies: []
-    benchmark-url: https://cp.cloudflare.com
-    lazy: true
-    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+  $flatten:
+    - - name: PROXY
+        type: select
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+        proxies:
+          $flatten:
+            - - Auto
+            - $map:
+                $eval: countries
+              each(country): ${country.name}
+        <<: *select
+      - name: Auto
+        type: url-test
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Auto.png
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 != "UN"
+            then:
+              $eval: proxy.name
+        <<: *url-test
+      - name: Info
+        type: select
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Available.png
+        proxies:
+          $map:
+            $eval: infoProxies
+          each(proxy):
+            $eval: proxy.name
+        <<: *select
+      - name: Crypto
+        type: url-test
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Cryptocurrency.png
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 in CRYPTO_COUNTRIES
+            then:
+              $eval: proxy.name
+        <<: *url-test
+      - name: Unknown
+        type: select
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/United_Nations.png
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 == "UN"
+            then:
+              $eval: proxy.name
+        <<: *select
+    - $map:
+        $eval: countries
+      each(country):
+        name: ${country.name}
+        type: url-test
+        proxies:
+          $map:
+            $eval: country.proxies
+          each(proxy):
+            $eval: proxy.name
+        <<: *url-test
+        icon: ${country.icon}
+
+rules:
+  - RULE-SET,domain-lan,DIRECT
+  - RULE-SET,domain-cn,DIRECT
+  - RULE-SET,domain-crypto,Crypto
+  - RULE-SET,domain-us,United States
+  - RULE-SET,domain-global,PROXY
+
+  - RULE-SET,ipcidr-lan,DIRECT,no-resolve
+  - RULE-SET,ipcidr-cn,DIRECT,no-resolve
+  - RULE-SET,ipcidr-us,United States,no-resolve
+  - RULE-SET,ipcidr-global,PROXY,no-resolve
+
+  - NOT,((OR,((DST-PORT,53),(DST-PORT,80),(DST-PORT,853),(DST-PORT,443)))),DIRECT
+  - MATCH,PROXY
 
 __rule-providers-anchors:
   domain: &domain
-    type: http
     behavior: domain
+    interval: 86400 # seconds
     format: mrs
-    interval: 86400
   ipcidr: &ipcidr
-    type: http
     behavior: ipcidr
+    interval: 86400 # seconds
     format: mrs
-    interval: 86400
 
 rule-providers:
-  # 🤖 AI
-  domain-ai:
+  domain-cn:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/cn.domain.mrs
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
-
-  # 🪙 Crypto
+    path: ./ruleset/cn.domain.mrs
+  ipcidr-cn:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/cn.ipcidr.mrs
+    <<: *ipcidr
+    path: ./ruleset/cn.ipcidr.mrs
   domain-crypto:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/crypto.domain.mrs
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/crypto.domain.mrs
-
-  # 🎯 Direct
-  domain-direct:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
-
-  # 📍 Domestic
-  domain-domestic:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
-  ipcidr-domestic:
-    <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
-
-  # 📥 Download
-  domain-download:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
-
-  # 🌐 Global
+    path: ./ruleset/crypto.domain.mrs
   domain-global:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/global.domain.mrs
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+    path: ./ruleset/global.domain.mrs
   ipcidr-global:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/global.ipcidr.mrs
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
-
-  # ♾️ Local
-  domain-local:
+    path: ./ruleset/global.ipcidr.mrs
+  domain-lan:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/lan.domain.mrs
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
-  ipcidr-local:
+    path: ./ruleset/lan.domain.mrs
+  ipcidr-lan:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/lan.ipcidr.mrs
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
-
-  # 📺 Stream
-  domain-stream:
+    path: ./ruleset/lan.ipcidr.mrs
+  domain-us:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/us.domain.mrs
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
-  ipcidr-stream:
+    path: ./ruleset/us.domain.mrs
+  ipcidr-us:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/us.ipcidr.mrs
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
-
-  # ✈️ Telegram
-  domain-telegram:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
-  ipcidr-telegram:
-    <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
-
-rules:
-  # Stash does not support multiple ports
-  - NOT,((OR,((DST-PORT,53),(DST-PORT,80),(DST-PORT,853),(DST-PORT,443)))),DIRECT
-
-  # domain
-  - RULE-SET,domain-direct,DIRECT
-  - RULE-SET,domain-domestic,DIRECT
-  - RULE-SET,domain-local,DIRECT
-  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # reject QUIC
-  - RULE-SET,domain-ai,AI
-  - RULE-SET,domain-crypto,Crypto
-  # - RULE-SET,domain-download,Download
-  # - RULE-SET,domain-stream,Stream
-  - RULE-SET,domain-telegram,PROXY
-  - RULE-SET,domain-global,PROXY
-
-  # ipcidr
-  - RULE-SET,ipcidr-domestic,DIRECT
-  - RULE-SET,ipcidr-local,DIRECT
-  # - RULE-SET,ipcidr-stream,Stream
-  - RULE-SET,ipcidr-telegram,PROXY
-  - RULE-SET,ipcidr-global,PROXY
-
-  - MATCH,PROXY
+    path: ./ruleset/us.ipcidr.mrs

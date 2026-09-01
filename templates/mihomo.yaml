@@ -1,16 +1,22 @@
 # ref: <https://wiki.metacubex.one/config/>
 
 allow-lan: true
+bind-address: "*"
 lan-allowed-ips:
+  # ref: <https://docs.docker.com/engine/network/#automatic-subnet-allocation>
+  # ref: <https://tailscale.com/docs/reference/reserved-ip-addresses>
+  # ref: <https://www.iana.org/assignments/iana-ipv4-special-registry>
+  # ref: <https://www.iana.org/assignments/iana-ipv6-special-registry>
   - 100.64.0.0/10 # tailscale
   - 127.0.0.0/8 # loopback
-  - 172.16.0.0/12 # docker
   - ::1/128 # loopback
+  - fd7a:115c:a1e0::/48 # tailscale
 skip-auth-prefixes:
   - 127.0.0.0/8 # loopback
   - ::1/128 # loopback
 mode: rule
 log-level: warning
+ipv6: true
 external-controller: 127.0.0.1:9090
 external-ui: ui
 external-ui-url: https://github.com/liblaf/mirrors-zashboard/archive/refs/heads/gh-pages.zip
@@ -20,38 +26,42 @@ profile:
 unified-delay: true
 tcp-concurrent: true
 geo-auto-update: true
-geox-url: # ref: <https://github.com/MetaCubeX/mihomo/blob/a84724665eb7f989809abe463c05f5723bd24975/config/config.go#L570-L575>
+geo-update-interval: 24 # hours
+geox-url: # ref: <https://github.com/MetaCubeX/mihomo/blob/ac017cdd246ce8bd547653d927e7bf77d7ee73d5/config/config.go#L578-L583>
   geoip: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat
   geosite: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat
   mmdb: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb
   asn: https://cdn.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/GeoLite2-ASN.mmdb
 
-# ref: <https://dns.icoa.cn/>
 dns:
   enable: true
   cache-algorithm: arc
   ipv6: true
+  enhanced-mode: redir-host
+  use-hosts: true
+  use-system-hosts: true
   respect-rules: true
+  # ref: <https://dns.icoa.cn/>
+  # ref: <https://tuna.moe/help/dns/>
+  # ref: <https://www.114dns.com/>
+  # ref: <https://www.dnspod.cn/products/publicdns>
   default-nameserver:
     - system
     - 101.6.6.6 # TUNA DNS666
     - 119.29.29.29 # DNSPod Public DNS
     - 223.5.5.5 # 阿里云公共 DNS
-  proxy-server-nameserver:
-    - system
-    - https://doh.pub/dns-query
-    - https://dns.alidns.com/dns-query
-  direct-nameserver:
-    - system
-    - https://doh.pub/dns-query
-    - https://dns.alidns.com/dns-query
-  nameserver:
-    - system
-    - https://doh.pub/dns-query
-    - https://dns.alidns.com/dns-query
-  fallback:
-    - https://cloudflare-dns.com/dns-query
-    - https://dns.google/dns-query
+  nameserver-policy:
+    rule-set:domain-cn: &dns-cn
+      - system
+      - https://101.6.6.6/dns-query # TUNA DNS666
+      - https://dns.alidns.com/dns-query # 阿里云公共 DNS
+      - https://doh.pub/dns-query # DNSPod Public DNS
+    rule-set:domain-global: &dns-global
+      - https://cloudflare-dns.com/dns-query
+      - https://dns.google/dns-query
+  proxy-server-nameserver: *dns-cn
+  direct-nameserver: *dns-cn
+  nameserver: *dns-global
 
 sniffer:
   enable: true
@@ -64,8 +74,8 @@ sniffer:
     QUIC:
       ports: [443, 8443]
   skip-domain:
-    - "Mijia Cloud"
-    - "+.push.apple.com"
+    - +.push.apple.com
+    - Mijia Cloud
 
 mixed-port: 7892
 
@@ -73,46 +83,127 @@ tun:
   enable: false
   stack: mixed
   auto-route: true
-  auto-redirect: true
+  auto-redirect: false
   auto-detect-interface: true
   dns-hijack:
     - udp://any:53
     - tcp://any:53
   strict-route: true
+  route-exclude-address:
+    # ref: <https://tailscale.com/docs/reference/reserved-ip-addresses>
+    - 100.64.0.0/10 # tailscale
+    - fd7a:115c:a1e0::/48 # tailscale
+  exclude-interface:
+    - tailscale0
 
-proxies: []
+proxies:
+  $flatten:
+    - $map:
+        $eval: proxies
+      each(proxy):
+        $eval: proxy.mihomo
+    - - name: TAILSCALE
+        type: direct
+        udp: true
+        interface-name: tailscale0
+    - $map:
+        $eval: infoProxies
+      each(proxy):
+        $eval: proxy.mihomo
+
+__proxy-group-anchors:
+  proxy-group: &proxy-group
+    url: https://cp.cloudflare.com
+    interval: 300 # seconds
+    lazy: true
+    timeout: 1200 # milliseconds
+    max-failed-times: 1
+    expected-status: 204
 
 proxy-groups:
-  - name: PROXY
-    type: select
-    proxies: []
-    url: https://cp.cloudflare.com
-    lazy: true
-    expected-status: 204
-    icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+  $flatten:
+    - - name: PROXY
+        type: select
+        proxies:
+          $flatten:
+            - - Auto
+            - $map:
+                $eval: countries
+              each(country): ${country.name}
+        <<: *proxy-group
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Proxy.png
+      - name: Auto
+        type: url-test
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 != "UN"
+            then:
+              $eval: proxy.name
+        <<: *proxy-group
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Auto.png
+      - name: Info
+        type: select
+        proxies:
+          $map:
+            $eval: infoProxies
+          each(proxy):
+            $eval: proxy.name
+        <<: *proxy-group
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Available.png
+      - name: Crypto
+        type: url-test
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 in CRYPTO_COUNTRIES
+            then:
+              $eval: proxy.name
+        <<: *proxy-group
+        url: https://api.binance.com/api/v3/ping
+        expected-status: 200
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/Cryptocurrency.png
+      - name: Unknown
+        type: select
+        proxies:
+          $map:
+            $eval: proxies
+          each(proxy):
+            $if: proxy.country.cca2 == "UN"
+            then:
+              $eval: proxy.name
+        <<: *proxy-group
+        icon: https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/United_Nations.png
+    - $map:
+        $eval: countries
+      each(country):
+        name: ${country.name}
+        type: url-test
+        proxies:
+          $map:
+            $eval: country.proxies
+          each(proxy):
+            $eval: proxy.name
+        <<: *proxy-group
+        icon: ${country.icon}
 
 rules:
-  - NOT,((DST-PORT,53/80/853/443)),DIRECT
-
-  # domain
-  - RULE-SET,domain-direct,DIRECT
-  - RULE-SET,domain-domestic,DIRECT
-  - RULE-SET,domain-local,DIRECT
-  - AND,((DST-PORT,443),(NETWORK,UDP)),REJECT # reject QUIC
-  - RULE-SET,domain-ai,AI
+  - RULE-SET,domain-lan,DIRECT
+  - RULE-SET,domain-tailscale,TAILSCALE
+  - RULE-SET,domain-cn,DIRECT
   - RULE-SET,domain-crypto,Crypto
-  # - RULE-SET,domain-download,Download
-  # - RULE-SET,domain-stream,Stream
-  - RULE-SET,domain-telegram,PROXY
+  - RULE-SET,domain-us,United States
   - RULE-SET,domain-global,PROXY
 
-  # ipcidr
-  - RULE-SET,ipcidr-domestic,DIRECT
-  - RULE-SET,ipcidr-local,DIRECT
-  # - RULE-SET,ipcidr-stream,Stream
-  - RULE-SET,ipcidr-telegram,PROXY
-  - RULE-SET,ipcidr-global,PROXY
+  - RULE-SET,ipcidr-lan,DIRECT,no-resolve
+  - RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve
+  - RULE-SET,ipcidr-cn,DIRECT,no-resolve
+  - RULE-SET,ipcidr-us,United States,no-resolve
+  - RULE-SET,ipcidr-global,PROXY,no-resolve
 
+  - NOT,((DST-PORT,53/80/853/443)),DIRECT
   - MATCH,PROXY
 
 __rule-providers-anchors:
@@ -120,84 +211,55 @@ __rule-providers-anchors:
     type: http
     behavior: domain
     format: mrs
-    interval: 86400
+    interval: 86400 # seconds
   ipcidr: &ipcidr
     type: http
     behavior: ipcidr
     format: mrs
-    interval: 86400
+    interval: 86400 # seconds
 
 rule-providers:
-  # 🤖 AI
-  domain-ai:
+  domain-cn:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/ai.domain.mrs
-    path: ./ruleset/ai.domain.mrs
-
-  # 🪙 Crypto
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/cn.domain.mrs
+    path: ./ruleset/cn.domain.mrs
+  ipcidr-cn:
+    <<: *ipcidr
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/cn.ipcidr.mrs
+    path: ./ruleset/cn.ipcidr.mrs
   domain-crypto:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/crypto.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/crypto.domain.mrs
     path: ./ruleset/crypto.domain.mrs
-
-  # 🎯 Direct
-  domain-direct:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/direct.domain.mrs
-    path: ./ruleset/direct.domain.mrs
-
-  # 📍 Domestic
-  domain-domestic:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.domain.mrs
-    path: ./ruleset/domestic.domain.mrs
-  ipcidr-domestic:
-    <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/domestic.ipcidr.mrs
-    path: ./ruleset/domestic.ipcidr.mrs
-
-  # 📥 Download
-  domain-download:
-    <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/download.domain.mrs
-    path: ./ruleset/download.domain.mrs
-
-  # 🌐 Global
   domain-global:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.domain.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/global.domain.mrs
     path: ./ruleset/global.domain.mrs
   ipcidr-global:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/global.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/global.ipcidr.mrs
     path: ./ruleset/global.ipcidr.mrs
-
-  # ♾️ Local
-  domain-local:
+  domain-lan:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.domain.mrs
-    path: ./ruleset/local.domain.mrs
-  ipcidr-local:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/lan.domain.mrs
+    path: ./ruleset/lan.domain.mrs
+  ipcidr-lan:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/local.ipcidr.mrs
-    path: ./ruleset/local.ipcidr.mrs
-
-  # 📺 Stream
-  domain-stream:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/lan.ipcidr.mrs
+    path: ./ruleset/lan.ipcidr.mrs
+  domain-tailscale:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.domain.mrs
-    path: ./ruleset/stream.domain.mrs
-  ipcidr-stream:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/tailscale.domain.mrs
+    path: ./ruleset/tailscale.domain.mrs
+  ipcidr-tailscale:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/stream.ipcidr.mrs
-    path: ./ruleset/stream.ipcidr.mrs
-
-  # ✈️ Telegram
-  domain-telegram:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/tailscale.ipcidr.mrs
+    path: ./ruleset/tailscale.ipcidr.mrs
+  domain-us:
     <<: *domain
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.domain.mrs
-    path: ./ruleset/telegram.domain.mrs
-  ipcidr-telegram:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/us.domain.mrs
+    path: ./ruleset/us.domain.mrs
+  ipcidr-us:
     <<: *ipcidr
-    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/mihomo/telegram.ipcidr.mrs
-    path: ./ruleset/telegram.ipcidr.mrs
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/us.ipcidr.mrs
+    path: ./ruleset/us.ipcidr.mrs

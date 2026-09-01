@@ -1,7 +1,7 @@
 {
   "name": "@liblaf/sub-store",
   "version": "0.3.1",
-  "description": "",
+  "description": "Build and publish Mihomo and Stash subscription configurations",
   "keywords": [],
   "homepage": "https://github.com/liblaf/sub-store",
   "bugs": {
@@ -17,6 +17,9 @@
   "funding": {
     "type": "github",
     "url": "https://github.com/liblaf/sub-store?sponsor=1"
+  },
+  "bin": {
+    "sub-store": "./dist/sub-store.js"
   },
   "files": [
     "dist"
@@ -42,6 +45,7 @@
     "lint:fix": "oxlint --fix",
     "prepack": "bun run build",
     "prepare": "bun run generate-types",
+    "test": "bun test",
     "type-check": "tsc --noEmit",
     "update": "bun update --latest && bun install"
   },
@@ -51,16 +55,16 @@
     "commander": "^15.0.0",
     "consola": "^3.4.2",
     "filesize": "^11.0.17",
+    "json-e": "^4.8.4",
     "ky": "^2.0.2",
-    "lodash-es": "^4.18.1",
     "platformdirs": "^4.3.8-rc3",
     "world-countries": "^5.1.0",
-    "yaml": "^2.9.0"
+    "yaml": "^2.9.0",
+    "zod": "4.5.2"
   },
   "devDependencies": {
     "@liblaf/config": "0.3.2",
     "@types/bun": "1.4.0",
-    "@types/lodash-es": "4.17.12",
     "bunup": "0.16.32",
     "chanfana": "3.4.0",
     "hono": "4.13.5",
@@ -68,8 +72,7 @@
     "oxlint": "1.80.0",
     "oxlint-tsgolint": "7.0.2001",
     "typescript": "7.0.2",
-    "wrangler": "4.127.1",
-    "zod": "4.5.2"
+    "wrangler": "4.127.1"
   },
   "readme": "./README.md"
 }

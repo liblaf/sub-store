@@ -21,6 +21,9 @@ node_modules/
 
 # build / generate output
 dist/
+/artifacts/
+/config.yaml
+/providers.yaml
 
 # Test Results
 junit.xml

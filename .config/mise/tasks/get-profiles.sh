@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-tmpdir="$PWD/tmp"
+tmpdir="${SUB_STORE_TMPDIR:-$PWD/tmp}"
 wrangler_flags=(--binding 'KV')
 if [[ ${REMOTE-} == 'true' ]]; then wrangler_flags+=(--remote); fi
 wrangler_flags+=("$@")

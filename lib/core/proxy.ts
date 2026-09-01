@@ -8,6 +8,7 @@ export type ProxyWrapper<T = unknown> = {
   wrapped: T;
 
   country: Country;
+  /** True only for metadata proxies synthesized by this application. */
   info: boolean;
 };
 

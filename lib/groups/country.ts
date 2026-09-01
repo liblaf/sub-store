@@ -69,7 +69,7 @@ const CCA2_TO_ICON: Record<string, string> = {
   US: "United_States",
 };
 
-function iconFromCountry(country: Country): string {
+export function iconFromCountry(country: Country): string {
   if (country.cca2 in CCA2_TO_ICON) {
     return icon(CCA2_TO_ICON[country.cca2]!);
   }

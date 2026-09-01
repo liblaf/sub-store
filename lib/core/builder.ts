@@ -1,30 +1,30 @@
-import * as _ from "lodash-es";
-
-import { group } from "@/lib/groups";
-import type { Group } from "@/lib/groups";
-import { inferCountry, inferInfo } from "@/lib/pipeline/infer";
+import { inferCountry } from "@/lib/pipeline/infer";
 import { nameStripCommonAffixes, namePretty, nameOverride } from "@/lib/pipeline/name";
 
 import type { Profile } from "./profile";
 import type { ProviderOptions } from "./provider";
 import type { ProxyWrapper } from "./proxy";
-import { usageToHeader, usageToProxyNames } from "./usage";
-import type { SubscriptionUserinfo } from "./usage";
+import { createProxyWrapper } from "./proxy";
+import { infoProxyNames, usageToHeader } from "./usage";
+import type { SubscriptionUserinfo, Usage } from "./usage";
 
 export type BuildOptions = {
-  groups: string[];
   profile: Profile;
   template: string;
 };
 
 export type Metadata = {
   date: Date;
-  usage?: SubscriptionUserinfo;
+  usage?: Usage;
 };
 
 export type FetchResult<T = unknown> = {
   proxies: ProxyWrapper<T>[];
   metadata: Metadata;
+};
+
+type ProviderSnapshot<T = unknown> = FetchResult<T> & {
+  provider: ProviderOptions;
 };
 
 export type Artifact = {
@@ -35,81 +35,84 @@ export type Artifact = {
 };
 
 export abstract class Builder<T = unknown> {
-  public groups: string[];
   public profile: Profile;
   public template: string;
 
   public constructor(options: BuildOptions) {
-    this.groups = options.groups;
     this.profile = options.profile;
     this.template = options.template;
   }
 
   public async build(): Promise<Artifact> {
-    const providers: FetchResult<T>[] = await Promise.all(
-      this.profile.providers.map(async (provider: ProviderOptions): Promise<FetchResult<T>> => {
-        let { proxies, metadata }: FetchResult<T> = await this.fetch(provider);
-        proxies = nameStripCommonAffixes(proxies);
-        proxies = nameOverride(proxies, provider.override?.["proxy-name"] ?? []);
-        proxies = this.addMetaProxies(proxies, metadata);
-        proxies = namePretty(proxies, provider.name);
-        return { proxies, metadata };
-      }),
+    const providers: ProviderSnapshot<T>[] = await Promise.all(
+      this.profile.providers.map(
+        async (provider: ProviderOptions): Promise<ProviderSnapshot<T>> => {
+          let { proxies, metadata }: FetchResult<T> = await this.fetch(provider);
+          proxies = nameStripCommonAffixes(proxies);
+          proxies = nameOverride(proxies, provider.override?.["proxy-name"] ?? []);
+          proxies = namePretty(proxies, provider.name);
+          return { provider, proxies, metadata };
+        },
+      ),
     );
     let proxies: ProxyWrapper<T>[] = providers.flatMap(
-      ({ proxies }: FetchResult<T>): ProxyWrapper<T>[] => proxies,
+      ({ proxies }: ProviderSnapshot<T>): ProxyWrapper<T>[] => proxies,
     );
-    const metadata: Metadata = mergeMetadata(
-      providers.map(({ metadata }: FetchResult<T>): Metadata => metadata),
-    );
-    proxies = this.addMetaProxies(proxies, metadata);
-    proxies = inferInfo(proxies);
     proxies = inferCountry(proxies);
-    const groups: Group<T>[] = group(proxies, this.groups);
-    const body: string = await this.render(proxies, groups);
+    const infoProxies: ProxyWrapper<T>[] = providers.flatMap(
+      ({ provider, metadata }: ProviderSnapshot<T>): ProxyWrapper<T>[] =>
+        infoProxyNames(provider.name, metadata.date, metadata.usage).map(
+          (name: string): ProxyWrapper<T> =>
+            createProxyWrapper({
+              info: true,
+              name,
+              wrapped: this.createInfoProxy(name),
+            }),
+        ),
+    );
+    const body: string = await this.render(proxies, infoProxies);
+    const header: string = usageToHeader(
+      mergeSubscriptionUserinfo(
+        providers.map(({ metadata }: ProviderSnapshot<T>): Metadata => metadata),
+      ),
+    );
     return {
       body,
       metadata: {
-        headers: {
-          "Subscription-Userinfo": usageToHeader(metadata.usage),
-        },
+        headers: header ? { "Subscription-Userinfo": header } : {},
       },
     };
   }
 
   public abstract fetch(provider: ProviderOptions): Promise<FetchResult<T>>;
 
-  public abstract proxyFromName(name: string): ProxyWrapper<T>;
+  public abstract render(
+    proxies: ProxyWrapper<T>[],
+    infoProxies: ProxyWrapper<T>[],
+  ): Promise<string>;
 
-  public abstract render(proxies: ProxyWrapper<T>[], groups: Group<T>[]): Promise<string>;
-
-  protected addMetaProxies(proxies: ProxyWrapper<T>[], metadata: Metadata): ProxyWrapper<T>[] {
-    for (const name of metadataToProxyNames(metadata)) {
-      if (proxies.some((proxy: ProxyWrapper<T>): boolean => proxy.name === name)) continue;
-      const proxy: ProxyWrapper<T> = this.proxyFromName(name);
-      proxies.push(proxy);
-    }
-    return proxies;
-  }
+  protected abstract createInfoProxy(name: string): T;
 }
 
-function mergeMetadata(metadataList: Metadata[]): Metadata {
-  const date: Date = _.min(metadataList.map((metadata: Metadata): Date => metadata.date))!;
+function mergeSubscriptionUserinfo(metadataList: Metadata[]): SubscriptionUserinfo | undefined {
+  const usageList: SubscriptionUserinfo[] = metadataList.flatMap(
+    ({ usage }: Metadata): SubscriptionUserinfo[] => (usage && !("source" in usage) ? [usage] : []),
+  );
+  if (usageList.length === 0) return undefined;
+
   const usage: SubscriptionUserinfo = {};
-  for (const metadata of metadataList) {
-    for (const key of ["upload", "download", "total"] as const) {
-      if (metadata.usage?.[key]) {
-        usage[key] = (usage[key] ?? 0) + metadata.usage[key];
-      }
-    }
-    if (metadata.usage?.expire && (!usage.expire || metadata.usage.expire < usage.expire)) {
-      usage.expire = metadata.usage.expire;
+  for (const key of ["upload", "download", "total"] as const) {
+    if (usageList.every((providerUsage): boolean => providerUsage[key] !== undefined)) {
+      usage[key] = usageList.reduce(
+        (sum: number, providerUsage: SubscriptionUserinfo): number => sum + providerUsage[key]!,
+        0,
+      );
     }
   }
-  return { date, usage };
-}
-
-function* metadataToProxyNames(metadata: Metadata): Generator<string> {
-  yield* usageToProxyNames(metadata.usage);
-  yield `🔄 ${metadata.date.toLocaleDateString("en-CA")}`;
+  if (usageList.every(({ expire }: SubscriptionUserinfo): boolean => expire !== undefined)) {
+    usage.expire = Math.min(
+      ...usageList.map(({ expire }: SubscriptionUserinfo): number => expire!),
+    );
+  }
+  return Object.keys(usage).length > 0 ? usage : undefined;
 }

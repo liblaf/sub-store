@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const MIHOMO_PROXY_SCHEMA = z.looseObject({
   name: z.string(),
+  type: z.string(),
 });
 
 export type MihomoProxy = z.infer<typeof MIHOMO_PROXY_SCHEMA>;
@@ -21,6 +22,7 @@ export type MihomoProxyGroup = z.infer<typeof MIHOMO_PROXY_GROUP_SCHEMA>;
 export const MIHOMO_CONFIG_SCHEMA = z.looseObject({
   proxies: z.array(MIHOMO_PROXY_SCHEMA),
   "proxy-groups": z.array(MIHOMO_PROXY_GROUP_SCHEMA),
+  rules: z.array(z.string()).optional(),
 });
 
 export type MihomoConfig = z.infer<typeof MIHOMO_CONFIG_SCHEMA>;

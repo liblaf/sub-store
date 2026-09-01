@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **(worker)** All existing API endpoints have been removed and replaced with a new `/api` structure. Consumers of the API must update their integrations to reflect the new paths, request parameters, and response formats. The underlying framework has been entirely swapped, which may impact any direct integrations with the worker's internal logic. The package version has been reset to 0.1.0 to signify this foundational change. - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
 - Route handlers now extend abstract base classes
-which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
+  which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
@@ -359,7 +359,7 @@ which may affect custom implementations. - [6a6a953](https://github.com/liblaf/s
 ### 💥 BREAKING CHANGES
 
 - **(core)** Removed IPAPIis class in favor of new GeoIP service.
-Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
+  Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 

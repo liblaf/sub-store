@@ -6,12 +6,36 @@ function icon(name: string): string {
   return `https://cdn.jsdelivr.net/gh/Koolson/Qure/IconSet/Color/${name}.png`;
 }
 
+export const CRYPTO_COUNTRY_CCA2 = [
+  "AR",
+  "AU",
+  "BR",
+  "CL",
+  "DE",
+  "ES",
+  "GB",
+  "IL",
+  "IN",
+  "IT",
+  "KR",
+  "SG",
+  "TH",
+  "TR",
+  "TW",
+  "VN",
+  "ZA",
+] as const;
+
+const CRYPTO_COUNTRIES = new Set<string>(CRYPTO_COUNTRY_CCA2);
+
 export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   auto<T>(proxies: ProxyWrapper<T>[]): Group<T> {
     return {
       name: "Auto",
       type: "url-test",
-      proxies: proxies.filter((proxy: ProxyWrapper<T>): boolean => !proxy.info),
+      proxies: proxies.filter(
+        (proxy: ProxyWrapper<T>): boolean => !proxy.info && proxy.country.cca2 !== "UN",
+      ),
       url: "https://cp.cloudflare.com",
       "expected-status": 204,
       icon: icon("Auto"),
@@ -25,7 +49,7 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
       proxies: proxies.filter((proxy: ProxyWrapper<T>): boolean => proxy.info),
       url: "https://cp.cloudflare.com",
       "expected-status": 204,
-      icon: icon("Lab"),
+      icon: icon("Info"),
     };
   },
 
@@ -43,13 +67,12 @@ export const BUILTIN_GROUPS: Record<string, GroupFactory> = {
   },
 
   crypto<T>(proxies: ProxyWrapper<T>[]): Group<T> {
-    const CRYPTO_EXCLUDE_CCA2 = new Set(["CA", "CN", "HK", "JP", "MY", "NL", "US"]);
     return {
       name: "Crypto",
       type: "url-test",
       proxies: proxies.filter(
         (proxy: ProxyWrapper<T>): boolean =>
-          !proxy.info && !CRYPTO_EXCLUDE_CCA2.has(proxy.country.cca2),
+          !proxy.info && CRYPTO_COUNTRIES.has(proxy.country.cca2),
       ),
       url: "https://api.binance.com/api/v3/ping",
       "expected-status": 200,
