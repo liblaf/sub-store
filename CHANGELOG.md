@@ -7,7 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.3.1](https://github.com/liblaf/sub-store/releases/tag/v0.3.1) - 2026-08-08
+## [v0.3.2](https://github.com/liblaf/sub-store/releases/tag/v0.3.2) - 2026-09-05
+
+### ✨ Features
+
+- build validated subscription artifacts - [e18f63b](https://github.com/liblaf/sub-store/commit/e18f63bd04f0b8c6223d48ff1a83ba37324e2bd3) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **(deps)** update dependency zod to v4.5.4 (#209) - [f8ef9b1](https://github.com/liblaf/sub-store/commit/f8ef9b1ad14b2415e5face29c66e55fb9dcfe32f) by [@renovate[bot]](https://github.com/apps/renovate)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf](https://github.com/liblaf)
+
+## [v0.3.1](https://github.com/liblaf/sub-store/releases/tag/v0.3.1) - 2026-08-09
 
 ### 🐛 Bug Fixes
 
@@ -15,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@renovate[bot]](https://github.com/apps/renovate)
 - [@liblaf](https://github.com/liblaf)
 - [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
@@ -123,7 +139,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **(worker)** All existing API endpoints have been removed and replaced with a new `/api` structure. Consumers of the API must update their integrations to reflect the new paths, request parameters, and response formats. The underlying framework has been entirely swapped, which may impact any direct integrations with the worker's internal logic. The package version has been reset to 0.1.0 to signify this foundational change. - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
 - Route handlers now extend abstract base classes
-  which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
+which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
@@ -359,7 +375,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 💥 BREAKING CHANGES
 
 - **(core)** Removed IPAPIis class in favor of new GeoIP service.
-  Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
+Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
