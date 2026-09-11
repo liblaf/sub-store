@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 
 import { Command } from "@commander-js/extra-typings";
 import YAML from "yaml";
@@ -7,6 +6,7 @@ import YAML from "yaml";
 import type { Artifact } from "@/lib/core/builder";
 import { PROFILE_SCHEMA } from "@/lib/core/profile";
 import type { Profile } from "@/lib/core/profile";
+import { writePrivateArtifact } from "@/lib/core/write-private-artifact";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 
 type Opts = {
@@ -28,8 +28,5 @@ export const mihomo: Command<[], Opts> = new Command("mihomo")
       template: options.template,
     });
     const artifact: Artifact = await builder.build();
-    await fs.mkdir(path.dirname(options.output), { recursive: true });
-    await fs.writeFile(options.output, artifact.body);
-    const metadataFile: string = `${options.output}.metadata.json`;
-    await fs.writeFile(metadataFile, JSON.stringify(artifact.metadata));
+    await writePrivateArtifact(options.output, artifact);
   });

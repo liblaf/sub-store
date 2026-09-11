@@ -7,9 +7,14 @@ export const PROFILE_ID_SCHEMA = z.union([
   z.uuid(),
 ]);
 
+export const PROFILE_VARS_SCHEMA = z.strictObject({
+  TS_AUTH_KEY: z.string().trim().min(1),
+});
+
 export const PROFILE_SCHEMA = z
   .strictObject({
     id: PROFILE_ID_SCHEMA,
+    vars: PROFILE_VARS_SCHEMA.optional(),
     providers: z.array(PROVIDER_SCHEMA),
   })
   .superRefine(({ providers }, ctx): void => {

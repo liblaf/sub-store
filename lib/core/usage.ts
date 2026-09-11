@@ -1,4 +1,3 @@
-import consola from "consola";
 import { partial } from "filesize";
 
 import { fetcher } from "../utils";
@@ -29,21 +28,15 @@ export type Usage = SubscriptionUserinfo | BwcounterUsage;
 
 export async function usageFromBwcounter(url?: string | null): Promise<BwcounterUsage | undefined> {
   if (!url) return undefined;
-  let response: Response;
-  try {
-    response = await fetcher.fetch(url, undefined, validateBwcounterResponse);
-    const bwcounter: unknown = await response.json();
-    if (!isBwcounter(bwcounter)) throw new Error("Invalid bwcounter response");
-    return {
-      source: "bwcounter",
-      used: bwcounter.bw_counter_b,
-      total: bwcounter.monthly_bw_limit_b,
-      resetDay: bwcounter.bw_reset_day_of_month,
-    };
-  } catch (err) {
-    consola.warn(err);
-    return undefined;
-  }
+  const response: Response = await fetcher.fetch(url, undefined, validateBwcounterResponse);
+  const bwcounter: unknown = await response.json();
+  if (!isBwcounter(bwcounter)) throw new Error("Invalid bwcounter response");
+  return {
+    source: "bwcounter",
+    used: bwcounter.bw_counter_b,
+    total: bwcounter.monthly_bw_limit_b,
+    resetDay: bwcounter.bw_reset_day_of_month,
+  };
 }
 
 export function usageFromHeader(header?: string | null): SubscriptionUserinfo | undefined {

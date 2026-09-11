@@ -1,4 +1,6 @@
 id: 0123456789ABCDEFGHJK
+vars:
+  TS_AUTH_KEY: <redacted>
 providers:
   - name: Example
     mihomo: https://example.com/subscription.yaml

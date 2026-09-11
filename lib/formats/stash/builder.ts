@@ -1,7 +1,7 @@
 import YAML from "yaml";
 
 import { Builder } from "@/lib/core/builder";
-import type { FetchResult } from "@/lib/core/builder";
+import type { BuildOptions, FetchResult } from "@/lib/core/builder";
 import type { ProviderOptions } from "@/lib/core/provider";
 import type { ProxyWrapper } from "@/lib/core/proxy";
 import { createProxyWrapper } from "@/lib/core/proxy";
@@ -15,6 +15,17 @@ import { STASH_CONFIG_SCHEMA } from "./schema";
 import type { StashConfig, StashProxy } from "./schema";
 
 export class StashBuilder extends Builder<StashProxy> {
+  readonly #tailscaleAuthKey: string;
+
+  public constructor(options: BuildOptions) {
+    super(options);
+    const authKey: string | undefined = this.profile.vars?.TS_AUTH_KEY;
+    if (!authKey) {
+      throw new Error("vars.TS_AUTH_KEY is required to build a Stash configuration");
+    }
+    this.#tailscaleAuthKey = authKey;
+  }
+
   public override async fetch(provider: ProviderOptions): Promise<FetchResult<StashProxy>> {
     const url: string = this.getUrl(provider);
     const response: Response = await fetcher.fetch(
@@ -51,7 +62,9 @@ export class StashBuilder extends Builder<StashProxy> {
         url: "builtin://stash.yaml",
         value: BUILTIN_TEMPLATE,
       },
-      context: createTemplateContext("stash", proxies, infoProxies),
+      context: createTemplateContext("stash", proxies, infoProxies, {
+        TS_AUTH_KEY: this.#tailscaleAuthKey,
+      }),
       schema: STASH_CONFIG_SCHEMA,
       template: this.template,
     });

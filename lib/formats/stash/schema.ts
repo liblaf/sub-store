@@ -3,6 +3,8 @@ import { z } from "zod";
 export const STASH_PROXY_SCHEMA = z.looseObject({
   name: z.string(),
   type: z.string(),
+  "auth-key": z.string().min(1).optional(),
+  "auto-route-disabled": z.boolean().optional(),
 });
 
 export type StashProxy = z.infer<typeof STASH_PROXY_SCHEMA>;

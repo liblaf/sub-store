@@ -7,7 +7,7 @@ export async function validateWithMihomo(body: string): Promise<void> {
   const directory: string = await fs.mkdtemp(path.join(os.tmpdir(), "sub-store-mihomo-"));
   try {
     const config: string = path.join(directory, "config.yaml");
-    await fs.writeFile(config, body);
+    await fs.writeFile(config, body, { mode: 0o600 });
     await new Promise<void>((resolve, reject): void => {
       execFile("mihomo", ["-d", directory, "-f", config, "-t"], (error, stdout, stderr): void => {
         if (error) {

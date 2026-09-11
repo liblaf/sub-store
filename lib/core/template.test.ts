@@ -7,14 +7,14 @@ import { createProxyWrapper } from "@/lib/core/proxy";
 import type { ProxyWrapper } from "@/lib/core/proxy";
 import { MIHOMO_CONFIG_SCHEMA } from "@/lib/formats/mihomo/schema";
 import type { MihomoProxy } from "@/lib/formats/mihomo/schema";
+import { StashBuilder } from "@/lib/formats/stash/builder";
 import { STASH_CONFIG_SCHEMA } from "@/lib/formats/stash/schema";
-import { CRYPTO_COUNTRY_CCA2 } from "@/lib/groups/builtins";
-import { iconFromCountry } from "@/lib/groups/country";
 import { COUNTRY_UNKNOWN, CCA2_TO_COUNTRY } from "@/lib/pipeline/infer/country";
 import MIHOMO_TEMPLATE from "@/templates/mihomo.yaml";
 import STASH_TEMPLATE from "@/templates/stash.yaml";
 
 import { createTemplateContext, renderTemplate } from "./template";
+import { CRYPTO_COUNTRY_CCA2, iconFromCountry } from "./template-country";
 
 const usProxyOne: ProxyWrapper<MihomoProxy> = proxy("US raw one", "US One", "US");
 const germanyProxy: ProxyWrapper<MihomoProxy> = proxy("DE raw", "Germany One", "DE");
@@ -33,6 +33,7 @@ const generatedInfoNames = [
   "Counter 🔋 100 B / 200 B (50%)",
   "Counter 🔄 2026-09-01 · resets day 15",
 ];
+const tailscaleAuthKey = "test-tailscale-auth-key";
 
 const proxies: ProxyWrapper<MihomoProxy>[] = [
   usProxyOne,
@@ -56,11 +57,12 @@ const countryGroupOptions = {
 } as const;
 
 describe("JSON-e templates", (): void => {
-  test("builds a versioned data-only context", (): void => {
+  test("builds a versioned JSON-only context", (): void => {
     const context = createTemplateContext("mihomo", proxies, infoProxies);
 
-    expect(context.version).toBe(6);
+    expect(context.version).toBe(7);
     expect(context.target).toBe("mihomo");
+    expect(context.vars).toEqual({});
     expect(context.proxies.map(({ name, country }) => ({ name, country: country.cca2 }))).toEqual([
       { name: "US One", country: "US" },
       { name: "Germany One", country: "DE" },
@@ -124,8 +126,8 @@ describe("JSON-e templates", (): void => {
       "US Two",
       "Unknown One",
       "Provider Traffic",
-      "TAILSCALE",
       ...generatedInfoNames,
+      "TAILSCALE",
     ]);
     expect(renderedGroups).toMatchObject({
       PROXY: ["Auto", "United States", "Germany"],
@@ -219,10 +221,36 @@ describe("JSON-e templates", (): void => {
     expect(config.rules).not.toContain("RULE-SET,domain-crypto,Crypto");
   });
 
+  test("removes Stash rules with options when their target group is empty", async (): Promise<void> => {
+    const output = await renderTemplate({
+      builtin: {
+        url: "builtin://stash-empty-group.yaml",
+        value: {
+          proxies: [{ name: "src", type: "direct" }],
+          "proxy-groups": [{ name: "Empty", type: "select", proxies: [] }],
+          rules: [
+            "DOMAIN-SUFFIX,example.com,Empty,no-track",
+            "IP-CIDR,192.0.2.0/24,Empty,src,no-resolve",
+            "DOMAIN-SUFFIX,example.org,src",
+            "MATCH,DIRECT",
+          ],
+        },
+      },
+      context: {},
+      schema: STASH_CONFIG_SCHEMA,
+      template: "builtin://stash-empty-group.yaml",
+    });
+    const config = STASH_CONFIG_SCHEMA.parse(YAML.parse(output));
+    expect(config["proxy-groups"]).toEqual([]);
+    expect(config.rules).toEqual(["DOMAIN-SUFFIX,example.org,src", "MATCH,DIRECT"]);
+  });
+
   test("renders the Stash template from the same semantic context", async (): Promise<void> => {
     const output: string = await renderTemplate({
       builtin: { url: "builtin://stash.yaml", value: STASH_TEMPLATE },
-      context: createTemplateContext("stash", proxies, infoProxies),
+      context: createTemplateContext("stash", proxies, infoProxies, {
+        TS_AUTH_KEY: tailscaleAuthKey,
+      }),
       schema: STASH_CONFIG_SCHEMA,
       template: "builtin://stash.yaml",
     });
@@ -238,7 +266,14 @@ describe("JSON-e templates", (): void => {
       "Unknown One",
       "Provider Traffic",
       ...generatedInfoNames,
+      "TAILSCALE",
     ]);
+    expect(config.proxies.find(({ name }) => name === "TAILSCALE")).toEqual({
+      name: "TAILSCALE",
+      type: "tailscale",
+      "auth-key": tailscaleAuthKey,
+      "auto-route-disabled": true,
+    });
     for (const name of generatedInfoNames) {
       expect(config.proxies.find((proxy) => proxy.name === name)).toMatchObject({
         name,
@@ -263,6 +298,8 @@ describe("JSON-e templates", (): void => {
       Germany: ["Germany One"],
     });
     expect(config.rules).toContain("RULE-SET,domain-global,PROXY");
+    expect(config.rules).toContain("RULE-SET,domain-tailscale,TAILSCALE");
+    expect(config.rules).toContain("RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve");
     expect((config["rule-providers"] as Record<string, unknown>)["domain-cn"]).toMatchObject({
       behavior: "domain",
       format: "mrs",
@@ -270,8 +307,50 @@ describe("JSON-e templates", (): void => {
     expect((config["rule-providers"] as Record<string, unknown>)["domain-cn"]).not.toHaveProperty(
       "type",
     );
+    expect((config["rule-providers"] as Record<string, unknown>)["domain-tailscale"]).toMatchObject(
+      { behavior: "domain", format: "mrs" },
+    );
+    expect((config["rule-providers"] as Record<string, unknown>)["ipcidr-tailscale"]).toMatchObject(
+      { behavior: "ipcidr", format: "mrs" },
+    );
     expect(config).not.toHaveProperty("__proxy-group-anchors");
     expect(config).not.toHaveProperty("__rule-providers-anchors");
+  });
+
+  test("requires and injects the Stash Tailscale auth key", async (): Promise<void> => {
+    const previousAuthKey: string | undefined = process.env.TAILSCALE_AUTHKEY;
+    const previousProfileAuthKey: string | undefined = process.env.TS_AUTH_KEY;
+    const withoutAuthKey = {
+      profile: { id: "00000000-0000-4000-8000-000000000000", providers: [] },
+      template: "builtin://stash.yaml",
+    };
+
+    try {
+      process.env.TAILSCALE_AUTHKEY = "legacy-ambient-auth-key";
+      process.env.TS_AUTH_KEY = "ambient-auth-key";
+      expect((): StashBuilder => new StashBuilder(withoutAuthKey)).toThrow(
+        "vars.TS_AUTH_KEY is required to build a Stash configuration",
+      );
+
+      const builder = new StashBuilder({
+        profile: {
+          id: "00000000-0000-4000-8000-000000000000",
+          vars: { TS_AUTH_KEY: tailscaleAuthKey },
+          providers: [],
+        },
+        template: "builtin://stash.yaml",
+      });
+      const output: string = await builder.render(proxies, infoProxies);
+      const config = STASH_CONFIG_SCHEMA.parse(YAML.parse(output));
+      expect(config.proxies.find(({ name }) => name === "TAILSCALE")).toMatchObject({
+        "auth-key": tailscaleAuthKey,
+      });
+    } finally {
+      if (previousAuthKey === undefined) delete process.env.TAILSCALE_AUTHKEY;
+      else process.env.TAILSCALE_AUTHKEY = previousAuthKey;
+      if (previousProfileAuthKey === undefined) delete process.env.TS_AUTH_KEY;
+      else process.env.TS_AUTH_KEY = previousProfileAuthKey;
+    }
   });
 
   test("rejects invalid configs, duplicate names, and unresolved references", async (): Promise<void> => {
@@ -336,6 +415,27 @@ describe("JSON-e templates", (): void => {
         template: "builtin://missing-rule-target.yaml",
       }),
     ).rejects.toThrow("Rule references an unknown proxy or group: Crypto");
+
+    for (const rule of [
+      "DOMAIN-SUFFIX,example.com,Missing",
+      "NOT,((DOMAIN-SUFFIX,example.com)),Missing,no-track",
+    ]) {
+      await expect(
+        renderTemplate({
+          builtin: {
+            url: "builtin://missing-stash-rule-target.yaml",
+            value: {
+              proxies: [{ name: "Node", type: "direct" }],
+              "proxy-groups": [{ name: "PROXY", type: "select", proxies: ["Node"] }],
+              rules: [rule],
+            },
+          },
+          context: {},
+          schema: STASH_CONFIG_SCHEMA,
+          template: "builtin://missing-stash-rule-target.yaml",
+        }),
+      ).rejects.toThrow("Rule references an unknown proxy or group: Missing");
+    }
 
     await expect(
       renderTemplate({

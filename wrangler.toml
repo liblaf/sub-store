@@ -12,6 +12,9 @@ upload_source_maps = true
 binding = "KV"
 id = "9dda497161fe4e45879212a17dba8e3b"
 
+[secrets]
+required = ["SUB_STORE_API_TOKEN"]
+
 [observability]
 enabled = true
 

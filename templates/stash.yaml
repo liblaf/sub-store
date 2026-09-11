@@ -28,6 +28,10 @@ proxies:
         $eval: infoProxies
       each(proxy):
         $eval: proxy.stash
+    - - name: TAILSCALE
+        type: tailscale
+        auth-key: ${vars.TS_AUTH_KEY}
+        auto-route-disabled: true
 
 __proxy-group-anchors:
   url-test: &url-test
@@ -113,12 +117,14 @@ proxy-groups:
 
 rules:
   - RULE-SET,domain-lan,DIRECT
+  - RULE-SET,domain-tailscale,TAILSCALE
   - RULE-SET,domain-cn,DIRECT
   - RULE-SET,domain-crypto,Crypto
   - RULE-SET,domain-us,United States
   - RULE-SET,domain-global,PROXY
 
   - RULE-SET,ipcidr-lan,DIRECT,no-resolve
+  - RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve
   - RULE-SET,ipcidr-cn,DIRECT,no-resolve
   - RULE-SET,ipcidr-us,United States,no-resolve
   - RULE-SET,ipcidr-global,PROXY,no-resolve
@@ -165,6 +171,14 @@ rule-providers:
     url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/lan.ipcidr.mrs
     <<: *ipcidr
     path: ./ruleset/lan.ipcidr.mrs
+  domain-tailscale:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/tailscale.domain.mrs
+    <<: *domain
+    path: ./ruleset/tailscale.domain.mrs
+  ipcidr-tailscale:
+    url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/tailscale.ipcidr.mrs
+    <<: *ipcidr
+    path: ./ruleset/tailscale.ipcidr.mrs
   domain-us:
     url: https://cdn.jsdelivr.net/gh/liblaf/route-rules@mihomo/us.domain.mrs
     <<: *domain

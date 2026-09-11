@@ -27,6 +27,27 @@ describe("provider input schema", (): void => {
     }
   });
 
+  test("accepts a nonblank Tailscale auth key variable", (): void => {
+    const profile = PROFILE_SCHEMA.parse({
+      id,
+      vars: { TS_AUTH_KEY: "  tskey-auth-example  " },
+      providers: [],
+    });
+
+    expect(profile.vars).toEqual({ TS_AUTH_KEY: "tskey-auth-example" });
+  });
+
+  test("rejects missing, blank, and unknown profile variables", (): void => {
+    for (const vars of [
+      {},
+      { TS_AUTH_KEY: "   " },
+      { TS_AUTH_KEY: 42 },
+      { TS_AUTH_KEY: "key", EXTRA: "value" },
+    ]) {
+      expect(PROFILE_SCHEMA.safeParse({ id, vars, providers: [] }).success).toBe(false);
+    }
+  });
+
   test("rejects malformed profile IDs", (): void => {
     const provider = { name: "Example", mihomo: "https://example.invalid/subscription" };
     for (const profileId of ["too-short", "0123456789ABCDEFGHJI", "0123456789abcdefghjk"]) {

@@ -5,10 +5,9 @@ import type { Country } from "world-countries";
 import YAML from "yaml";
 import type { ZodType } from "zod";
 
-import { CRYPTO_COUNTRY_CCA2 } from "../groups/builtins";
-import { iconFromCountry } from "../groups/country";
 import { COUNTRY_UNKNOWN } from "../pipeline/infer/country";
 import type { ProxyWrapper } from "./proxy";
+import { CRYPTO_COUNTRY_CCA2, iconFromCountry } from "./template-country";
 
 export type TemplateTarget = "mihomo" | "stash";
 
@@ -34,9 +33,12 @@ export type TemplateCountryGroup<T> = TemplateCountry & {
   proxies: TemplateProxy<T>[];
 };
 
+export type TemplateVars = Partial<Record<"TS_AUTH_KEY", string>>;
+
 export type TemplateContext<T> = {
-  version: 6;
+  version: 7;
   target: TemplateTarget;
+  vars: TemplateVars;
   proxies: TemplateProxy<T>[];
   infoProxies: TemplateInfoProxy<T>[];
   countries: TemplateCountryGroup<T>[];
@@ -55,6 +57,8 @@ type RenderedConfig = {
   "rule-providers"?: Record<string, unknown>;
 };
 
+const RULE_TRAILING_OPTIONS = new Set(["no-resolve", "no-track", "src"]);
+
 type RenderTemplateOptions<T extends RenderedConfig> = {
   builtin: {
     url: string;
@@ -69,6 +73,7 @@ export function createTemplateContext<T extends Record<string, unknown>>(
   target: TemplateTarget,
   proxies: ProxyWrapper<T>[],
   infoProxies: ProxyWrapper<T>[],
+  vars: TemplateVars = {},
 ): TemplateContext<T> {
   const templateProxies: TemplateProxy<T>[] = proxies.map(
     (proxy: ProxyWrapper<T>): TemplateProxy<T> => ({
@@ -90,8 +95,9 @@ export function createTemplateContext<T extends Record<string, unknown>>(
     countries.set(proxy.country.cca2, country);
   }
   return {
-    version: 6,
+    version: 7,
     target,
+    vars,
     proxies: templateProxies,
     infoProxies: templateInfoProxies,
     countries: [...countries.values()].sort(
@@ -185,14 +191,20 @@ function removeEmptyProxyGroups<T extends RenderedConfig>(config: T): T {
 }
 
 function ruleTargetsAnyGroup(rule: string, groupNames: Set<string>): boolean {
-  for (const name of groupNames) {
-    if (rule.endsWith(`,${name}`) || rule.endsWith(`,${name},no-resolve`)) return true;
-  }
-  return false;
+  const target: string | undefined = ruleTarget(rule.split(","));
+  return target !== undefined && groupNames.has(target);
 }
 
 function assertReferencesExist(config: RenderedConfig): void {
-  const targets = new Set(["DIRECT", "PASS", "REJECT", "REJECT-DROP"]);
+  const targets = new Set([
+    "COMPATIBLE",
+    "DIRECT",
+    "GLOBAL",
+    "PASS",
+    "PASS-RULE",
+    "REJECT",
+    "REJECT-DROP",
+  ]);
   for (const proxy of config.proxies) addUnique(targets, proxy.name, "proxy or group");
   for (const group of config["proxy-groups"]) addUnique(targets, group.name, "proxy or group");
 
@@ -208,15 +220,26 @@ function assertReferencesExist(config: RenderedConfig): void {
 
   for (const rule of config.rules ?? []) {
     const fields: string[] = rule.split(",");
-    if (fields[0] === "RULE-SET" && !config["rule-providers"]?.[fields[1]!]) {
-      throw new Error(`Rule references an unknown rule provider: ${fields[1]}`);
+    const type: string | undefined = fields[0]?.trim();
+    const provider: string | undefined = fields[1]?.trim();
+    if (type === "RULE-SET" && (!provider || !config["rule-providers"]?.[provider])) {
+      throw new Error(`Rule references an unknown rule provider: ${provider}`);
     }
-    if (fields[0] !== "MATCH" && fields[0] !== "RULE-SET") continue;
-    const target: string | undefined = fields.at(fields.at(-1) === "no-resolve" ? -2 : -1);
+    const target: string | undefined = ruleTarget(fields);
     if (target && !targets.has(target)) {
       throw new Error(`Rule references an unknown proxy or group: ${target}`);
     }
   }
+}
+
+function ruleTarget(fields: string[]): string | undefined {
+  // Mihomo SUB-RULE ends with a sub-rule name instead of an outbound policy.
+  const type: string | undefined = fields[0]?.trim();
+  if (type === "SUB-RULE") return undefined;
+  let index: number = fields.length - 1;
+  const minimumIndex: number = type === "MATCH" ? 1 : 2;
+  while (index > minimumIndex && RULE_TRAILING_OPTIONS.has(fields[index]!.trim())) index--;
+  return fields[index]?.trim();
 }
 
 function addUnique(names: Set<string>, name: string, kind: string): void {

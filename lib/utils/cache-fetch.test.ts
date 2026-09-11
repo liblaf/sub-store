@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
@@ -36,6 +36,51 @@ async function expireCache(dir: string): Promise<void> {
 }
 
 describe("Fetcher cache", (): void => {
+  test("creates private cache files and repairs permissive existing ones", async (): Promise<void> => {
+    await withCache(async (dir: string): Promise<void> => {
+      const cacheDir = path.join(dir, "cache");
+      const fetcher = new Fetcher(
+        kyFrom(async (): Promise<Response> => new Response("valid")),
+        cacheDir,
+      );
+      await fetcher.fetch("https://example.test/sub");
+      const [file] = await readdir(cacheDir);
+      expect(file).toBeDefined();
+      expect((await stat(cacheDir)).mode & 0o777).toBe(0o700);
+      expect((await stat(path.join(cacheDir, file!))).mode & 0o777).toBe(0o600);
+      await chmod(cacheDir, 0o755);
+      await chmod(path.join(cacheDir, file!), 0o644);
+
+      await fetcher.fetch("https://example.test/sub");
+
+      expect((await stat(cacheDir)).mode & 0o777).toBe(0o755);
+      expect((await stat(path.join(cacheDir, file!))).mode & 0o777).toBe(0o600);
+    });
+  });
+
+  test("refuses to read or overwrite a cache symlink target", async (): Promise<void> => {
+    await withCache(async (dir: string): Promise<void> => {
+      const cacheDir = path.join(dir, "cache");
+      const fetcher = new Fetcher(
+        kyFrom(async (): Promise<Response> => new Response("valid")),
+        cacheDir,
+      );
+      await fetcher.fetch("https://example.test/sub");
+      const [file] = await readdir(cacheDir);
+      expect(file).toBeDefined();
+      const cacheFile = path.join(cacheDir, file!);
+      const victim = path.join(dir, "victim");
+      await writeFile(victim, "unchanged", { mode: 0o644 });
+      await rm(cacheFile);
+      await symlink(victim, cacheFile);
+
+      await expect(fetcher.fetch("https://example.test/sub")).rejects.toThrow();
+
+      expect(await readFile(victim, "utf-8")).toBe("unchanged");
+      expect((await stat(victim)).mode & 0o777).toBe(0o644);
+    });
+  });
+
   test("redacts credentials, paths, and queries from log labels", (): void => {
     expect(
       formatUrlForLog("https://username:password@example.test/private/token?secret=value"),
@@ -75,7 +120,7 @@ describe("Fetcher cache", (): void => {
     });
   });
 
-  test("returns a stale valid cache after a network failure", async (): Promise<void> => {
+  test("propagates network failures even when a stale cache exists", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       let fail = false;
       const fetcher = new Fetcher(
@@ -88,13 +133,13 @@ describe("Fetcher cache", (): void => {
       await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
       await expireCache(dir);
       fail = true;
-      expect(
-        await (await fetcher.fetch("https://example.test/sub", undefined, validateYaml)).text(),
-      ).toBe("valid");
+      await expect(
+        fetcher.fetch("https://example.test/sub", undefined, validateYaml),
+      ).rejects.toThrow("offline");
     });
   });
 
-  test("rejects a malformed fetched body and retains stale valid cache", async (): Promise<void> => {
+  test("rejects a malformed refresh without overwriting the cache", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       let body = "valid";
       const fetcher = new Fetcher(
@@ -106,14 +151,18 @@ describe("Fetcher cache", (): void => {
       );
       await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
       await expireCache(dir);
+      const [file] = await readdir(dir);
+      const cacheFile = path.join(dir, file!);
+      const before = await readFile(cacheFile, "utf-8");
       body = "malformed";
-      expect(
-        await (await fetcher.fetch("https://example.test/sub", undefined, validateYaml)).text(),
-      ).toBe("valid");
+      await expect(
+        fetcher.fetch("https://example.test/sub", undefined, validateYaml),
+      ).rejects.toThrow("invalid provider body");
+      expect(await readFile(cacheFile, "utf-8")).toBe(before);
     });
   });
 
-  test("throws when there is no cache to fall back to", async (): Promise<void> => {
+  test("propagates network failures without a cache", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       const fetcher = new Fetcher(
         kyFrom(async (): Promise<Response> => {
@@ -122,6 +171,25 @@ describe("Fetcher cache", (): void => {
         dir,
       );
       await expect(fetcher.fetch("https://example.test/sub")).rejects.toThrow("offline");
+    });
+  });
+
+  test("rejects an invalid fresh cache without hiding it with a refetch", async (): Promise<void> => {
+    await withCache(async (dir: string): Promise<void> => {
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async (): Promise<Response> => {
+          calls++;
+          return new Response("malformed");
+        }),
+        dir,
+      );
+      await fetcher.fetch("https://example.test/sub");
+
+      await expect(
+        fetcher.fetch("https://example.test/sub", undefined, validateYaml),
+      ).rejects.toThrow("invalid provider body");
+      expect(calls).toBe(1);
     });
   });
 });

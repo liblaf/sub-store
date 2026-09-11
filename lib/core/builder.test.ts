@@ -63,6 +63,45 @@ class TestMihomoBuilder extends MihomoBuilder {
   }
 }
 
+type NameOverride = { pattern: string; target: string };
+
+class NameTestMihomoBuilder extends MihomoBuilder {
+  public renderedProxies: ProxyWrapper<MihomoProxy>[] = [];
+
+  public constructor(names: string[], overrides: NameOverride[] = []) {
+    super({
+      profile: {
+        id: "00000000-0000-4000-8000-000000000000",
+        providers: [
+          {
+            name: "JMS",
+            mihomo: "https://example.invalid/jms",
+            override: { "proxy-name": overrides },
+          },
+        ],
+      },
+      template: "builtin://mihomo.yaml",
+    });
+    this.names = names;
+  }
+
+  private readonly names: string[];
+
+  public override async fetch(): Promise<FetchResult<MihomoProxy>> {
+    return {
+      proxies: this.names.map((name: string): ProxyWrapper<MihomoProxy> =>
+        createProxyWrapper({ name, wrapped: { name, type: "direct" } }),
+      ),
+      metadata: { date: new Date("2026-08-31T12:00:00Z") },
+    };
+  }
+
+  public override async render(proxies: ProxyWrapper<MihomoProxy>[]): Promise<string> {
+    this.renderedProxies = proxies;
+    return "rendered";
+  }
+}
+
 describe("Builder provider metadata", (): void => {
   test("adds format-specific info proxies before rendering", async (): Promise<void> => {
     const builder = new TestMihomoBuilder({
@@ -152,5 +191,102 @@ describe("Builder provider metadata", (): void => {
       "Download 🔄 2026-08-31",
     ]);
     expect(artifact.metadata.headers).toEqual({});
+  });
+});
+
+describe("Builder proxy names", (): void => {
+  test("matches original JMS names and preserves shared replacement text", async (): Promise<void> => {
+    const builder = new NameTestMihomoBuilder(
+      [
+        "JMS-1234567@c73s1.portablesubmarines.com:8675",
+        "JMS-1234567@c73s2.portablesubmarines.com:8675",
+      ],
+      [
+        {
+          pattern: ".*s(?<server>1|2|3|801)\\b.*",
+          target: "🇺🇸 s$<server> United States",
+        },
+      ],
+    );
+
+    await builder.build();
+
+    expect(builder.renderedProxies.map(({ pretty }) => pretty)).toEqual([
+      "[JMS] 🇺🇸 s1 United States",
+      "[JMS] 🇺🇸 s2 United States",
+    ]);
+  });
+
+  test("applies named-capture replacement rules sequentially", async (): Promise<void> => {
+    const builder = new NameTestMihomoBuilder(
+      ["JMS source · s1 · US"],
+      [
+        {
+          pattern: "^JMS source · (?<server>s\\d+) · (?<country>US)$",
+          target: "$<country> $<server>",
+        },
+        {
+          pattern: "^(?<country>US) (?<server>s\\d+)$",
+          target: "🇺🇸 $<server> $<country>",
+        },
+      ],
+    );
+
+    await builder.build();
+
+    expect(builder.renderedProxies.map(({ pretty }) => pretty)).toEqual(["[JMS] 🇺🇸 s1 US"]);
+  });
+
+  test("preserves any rule match and strips only unmatched names from the original set", async (): Promise<void> => {
+    const builder = new NameTestMihomoBuilder(
+      [
+        "shared JMS s1 US shared",
+        "shared Keep shared",
+        "shared Alpha shared",
+        "shared Beta shared",
+      ],
+      [
+        {
+          pattern: "^shared JMS (?<server>s\\d+) (?<country>US) shared$",
+          target: "formatted 🇺🇸 $<server> $<country> shared",
+        },
+        { pattern: "^shared Keep shared$", target: "$&" },
+      ],
+    );
+
+    await builder.build();
+
+    expect(builder.renderedProxies.map(({ pretty }) => pretty)).toEqual([
+      "[JMS] formatted 🇺🇸 s1 US shared",
+      "[JMS] shared Keep shared",
+      "[JMS] Alpha",
+      "[JMS] Beta",
+    ]);
+  });
+
+  test("retains automatic stripping without rules and preserves a single name", async (): Promise<void> => {
+    const multiple = new NameTestMihomoBuilder(["shared Alpha1 shared", "shared Beta2 shared"]);
+    const single = new NameTestMihomoBuilder(["shared Only shared"]);
+
+    await Promise.all([multiple.build(), single.build()]);
+
+    expect(multiple.renderedProxies.map(({ pretty }) => pretty)).toEqual([
+      "[JMS] Alpha1",
+      "[JMS] Beta2",
+    ]);
+    expect(single.renderedProxies.map(({ pretty }) => pretty)).toEqual([
+      "[JMS] shared Only shared",
+    ]);
+  });
+
+  test("preserves all names when common affixes would consume one", async (): Promise<void> => {
+    const builder = new NameTestMihomoBuilder(["abc", "abcabc"]);
+
+    await builder.build();
+
+    expect(builder.renderedProxies.map(({ pretty }) => pretty)).toEqual([
+      "[JMS] abc",
+      "[JMS] abcabc",
+    ]);
   });
 });

@@ -76,4 +76,18 @@ describe("Subscription-Userinfo", (): void => {
       fetcher.fetch = originalFetch;
     }
   });
+
+  test("propagates a configured bwcounter failure", async (): Promise<void> => {
+    const originalFetch = fetcher.fetch;
+    fetcher.fetch = async (): Promise<Response> => {
+      throw new Error("bwcounter unavailable");
+    };
+    try {
+      await expect(usageFromBwcounter("https://example.test/bw")).rejects.toThrow(
+        "bwcounter unavailable",
+      );
+    } finally {
+      fetcher.fetch = originalFetch;
+    }
+  });
 });

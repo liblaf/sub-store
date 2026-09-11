@@ -1,3 +1,2 @@
-export { nameOverride } from "./override";
+export { nameNormalize } from "./normalize";
 export { namePretty } from "./pretty";
-export { nameStripCommonAffixes } from "./strip-common-affixes";

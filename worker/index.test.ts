@@ -16,6 +16,7 @@ function createEnv(entries: Record<string, { body: string; metadata?: Metadata }
           : { value: null, metadata: null, cacheStatus: null };
       },
     } as KVNamespace,
+    SUB_STORE_API_TOKEN: "test-token",
   };
 }
 

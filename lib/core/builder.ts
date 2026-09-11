@@ -1,5 +1,5 @@
 import { inferCountry } from "@/lib/pipeline/infer";
-import { nameStripCommonAffixes, namePretty, nameOverride } from "@/lib/pipeline/name";
+import { nameNormalize, namePretty } from "@/lib/pipeline/name";
 
 import type { Profile } from "./profile";
 import type { ProviderOptions } from "./provider";
@@ -48,8 +48,7 @@ export abstract class Builder<T = unknown> {
       this.profile.providers.map(
         async (provider: ProviderOptions): Promise<ProviderSnapshot<T>> => {
           let { proxies, metadata }: FetchResult<T> = await this.fetch(provider);
-          proxies = nameStripCommonAffixes(proxies);
-          proxies = nameOverride(proxies, provider.override?.["proxy-name"] ?? []);
+          proxies = nameNormalize(proxies, provider.override?.["proxy-name"] ?? []);
           proxies = namePretty(proxies, provider.name);
           return { provider, proxies, metadata };
         },
