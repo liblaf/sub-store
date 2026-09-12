@@ -26,7 +26,7 @@ describe("Subscription-Userinfo", (): void => {
         total: 200,
         resetDay: 15,
       }),
-    ).toEqual(["Counter 🔋 100 B / 200 B (50%)", "Counter 🔄 2026-09-01 · resets day 15"]);
+    ).toEqual(["[Counter] 🔋 100 B / 200 B (50%)", "[Counter] 🔄 2026-09-01 · resets day 15"]);
   });
 
   test("omits missing usage fields but always includes the provider update", (): void => {
@@ -35,9 +35,9 @@ describe("Subscription-Userinfo", (): void => {
         upload: 100,
         total: 200,
       }),
-    ).toEqual(["Partial 🔄 2026-09-01"]);
+    ).toEqual(["[Partial] 🔄 2026-09-01"]);
     expect(infoProxyNames("None", new Date("2026-09-01T12:00:00Z"))).toEqual([
-      "None 🔄 2026-09-01",
+      "[None] 🔄 2026-09-01",
     ]);
   });
 
@@ -49,9 +49,13 @@ describe("Subscription-Userinfo", (): void => {
         total: 100,
         expire: Date.parse("2027-01-01T00:00:00Z") / 1000,
       }),
-    ).toEqual(["Header 🔋 50.0 B / 100 B (50%)", "Header ⏳ 2027-01-01", "Header 🔄 2026-09-01"]);
+    ).toEqual([
+      "[Header] 🔋 50.0 B / 100 B (50%)",
+      "[Header] ⏳ 2027-01-01",
+      "[Header] 🔄 2026-09-01",
+    ]);
     expect(infoProxyNames("Unlimited", new Date("2026-09-01T12:00:00Z"), { expire: 0 })).toEqual([
-      "Unlimited 🔄 2026-09-01",
+      "[Unlimited] 🔄 2026-09-01",
     ]);
   });
 

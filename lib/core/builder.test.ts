@@ -127,20 +127,20 @@ describe("Builder provider metadata", (): void => {
       "[Beta] Beta Node",
     ]);
     expect(builder.renderedInfoProxies.map(({ pretty }) => pretty)).toEqual([
-      "Alpha 🔋 50.0 B / 100 B (50%)",
-      "Alpha ⏳ 2026-09-30",
-      "Alpha 🔄 2026-08-30",
-      "Beta 🔋 100 B / 200 B (50%)",
-      "Beta 🔄 2026-08-31 · resets day 15",
+      "[Alpha] 🔋 50.0 B / 100 B (50%)",
+      "[Alpha] ⏳ 2026-09-30",
+      "[Alpha] 🔄 2026-08-30",
+      "[Beta] 🔋 100 B / 200 B (50%)",
+      "[Beta] 🔄 2026-08-31 · resets day 15",
     ]);
     expect(builder.renderedProxies.every(({ info }) => !info)).toBe(true);
     expect(builder.renderedInfoProxies.every(({ info }) => info)).toBe(true);
     expect(builder.renderedInfoProxies.map(({ wrapped }) => wrapped)).toEqual([
-      { name: "Alpha 🔋 50.0 B / 100 B (50%)", type: "direct", udp: true },
-      { name: "Alpha ⏳ 2026-09-30", type: "direct", udp: true },
-      { name: "Alpha 🔄 2026-08-30", type: "direct", udp: true },
-      { name: "Beta 🔋 100 B / 200 B (50%)", type: "direct", udp: true },
-      { name: "Beta 🔄 2026-08-31 · resets day 15", type: "direct", udp: true },
+      { name: "[Alpha] 🔋 50.0 B / 100 B (50%)", type: "direct", udp: true },
+      { name: "[Alpha] ⏳ 2026-09-30", type: "direct", udp: true },
+      { name: "[Alpha] 🔄 2026-08-30", type: "direct", udp: true },
+      { name: "[Beta] 🔋 100 B / 200 B (50%)", type: "direct", udp: true },
+      { name: "[Beta] 🔄 2026-08-31 · resets day 15", type: "direct", udp: true },
     ]);
     expect(builder.renderedInfoProxies.every(({ country }) => country.cca2 === "UN")).toBe(true);
     expect(artifact.metadata.headers).toEqual({
@@ -166,8 +166,8 @@ describe("Builder provider metadata", (): void => {
     const artifact = await builder.build();
 
     expect(builder.renderedInfoProxies.map(({ pretty }) => pretty)).toEqual([
-      "Beta 🔋 100 B / 200 B (50%)",
-      "Beta 🔄 2026-08-31 · resets day 15",
+      "[Beta] 🔋 100 B / 200 B (50%)",
+      "[Beta] 🔄 2026-08-31 · resets day 15",
     ]);
     expect(artifact.metadata.headers).toEqual({});
   });
@@ -187,8 +187,8 @@ describe("Builder provider metadata", (): void => {
     const artifact = await builder.build();
 
     expect(builder.renderedInfoProxies.map(({ pretty }) => pretty)).toEqual([
-      "Upload 🔄 2026-08-31",
-      "Download 🔄 2026-08-31",
+      "[Upload] 🔄 2026-08-31",
+      "[Download] 🔄 2026-08-31",
     ]);
     expect(artifact.metadata.headers).toEqual({});
   });

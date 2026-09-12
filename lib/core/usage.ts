@@ -87,7 +87,7 @@ export function infoProxyNames(providerName: string, date: Date, usage?: Usage |
     ? ` · ${bwcounterResetToDisplay(usage.resetDay)}`
     : "";
   names.push(`🔄 ${formatDate(date)}${reset}`);
-  return names.map((name: string): string => `${providerName} ${name}`);
+  return names.map((name: string): string => `[${providerName}] ${name}`);
 }
 
 function quotaToDisplay(used: number, total: number): string {
