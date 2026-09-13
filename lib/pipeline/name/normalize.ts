@@ -1,3 +1,4 @@
+import { countryFromName } from "../infer/country";
 import { nameStripCommonAffixes } from "./strip-common-affixes";
 
 interface ProxyWrapper {
@@ -18,7 +19,6 @@ export function nameNormalize<T extends ProxyWrapper>(
   proxies: T[],
   overrides: OverrideProxyName[],
 ): T[] {
-  if (overrides.length === 0) return nameStripCommonAffixes(proxies);
   const regexps: OverrideProxyNameRegex[] = overrides.map(
     ({ pattern, target }: OverrideProxyName): OverrideProxyNameRegex => ({
       pattern: new RegExp(pattern),
@@ -38,7 +38,13 @@ export function nameNormalize<T extends ProxyWrapper>(
       matched = true;
     }
     // Even a no-op replacement claims the name and prevents automatic stripping.
-    proxy.name = matched ? name : stripped[index]!.name;
+    const automaticName: string = stripped[index]!.name;
+    proxy.name =
+      matched ||
+      automaticName === name ||
+      countryFromName(name).cca2 !== countryFromName(automaticName).cca2
+        ? name
+        : automaticName;
     return proxy;
   });
 }

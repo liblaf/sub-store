@@ -23,29 +23,31 @@ export const CCA2_TO_COUNTRY: Record<string, Country> = Object.fromEntries(
   ]),
 );
 
-const PATTERNS: Record<string, RegExp> = { TW: /台湾/ };
+const PATTERNS: Record<string, RegExp> = { TW: /台湾|台灣/u };
 const PROVIDER_INFO_PATTERN: RegExp = /Expire|Traffic|剩余流量|套餐到期/i;
 
 export function inferCountry<T extends ProxyWrapper>(proxies: T[]): T[] {
   return proxies.map((proxy: T): T => {
-    if (proxy.info || PROVIDER_INFO_PATTERN.test(proxy.name)) {
-      proxy.country = COUNTRY_UNKNOWN;
-      return proxy;
+    const country: Country = proxy.info ? COUNTRY_UNKNOWN : countryFromName(proxy.name);
+    if (country.cca2 === COUNTRY_UNKNOWN.cca2) {
+      consola.warn(`${proxy.name} ~ ${prettyCountry(country)}`);
+    } else {
+      consola.success(`${proxy.name} ~ ${prettyCountry(country)}`);
     }
-    for (const country of countries) {
-      if (country.cca2 === "CN") continue;
-      for (const pattern of patternsFromCountry(country)) {
-        if (pattern?.test(proxy.name)) {
-          consola.success(`${proxy.name} ~ ${prettyCountry(country)}`);
-          proxy.country = country;
-          return proxy;
-        }
-      }
-    }
-    consola.warn(`${proxy.name} ~ ${prettyCountry(COUNTRY_UNKNOWN)}`);
-    proxy.country = COUNTRY_UNKNOWN;
+    proxy.country = country;
     return proxy;
   });
+}
+
+export function countryFromName(name: string): Country {
+  if (PROVIDER_INFO_PATTERN.test(name)) return COUNTRY_UNKNOWN;
+  for (const country of countries) {
+    if (country.cca2 === "CN") continue;
+    for (const pattern of patternsFromCountry(country)) {
+      if (pattern?.test(name)) return country;
+    }
+  }
+  return COUNTRY_UNKNOWN;
 }
 
 function* patternsFromCountry(country: Country): Generator<RegExp | undefined> {

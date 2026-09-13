@@ -68,6 +68,7 @@ export function infoProxyNames(providerName: string, date: Date, usage?: Usage |
   const names: string[] = [];
   if (isBwcounterUsage(usage)) {
     names.push(quotaToDisplay(usage.used, usage.total));
+    names.push(`🔁 ${usage.resetDay}`);
   } else if (usage) {
     if (
       usage.upload !== undefined &&
@@ -79,14 +80,10 @@ export function infoProxyNames(providerName: string, date: Date, usage?: Usage |
     }
     if (usage.expire !== undefined && usage.expire > 0) {
       const expire: Date = new Date(usage.expire * 1000);
-      // Bunup corrupts a literal U+23F3 in the packaged CLI, so construct it at runtime.
-      names.push(`${String.fromCodePoint(0x23f3)} ${formatDate(expire)}`);
+      names.push(`⌛ ${formatDate(expire)}`);
     }
   }
-  const reset: string = isBwcounterUsage(usage)
-    ? ` · ${bwcounterResetToDisplay(usage.resetDay)}`
-    : "";
-  names.push(`🔄 ${formatDate(date)}${reset}`);
+  names.push(`📥 ${formatDate(date)}`);
   return names.map((name: string): string => `[${providerName}] ${name}`);
 }
 
@@ -94,11 +91,7 @@ function quotaToDisplay(used: number, total: number): string {
   const filesize = partial({ precision: 3 });
   const remaining: number = total - used;
   const percentage: number = (remaining / total) * 100;
-  return `🔋 ${filesize(remaining)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
-}
-
-function bwcounterResetToDisplay(resetDay: number): string {
-  return `resets day ${resetDay}`;
+  return `📊 ${filesize(remaining)} / ${filesize(total)} (${percentage.toFixed(0)}%)`;
 }
 
 function formatDate(date: Date): string {

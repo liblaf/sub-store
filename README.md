@@ -18,7 +18,7 @@
 - Renders YAML templates with [JSON-e](https://json-e.js.org/), removes private `__*` fields and empty proxy groups, and rejects unresolved references.
 - Validates rendered references for both formats and additionally checks Mihomo output with `mihomo -t` before writing an artifact.
 - Caches upstream responses in `~/.cache/sub-store/` for one hour and stops the build if a refresh fails or returns invalid data.
-- Exposes generated quota, expiry, and update entries separately as `infoProxies`; templates place them in `Info` while keeping upstream informational nodes in `Unknown`.
+- Exposes generated quota (`📊`), reset (`🔁`), expiry (`⌛`), and update (`📥`) entries separately as `infoProxies`; templates place them in `Info` while keeping upstream informational nodes in `Unknown`. Names contain only the provider prefix, emoji, and value. Reset entries show the monthly day reported by bwcounter; update entries show the subscription response date.
 - Publishes `/subs/<ID>/mihomo.yaml` and `/subs/<ID>/stash.yaml` with the generated `Subscription-Userinfo` response header.
 
 ## 📦 Provider file
