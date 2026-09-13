@@ -7,6 +7,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.4.1](https://github.com/liblaf/sub-store/releases/tag/v0.4.1) - 2026-09-13
+
+### 🐛 Bug Fixes
+
+- **(deps)** update dependency zod to v4.6.1 (#222) - [8965f14](https://github.com/liblaf/sub-store/commit/8965f140a11b706b9087b9adbe7e0d7bf6179bba) by [@renovate[bot]](https://github.com/apps/renovate)
+- preserve Unicode labels and Taiwan proxy grouping - [7b68bdc](https://github.com/liblaf/sub-store/commit/7b68bdcdb30898150ee41e9860542df076af1d85) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.4.0](https://github.com/liblaf/sub-store/releases/tag/v0.4.0) - 2026-09-12
 
 ### 💥 BREAKING CHANGES
@@ -26,6 +38,7 @@ failed refreshes no longer publish stale cache data. - [e71248d](https://github.
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
