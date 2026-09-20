@@ -21,8 +21,8 @@ words:
   - abcdefghjn
   - bunup
   - bwcounter
-  - dnsmasq
   - dotenv
+  - forgejo
   - geoip
   - geox
   - hjkmnp
@@ -32,6 +32,7 @@ words:
   - mihomo
   - mijia
   - mmdb
+  - oplist
   - orhun
   - pipx
   - platformdirs

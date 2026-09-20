@@ -67,6 +67,12 @@ dns:
   direct-nameserver-follow-policy: true
   nameserver: *dns-global
 
+hosts:
+  forgejo.liblaf.me: 100.77.7.7
+  jellyfin.liblaf.me: 100.77.7.7
+  oplist.liblaf.me: 100.77.7.7
+  qbt.liblaf.me: 100.77.7.7
+
 sniffer:
   enable: true
   sniff:
@@ -194,12 +200,12 @@ proxy-groups:
         icon: ${country.icon}
 
 rules:
-  - RULE-SET,domain-tailscale,TAILSCALE
-  - RULE-SET,domain-lan,DIRECT
-  - RULE-SET,domain-cn,DIRECT
-  - RULE-SET,domain-crypto,Crypto
-  - RULE-SET,domain-us,United States
-  - RULE-SET,domain-global,PROXY
+  - RULE-SET,domain-tailscale,TAILSCALE,no-resolve
+  - RULE-SET,domain-lan,DIRECT,no-resolve
+  - RULE-SET,domain-cn,DIRECT,no-resolve
+  - RULE-SET,domain-crypto,Crypto,no-resolve
+  - RULE-SET,domain-us,United States,no-resolve
+  - RULE-SET,domain-global,PROXY,no-resolve
 
   - RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve
   - RULE-SET,ipcidr-lan,DIRECT,no-resolve

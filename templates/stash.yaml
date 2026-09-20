@@ -4,6 +4,12 @@ mode: rule
 
 log-level: warning
 
+hosts:
+  forgejo.liblaf.me: 100.77.7.7
+  jellyfin.liblaf.me: 100.77.7.7
+  oplist.liblaf.me: 100.77.7.7
+  qbt.liblaf.me: 100.77.7.7
+
 dns:
   # Stash queries all the DNS servers simultaneously and caches DNS queries using the LRU algorithm. On mobile devices, configuring 1-2 DNS servers is sufficient for most use cases.
   default-nameserver:
@@ -13,9 +19,7 @@ dns:
     - https://cloudflare-dns.com/dns-query
     - https://dns.google/dns-query
   nameserver-policy:
-    geosite:cn:
-      - system
-      - https://doh.pub/dns-query # DNSPod Public DNS
+    geosite:cn: system
   follow-rule: true
 
 proxies:
@@ -116,12 +120,12 @@ proxy-groups:
         icon: ${country.icon}
 
 rules:
-  - RULE-SET,domain-tailscale,TAILSCALE
-  - RULE-SET,domain-lan,DIRECT
-  - RULE-SET,domain-cn,DIRECT
-  - RULE-SET,domain-crypto,Crypto
-  - RULE-SET,domain-us,United States
-  - RULE-SET,domain-global,PROXY
+  - RULE-SET,domain-tailscale,TAILSCALE,no-resolve
+  - RULE-SET,domain-lan,DIRECT,no-resolve
+  - RULE-SET,domain-cn,DIRECT,no-resolve
+  - RULE-SET,domain-crypto,Crypto,no-resolve
+  - RULE-SET,domain-us,United States,no-resolve
+  - RULE-SET,domain-global,PROXY,no-resolve
 
   - RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve
   - RULE-SET,ipcidr-lan,DIRECT,no-resolve

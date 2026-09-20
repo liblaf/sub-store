@@ -159,7 +159,7 @@ describe("JSON-e templates", (): void => {
         udp: true,
       });
     }
-    expect(config.rules).toContain("RULE-SET,domain-global,PROXY");
+    expect(config.rules).toContain("RULE-SET,domain-global,PROXY,no-resolve");
     expect((config["rule-providers"] as Record<string, unknown>)["domain-cn"]).toMatchObject({
       type: "http",
       behavior: "domain",
@@ -201,7 +201,7 @@ describe("JSON-e templates", (): void => {
       "Auto",
       "United States",
     ]);
-    expect(config.rules).not.toContain("RULE-SET,domain-crypto,Crypto");
+    expect(config.rules).not.toContain("RULE-SET,domain-crypto,Crypto,no-resolve");
   });
 
   test("uses an explicit Crypto country allowlist", async (): Promise<void> => {
@@ -220,7 +220,7 @@ describe("JSON-e templates", (): void => {
       "United States",
       "France",
     ]);
-    expect(config.rules).not.toContain("RULE-SET,domain-crypto,Crypto");
+    expect(config.rules).not.toContain("RULE-SET,domain-crypto,Crypto,no-resolve");
   });
 
   test("removes Stash rules with options when their target group is empty", async (): Promise<void> => {
@@ -300,8 +300,8 @@ describe("JSON-e templates", (): void => {
       "United States": ["US One", "US Two"],
       Germany: ["Germany One"],
     });
-    expect(config.rules).toContain("RULE-SET,domain-global,PROXY");
-    expect(config.rules).toContain("RULE-SET,domain-tailscale,TAILSCALE");
+    expect(config.rules).toContain("RULE-SET,domain-global,PROXY,no-resolve");
+    expect(config.rules).toContain("RULE-SET,domain-tailscale,TAILSCALE,no-resolve");
     expect(config.rules).toContain("RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve");
     expect((config["rule-providers"] as Record<string, unknown>)["domain-cn"]).toMatchObject({
       behavior: "domain",
