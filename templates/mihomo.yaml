@@ -99,8 +99,6 @@ tun:
     - fd7a:115c:a1e0::/48 # tailscale
   exclude-interface:
     - tailscale0
-  exclude-uid:
-    - 966 # dnsmasq
 
 proxies:
   $flatten:
@@ -196,15 +194,15 @@ proxy-groups:
         icon: ${country.icon}
 
 rules:
-  - RULE-SET,domain-lan,DIRECT
   - RULE-SET,domain-tailscale,TAILSCALE
+  - RULE-SET,domain-lan,DIRECT
   - RULE-SET,domain-cn,DIRECT
   - RULE-SET,domain-crypto,Crypto
   - RULE-SET,domain-us,United States
   - RULE-SET,domain-global,PROXY
 
-  - RULE-SET,ipcidr-lan,DIRECT,no-resolve
   - RULE-SET,ipcidr-tailscale,TAILSCALE,no-resolve
+  - RULE-SET,ipcidr-lan,DIRECT,no-resolve
   - RULE-SET,ipcidr-cn,DIRECT,no-resolve
   - RULE-SET,ipcidr-us,United States,no-resolve
   - RULE-SET,ipcidr-global,PROXY,no-resolve
