@@ -7,7 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.4.2](https://github.com/liblaf/sub-store/releases/tag/v0.4.2) - 2026-09-19
+## [v0.4.3](https://github.com/liblaf/sub-store/releases/tag/v0.4.3) - 2026-09-20
+
+### 🐛 Bug Fixes
+
+- **(mihomo)** honor Tailscale DNS policy and bypass dnsmasq - [2e1f724](https://github.com/liblaf/sub-store/commit/2e1f7241088b92b42593ecc8f7dd7cdd1fd2fc88) by [@liblaf](https://github.com/liblaf)
+- **(templates)** prioritize Tailscale rules over LAN rules - [e6a4930](https://github.com/liblaf/sub-store/commit/e6a49308ed21407906f2fb3fb56c8d352c554c90) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
+
+## [v0.4.2](https://github.com/liblaf/sub-store/releases/tag/v0.4.2) - 2026-09-20
 
 ### 🐛 Bug Fixes
 
@@ -17,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
+- [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
 ## [v0.4.1](https://github.com/liblaf/sub-store/releases/tag/v0.4.1) - 2026-09-14
