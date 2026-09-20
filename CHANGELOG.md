@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.4.4](https://github.com/liblaf/sub-store/releases/tag/v0.4.4) - 2026-09-20
+
+### 🐛 Bug Fixes
+
+- **(templates)** resolve private services through Tailscale - [5f2d25a](https://github.com/liblaf/sub-store/commit/5f2d25a10510c833bc2d32ed317edbc37c668728) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.4.3](https://github.com/liblaf/sub-store/releases/tag/v0.4.3) - 2026-09-20
 
 ### 🐛 Bug Fixes
@@ -16,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
