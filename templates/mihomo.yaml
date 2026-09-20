@@ -42,6 +42,7 @@ dns:
   use-system-hosts: true
   respect-rules: true
   # ref: <https://dns.icoa.cn/>
+  # ref: <https://en.wikipedia.org/wiki/Domain_Name_System>
   # ref: <https://tuna.moe/help/dns/>
   # ref: <https://www.114dns.com/>
   # ref: <https://www.dnspod.cn/products/publicdns>
@@ -51,6 +52,8 @@ dns:
     - 119.29.29.29 # DNSPod Public DNS
     - 223.5.5.5 # 阿里云公共 DNS
   nameserver-policy:
+    rule-set:domain-tailscale:
+      - 100.100.100.100
     rule-set:domain-cn: &dns-cn
       - system
       - https://101.6.6.6/dns-query # TUNA DNS666
@@ -61,6 +64,7 @@ dns:
       - https://dns.google/dns-query
   proxy-server-nameserver: *dns-cn
   direct-nameserver: *dns-cn
+  direct-nameserver-follow-policy: true
   nameserver: *dns-global
 
 sniffer:
@@ -95,6 +99,8 @@ tun:
     - fd7a:115c:a1e0::/48 # tailscale
   exclude-interface:
     - tailscale0
+  exclude-uid:
+    - 966 # dnsmasq
 
 proxies:
   $flatten:

@@ -9,32 +9,36 @@ enableGlobDot: true
 ignorePaths:
   - .git/
   - cspell.*
+  - CHANGELOG.md
   - "*.lock"
 ignoreRandomStrings: true
 maxFileSize: 32KB
 useGitignore: true
 words:
-  - bilibili
-  - bilivideo
+  - abcdefghji
+  - abcdefghjk
+  - abcdefghjm
+  - abcdefghjn
   - bunup
   - bwcounter
+  - dnsmasq
   - dotenv
   - geoip
   - geox
+  - hjkmnp
   - ipcidr
+  - jsone
   - liblaf
-  - mcdn
   - mihomo
   - mijia
-  - mkdocs
   - mmdb
-  - msftconnecttest
-  - msftncsi
-  - oxfmt
-  - oxlint
+  - orhun
   - pipx
   - platformdirs
   - quic
+  - qure
+  - redir
   - rumdl
   - taiki
   - tsgolint
+  - tskey
