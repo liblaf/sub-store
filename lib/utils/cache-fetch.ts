@@ -58,7 +58,15 @@ export class Fetcher {
     } else {
       consola.info(`Cache miss: ${formatUrlForLog(url)}`);
     }
-    const fetched: Response = await this.ky(url, options);
+    let fetched: Response;
+    try {
+      fetched = await this.ky(url, options);
+    } catch (error) {
+      if (!cached) throw error;
+      await this.validate(cached.response, validator);
+      consola.warn(`Upstream fetch failed; using stale cache: ${formatUrlForLog(url)}`);
+      return cached.response;
+    }
     await this.validate(fetched, validator);
     const response: Response = withValidDate(fetched);
     await this.saveCache(key, response.clone());

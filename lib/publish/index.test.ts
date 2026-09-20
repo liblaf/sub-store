@@ -3,11 +3,14 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
+import ky from "ky";
 import YAML from "yaml";
 
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 import { publishProfiles } from "@/lib/publish";
+import { fetcher } from "@/lib/utils";
+import { Fetcher } from "@/lib/utils/cache-fetch";
 
 const artifact = (
   body: string,
@@ -17,11 +20,11 @@ const artifact = (
   metadata: { headers: { "Subscription-Userinfo": header } },
 });
 
-const profile = (id: string): string =>
+const profile = (id: string, providers: unknown[] = []): string =>
   YAML.stringify({
     id,
     vars: { TS_AUTH_KEY: "test-auth-key" },
-    providers: [],
+    providers,
   });
 
 const temporaryDirectories: string[] = [];
@@ -140,6 +143,71 @@ describe("publishProfiles", () => {
       publishProfiles(directory, { url: "https://example.test", token: "token" }),
     ).rejects.toThrow("build failed");
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test("publishes stale provider artifacts when the expired upstream cache cannot refresh", async () => {
+    const directory = await makeDirectory();
+    const cacheDirectory = path.join(directory, "cache");
+    const upstream = "https://subscription.example.test/profile";
+    const oldDate = "Thu, 29 Feb 2024 12:00:00 GMT";
+    await fs.writeFile(
+      path.join(directory, "profile.yaml"),
+      profile("0123456789ABCDEFGHJK", [{ name: "Cached", mihomo: upstream }]),
+    );
+
+    let upstreamAvailable = true;
+    let upstreamRequests = 0;
+    const cachedFetcher = new Fetcher(
+      ky.create({
+        retry: 0,
+        fetch: async (): Promise<Response> => {
+          upstreamRequests += 1;
+          if (!upstreamAvailable) throw new TypeError("offline");
+          return new Response(
+            YAML.stringify({ proxies: [{ name: "Cached proxy", type: "direct" }] }),
+            { headers: { Date: oldDate } },
+          );
+        },
+      }),
+      cacheDirectory,
+    );
+    spyOn(fetcher, "fetch").mockImplementation(cachedFetcher.fetch.bind(cachedFetcher));
+    await fetcher.fetch(upstream, { headers: { "User-Agent": "clash.meta" } });
+    const [cacheFile] = await fs.readdir(cacheDirectory);
+    expect(cacheFile).toBeDefined();
+    const cachePath = path.join(cacheDirectory, cacheFile!);
+    const cached = JSON.parse(await fs.readFile(cachePath, "utf-8")) as { storedAt: number };
+    cached.storedAt = 0;
+    await fs.writeFile(cachePath, JSON.stringify(cached));
+    const cacheBeforePublish = await fs.readFile(cachePath, "utf-8");
+    upstreamAvailable = false;
+
+    spyOn(MihomoBuilder.prototype, "render").mockImplementation(
+      async (_proxies, infoProxies): Promise<string> =>
+        infoProxies.map(({ name }) => name).join("\n"),
+    );
+    spyOn(StashBuilder.prototype, "render").mockImplementation(
+      async (_proxies, infoProxies): Promise<string> =>
+        infoProxies.map(({ name }) => name).join("\n"),
+    );
+    const uploads: Record<string, unknown>[] = [];
+    mockFetch(async (input, init) => {
+      const request = new Request(input, init);
+      uploads.push((await request.json()) as Record<string, unknown>);
+      return new Response(null, { status: 204 });
+    });
+
+    await expect(
+      publishProfiles(directory, { url: "https://example.test", token: "token" }),
+    ).resolves.toBe(1);
+
+    expect(upstreamRequests).toBe(3);
+    expect(uploads).toHaveLength(1);
+    const artifacts = uploads[0]!;
+    for (const format of ["mihomo", "stash"]) {
+      expect((artifacts[format] as { body: string }).body).toContain("[Cached] 📥 2024-02-29");
+    }
+    expect(await fs.readFile(cachePath, "utf-8")).toBe(cacheBeforePublish);
   });
 
   test("propagates HTTP failure without uploading another profile", async () => {

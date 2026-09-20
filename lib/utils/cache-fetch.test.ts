@@ -3,6 +3,7 @@ import { chmod, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from 
 import os from "node:os";
 import path from "node:path";
 
+import ky from "ky";
 import type { KyInstance } from "ky";
 
 import { Fetcher, formatUrlForLog } from "./cache-fetch";
@@ -120,22 +121,94 @@ describe("Fetcher cache", (): void => {
     });
   });
 
-  test("propagates network failures even when a stale cache exists", async (): Promise<void> => {
+  test.each(["network", "HTTP"] as const)(
+    "reuses stale cache after a %s failure without updating its date or age",
+    async (failure): Promise<void> => {
+      await withCache(async (dir: string): Promise<void> => {
+        let fail = false;
+        let calls = 0;
+        const date = "Mon, 01 Jan 2024 12:00:00 GMT";
+        const userinfo = "upload=1; download=2; total=100";
+        const fetcher = new Fetcher(
+          ky.create({
+            retry: 0,
+            fetch: async (): Promise<Response> => {
+              calls++;
+              if (fail) {
+                if (failure === "network") throw new TypeError("offline");
+                return new Response("unavailable", { status: 503 });
+              }
+              return new Response("valid", {
+                headers: { Date: date, "Subscription-Userinfo": userinfo },
+              });
+            },
+          }),
+          dir,
+        );
+        await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        await expireCache(dir);
+        const [file] = await readdir(dir);
+        const cacheFile = path.join(dir, file!);
+        const before = await readFile(cacheFile, "utf-8");
+        fail = true;
+
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const response = await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+
+          expect(await response.text()).toBe("valid");
+          expect(response.headers.get("date")).toBe(date);
+          expect(response.headers.get("subscription-userinfo")).toBe(userinfo);
+          expect(await readFile(cacheFile, "utf-8")).toBe(before);
+        }
+        expect(calls).toBe(3);
+
+        fail = false;
+        await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        expect(await readFile(cacheFile, "utf-8")).not.toBe(before);
+        await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        expect(calls).toBe(4);
+      });
+    },
+  );
+
+  test("preserves the original fetch date when stale upstream data had no Date header", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       let fail = false;
       const fetcher = new Fetcher(
         kyFrom(async (): Promise<Response> => {
           if (fail) throw new Error("offline");
-          return new Response("valid", { headers: { Date: "Thu, 01 Jan 1970 00:00:00 GMT" } });
+          return new Response("valid");
         }),
         dir,
       );
-      await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+      const original = await fetcher.fetch("https://example.test/sub");
       await expireCache(dir);
       fail = true;
+
+      const response = await fetcher.fetch("https://example.test/sub");
+
+      expect(response.headers.get("date")).toBe(original.headers.get("date"));
+      expect(await response.text()).toBe("valid");
+    });
+  });
+
+  test("rejects an invalid stale cache when upstream fails", async (): Promise<void> => {
+    await withCache(async (dir: string): Promise<void> => {
+      let fail = false;
+      const fetcher = new Fetcher(
+        kyFrom(async (): Promise<Response> => {
+          if (fail) throw new Error("offline");
+          return new Response("malformed");
+        }),
+        dir,
+      );
+      await fetcher.fetch("https://example.test/sub");
+      await expireCache(dir);
+      fail = true;
+
       await expect(
         fetcher.fetch("https://example.test/sub", undefined, validateYaml),
-      ).rejects.toThrow("offline");
+      ).rejects.toThrow("invalid provider body");
     });
   });
 
