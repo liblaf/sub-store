@@ -105,6 +105,8 @@ tun:
     - fd7a:115c:a1e0::/48 # tailscale
   exclude-interface:
     - tailscale0
+  exclude-uid-range:
+    - 500:999
 
 proxies:
   $flatten:
