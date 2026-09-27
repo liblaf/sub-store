@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.4.6](https://github.com/liblaf/sub-store/releases/tag/v0.4.6) - 2026-09-26
+
+### 🐛 Bug Fixes
+
+- **(mihomo)** exclude UIDs 500-999 from TUN routing - [640001f](https://github.com/liblaf/sub-store/commit/640001fd03d29d6e21a6153dadfa78bd2191b4b1) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.4.5](https://github.com/liblaf/sub-store/releases/tag/v0.4.5) - 2026-09-20
 
 ### 🐛 Bug Fixes
@@ -15,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 
 ## [v0.4.4](https://github.com/liblaf/sub-store/releases/tag/v0.4.4) - 2026-09-20
