@@ -68,7 +68,7 @@
     "bunup": "0.16.32",
     "hono": "4.13.13",
     "oxfmt": "0.73.0",
-    "oxlint": "1.87.0",
+    "oxlint": "1.88.0",
     "oxlint-tsgolint": "7.0.2004",
     "typescript": "7.0.2",
     "wrangler": "4.149.0"
