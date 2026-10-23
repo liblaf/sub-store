@@ -7,7 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.4.6](https://github.com/liblaf/sub-store/releases/tag/v0.4.6) - 2026-09-26
+## [v0.4.7](https://github.com/liblaf/sub-store/releases/tag/v0.4.7) - 2026-10-23
+
+### 🐛 Bug Fixes
+
+- **(deps)** update dependency zod to v4.6.6 (#274) - [b7882a3](https://github.com/liblaf/sub-store/commit/b7882a3e0855fe9c28bd434d959c7b87c4ca9a4b) by [@renovate[bot]](https://github.com/apps/renovate)
+- **(deps)** update dependency zod to v4.6.7 (#277) - [4408c37](https://github.com/liblaf/sub-store/commit/4408c377a8d16c54b741aa7d16488d13c67fcf0a) by [@renovate[bot]](https://github.com/apps/renovate)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
+
+## [v0.4.6](https://github.com/liblaf/sub-store/releases/tag/v0.4.6) - 2026-09-27
 
 ### 🐛 Bug Fixes
 
@@ -15,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@renovate[bot]](https://github.com/apps/renovate)
 - [@liblaf](https://github.com/liblaf)
 
