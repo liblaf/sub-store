@@ -11,115 +11,116 @@
 
 </div>
 
-`sub-store` builds validated Mihomo and Stash configurations from subscription providers, then publishes prebuilt artifacts through a Cloudflare Worker and KV.
+`sub-store` compiles native Mihomo and Stash YAML profiles into static subscriptions and optionally publishes them through a Cloudflare Worker and KV.
 
 ## ✨ Features
 
-- Renders YAML templates with [JSON-e](https://json-e.js.org/), removes private `__*` fields and empty proxy groups, and rejects unresolved references.
-- Validates rendered references for both formats and additionally checks Mihomo output with `mihomo -t` before writing an artifact.
-- Caches upstream responses in `~/.cache/sub-store/` for one hour. If an upstream fetch fails, it warns and reuses a valid stale cache, preserving the original update date. Fetch failures without a valid cache and invalid refresh data still fail the build.
-- Exposes generated quota (`📊`), reset (`🔁`), expiry (`⌛`), and update (`📥`) entries separately as `infoProxies`; templates place them in `Info` while keeping upstream informational nodes in `Unknown`. Names contain only the provider prefix, emoji, and value. Reset entries show the monthly day reported by bwcounter; update entries show the subscription response date.
-- Publishes `/subs/<ID>/mihomo.yaml` and `/subs/<ID>/stash.yaml` with the generated `Subscription-Userinfo` response header.
+- Keep client settings, static proxies, groups, rule providers, and routing rules in one native YAML profile.
+- Fetch providers during the build and expand provider references into static proxy lists.
+- Apply explicit name overrides and regex filters, with generated quota, expiry, reset, and update entries available through `$info`.
+- Validate references for both formats and run `mihomo -t` for Mihomo output.
+- Cache upstream responses for one hour. Failed fetches can reuse a valid stale cache with its original update date; invalid refresh data and failures without a valid cache fail the build.
 
-## 📦 Provider file
+## 📦 Native profiles
 
-Provider input is strict: each provider must define exactly one of `mihomo` or `mixed`. The optional root `vars` object permits only `TS_AUTH_KEY`; `bwcounter` and proxy-name overrides are optional.
+Start with [profile.example.yaml](https://github.com/liblaf/sub-store/blob/main/profile.example.yaml). Use separate native YAML files for Mihomo and Stash, with each client's own settings and proxy definitions. A profile looks like this:
 
 ```yaml
-id: 0123456789ABCDEFGHJK
-vars:
-  TS_AUTH_KEY: <redacted>
-providers:
-  - name: Example
-    mihomo: https://example.com/subscription.yaml
-    bwcounter: https://example.com/bwcounter.json
+__sub-store:
+  id: 0123456789ABCDEFGHJK
+  target: stash
+
+proxies:
+  - name: Local Direct
+    type: direct
+
+proxy-providers:
+  Example:
+    url: https://example.invalid/subscription.yaml
     override:
+      additional-prefix: "[Example] "
       proxy-name:
-        - pattern: ^Old Name$
-          target: New Name
-  - name: Mixed Example
-    mixed: https://example.com/subscription
+        - pattern: "(?i)^node (?<number>[0-9]+)$"
+          target: "Node $<number>"
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies: [Local Direct]
+    use: [Auto, Selected]
+  - name: Auto
+    type: url-test
+    include-all-providers: true
+    exclude-filter: "Traffic|剩余流量"
+    benchmark-url: https://cp.cloudflare.com/generate_204
+    interval: 300
+  - name: Selected
+    type: select
+    use: [Example]
+    filter: "Node [12]$"
+  - name: Info
+    type: select
+    use: [$info]
+
+rules:
+  - MATCH,PROXY
 ```
 
-Use a 20-character uppercase Crockford Base32 token for new profile IDs. Existing UUID profile IDs remain supported.
+Provider entries use a direct `url`; `type` defaults to `http`. For subscriptions that require conversion, set the provider's `__sub-store.format: mixed`. Optional `__sub-store.bwcounter` supplies display usage when subscription headers have none. Common affix stripping is opt-in through `__sub-store.strip-common-affixes: true`. Provider names do not automatically prefix proxy names; set `override.additional-prefix` explicitly.
 
-See the redacted, ready-to-copy example at [providers.example.yaml](https://github.com/liblaf/sub-store/blob/main/providers.example.yaml).
+Names are normalized in order: optional common affix stripping, sequential name overrides, then the explicit prefix and suffix. Provider and group filters match these final names. Name overrides run sequentially and support JavaScript named capture replacements such as `$<number>`. Patterns use JavaScript regular expressions and accept a leading `(?i)` for case-insensitive matching. Invalid patterns fail the build.
+
+A group's `use` accepts provider names, group names, and `$info`. Group names remain group references. `include-all-providers` imports every provider in profile order and excludes generated `$info` entries. Members are collected in order: explicit `proxies`, `use`, then `include-all-providers`, with stable deduplication. `filter` keeps imported proxy names, then `exclude-filter` removes matching names; explicit proxy members and group references retain their place.
+
+Static proxies stay first, followed by provider proxies in profile order and generated information entries. Provider-local `dialer-proxy` references follow renamed proxies. Compilation removes `proxy-providers`, build metadata, group build directives, and every key beginning with `__` recursively. Use private keys such as `__health-check` to define YAML anchors and reuse them with `<<` merges. YAML merges are resolved before compilation.
+
+Unknown or ambiguous references, duplicate proxy names, proxy/group cycles, and missing routing targets fail the build. Empty groups used by routing rules also fail unless a Mihomo group explicitly declares `empty-fallback: REJECT`; that group compiles to `proxies: [REJECT]` when no members remain. Unused empty groups can be removed. Routing rules are preserved.
 
 ## ⌨️ Build
 
-Install dependencies and ensure `mihomo` is available on `PATH`:
+Install dependencies from a checkout and put `mihomo` on `PATH` for Mihomo builds:
 
 ```bash
 bun install
+bun run ./cli/bin/sub-store.ts build mihomo profiles/mihomo.yaml -o artifacts/mihomo.yaml
+bun run ./cli/bin/sub-store.ts build stash profiles/stash.yaml -o artifacts/stash.yaml
 ```
 
-Build either format from a repository checkout:
+The installed package exposes the same commands through `sub-store`. Root `__sub-store` metadata is optional when building locally. If `__sub-store.target` is present, it must match the selected build command. The legacy `sub-store` spelling remains accepted for root and provider metadata; conflicting aliases fail validation. Use `__sub-store` in new profiles. Native secrets, including a Stash Tailscale auth key, belong directly in the relevant native proxy definition.
 
-```bash
-bun run ./cli/bin/sub-store.ts build mihomo \
-  --template templates/mihomo.yaml \
-  --providers providers.yaml \
-  --output artifacts/mihomo.yaml
+Each build writes YAML and a sibling `.metadata.json` file with owner-only permissions. The metadata contains response headers. Missing usage fields do not create information entries. A generated `Subscription-Userinfo` field is aggregated only when every header-based provider supplies that field. Bwcounter usage is display-only.
 
-bun run ./cli/bin/sub-store.ts build stash \
-  --template templates/stash.yaml \
-  --providers providers.yaml \
-  --output artifacts/stash.yaml
-```
-
-The published package exposes the same commands through the `sub-store` executable.
-
-Each build writes the YAML artifact and a sibling `.metadata.json` file with owner-only permissions. The metadata file contains response headers. Missing provider usage fields do not create corresponding information nodes. The published aggregate header only contains a field when every header-based provider supplies it; bwcounter data is display-only and is never converted into `Subscription-Userinfo`.
-
-Custom templates receive a versioned JSON-only context. In version 7, `proxies` contains normalized provider proxy records, `infoProxies` contains generated display-only proxy records, and each `countries[].proxies` entry contains the corresponding provider proxy records. Templates should map each record's `name` when constructing proxy groups and append `infoProxies` to the final client proxy list. The `vars` object contains only the strict profile variables explicitly exposed by the builder; Stash exposes `TS_AUTH_KEY`.
-
-The Stash template requires `vars.TS_AUTH_KEY` and embeds it in the generated configuration. It does not read a host environment variable. Treat provider profiles, cached provider responses, and every generated artifact as secrets. Automatic Tailnet routing is disabled so the template's explicit rule sets remain authoritative.
+Mihomo output receives schema and reference checks followed by `mihomo -t` using the installed executable. Stash output receives schema and reference checks. These checks do not establish connectivity or runtime routing behavior; verify the generated profile in its client. Treat profiles, cached provider responses, and generated artifacts as secrets.
 
 ## ☁️ Publish to Cloudflare
 
-The CLI builds profiles locally and uploads the finished artifacts to the Worker:
+Add `__sub-store.id` and `__sub-store.target` to each profile you want to publish. New IDs use 20 uppercase Crockford Base32 characters; existing UUIDs remain supported. Separate Mihomo and Stash profiles may share an ID. Duplicate `(id, target)` pairs fail before upload.
 
 ```bash
 export SUB_STORE_API_TOKEN='<upload token>'
-sub-store publish                                  # ~/.config/sub-store/profiles/*.yaml
-sub-store publish /path/to/profiles                 # another folder
-sub-store publish /path/to/profile.yaml             # one profile
+sub-store publish                       # ~/.config/sub-store/profiles/*.yaml
+sub-store publish /path/to/profiles
+sub-store publish /path/to/profile.yaml
 ```
 
-It uses the built-in Mihomo and Stash templates and requires `mihomo` on `PATH`. Every profile
-must include `vars.TS_AUTH_KEY` for Stash. All profiles are parsed and both formats are built
-before any upload begins. Empty folders, duplicate profile IDs, build failures, and upload
-failures cause a nonzero exit. Folder discovery is nonrecursive and matches non-hidden `*.yaml`
-files.
+The CLI builds each profile for its declared target before any upload begins. Folder discovery is nonrecursive and includes non-hidden `*.yaml` files. Empty folders, build failures, and upload failures cause a nonzero exit.
 
-`SUB_STORE_URL` selects the Worker address and defaults to `https://subs.liblaf.me`. HTTPS is
-required except for localhost development. The CLI sends `SUB_STORE_API_TOKEN` in the
-`Authorization: Bearer` header and refuses redirects.
+`SUB_STORE_URL` defaults to `https://subs.liblaf.me`. HTTPS is required except for localhost development. The CLI sends the upload token in an `Authorization: Bearer` header and refuses redirects.
 
-Configure the same upload token as a Worker secret before using the API:
+Configure the Worker upload secret and deploy separately:
 
 ```bash
 wrangler secret put SUB_STORE_API_TOKEN
 wrangler deploy
 ```
 
-Deploy the updated Worker to enable `PUT /api/profiles/:id/artifacts`. Its JSON body contains
-`mihomo` and `stash`, each with a `body` YAML string and `metadata.headers`. Only the optional
-`Subscription-Userinfo` metadata header is accepted, and the complete request is limited to
-10 MiB. The Worker authenticates and validates the request before writing the existing
-`artifacts/<ID>/mihomo.yaml` and `artifacts/<ID>/stash.yaml` KV keys. It returns `204` after both
-writes succeed. The upload token grants publishing access to all profiles and is separate from
-the bearer IDs used for downloads.
+`PUT /api/profiles/:id/artifacts` accepts an artifact for either or both targets, each containing a `body` YAML string and `metadata.headers`. Only `Subscription-Userinfo` is accepted as a metadata header; the complete request is limited to 10 MiB. Supplied targets update the corresponding `artifacts/<ID>/<target>.yaml` KV keys. KV writes are not transactional and may take time to propagate.
 
-KV writes are not transactional: an upload failure can leave some artifacts updated, and
-updates may take time to reach every location. The CLI stops on the first failed upload.
+The Worker uses the `KV` binding in `wrangler.toml`. Download URLs are `/subs/<ID>/mihomo.yaml` and `/subs/<ID>/stash.yaml`; successful responses begin with a `#SUBSCRIBED <canonical URL>` marker. IDs are bearer credentials, so keep subscription URLs private.
 
-The repository uses the `KV` binding in `wrangler.toml`. Configure the desired custom domain
-in Cloudflare. Subscriptions are available at `/subs/<ID>/mihomo.yaml` and
-`/subs/<ID>/stash.yaml`. Each successful response starts with a `#SUBSCRIBED <canonical URL>`
-marker. The ID is a bearer credential; keep subscription URLs private.
+Scheduling, systemd units, and local Mihomo installation and restarts are managed by the dotfiles repository.
 
-The CLI publishes locally managed profiles. It replaces the repository's former shell tasks
-for syncing profiles through KV and publishing artifacts. Worker deployment is a separate
-`wrangler deploy` operation. Scheduling, systemd units, and local Mihomo installation and
-restarts are managed by the dotfiles repository.
+#### 📝 License
+
+Copyright © 2026 [liblaf](https://github.com/liblaf). <br />
+This project is [MIT](https://github.com/liblaf/sub-store/blob/main/LICENSE) licensed.

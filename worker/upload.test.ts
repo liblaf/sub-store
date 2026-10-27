@@ -90,7 +90,8 @@ describe("artifact upload", (): void => {
   test("rejects invalid JSON, invalid payloads, oversized bodies, and invalid IDs without writes", async (): Promise<void> => {
     const cases: Array<{ path: string; body: BodyInit; status: number }> = [
       { path, body: "not json", status: 400 },
-      { path, body: JSON.stringify({ mihomo: upload.mihomo }), status: 400 },
+      { path, body: JSON.stringify({}), status: 400 },
+      { path, body: JSON.stringify({ extra: upload.mihomo }), status: 400 },
       { path, body: "x".repeat(MAX_UPLOAD_BYTES + 1), status: 413 },
       {
         path: "https://example.test/api/profiles/not-a-profile-id/artifacts",
@@ -124,6 +125,25 @@ describe("artifact upload", (): void => {
     expect(await downloaded.text()).toBe(
       `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/mihomo.yaml\nproxies: []\n`,
     );
+  });
+
+  test("updates only supplied formats and preserves existing artifacts", async (): Promise<void> => {
+    for (const format of ["mihomo", "stash"] as const) {
+      const { env, entries, writes } = createEnv({ token });
+      const other = format === "mihomo" ? "stash" : "mihomo";
+      const otherKey = `artifacts/${id}/${other}.yaml`;
+      const previous = { body: "existing artifact", metadata: { headers: {} } };
+      entries.set(otherKey, previous);
+      const response = await app.request(
+        path,
+        put(JSON.stringify({ [format]: upload[format] })),
+        env,
+      );
+      expect(response.status).toBe(204);
+      expect(writes).toEqual([`artifacts/${id}/${format}.yaml`]);
+      expect(entries.get(otherKey)).toEqual(previous);
+      expect(entries.get(`artifacts/${id}/${format}.yaml`)).toEqual(upload[format]);
+    }
   });
 
   test("rejects unsafe or oversized metadata before either KV write", async (): Promise<void> => {

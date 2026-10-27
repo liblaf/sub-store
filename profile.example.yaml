@@ -1,0 +1,52 @@
+# Example native Stash profile.
+# Metadata is optional for build and required for publish.
+__sub-store:
+  id: 0123456789ABCDEFGHJK
+  target: stash
+
+mode: rule
+log-level: info
+
+# Private anchor definitions are removed after YAML merges are resolved.
+__health-check: &health-check
+  benchmark-url: https://cp.cloudflare.com/generate_204
+  interval: 300
+
+# Native, locally defined proxies are preserved.
+proxies:
+  - name: Local Direct
+    type: direct
+
+proxy-providers:
+  Example:
+    url: https://example.invalid/subscription.yaml
+    override:
+      additional-prefix: "[Example] "
+      proxy-name:
+        - pattern: "(?i)^node (?<number>[0-9]+)$"
+          target: "Node $<number>"
+    __sub-store:
+      strip-common-affixes: false
+      # bwcounter: https://example.invalid/bwcounter.json
+      # format: mixed
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies: [Local Direct]
+    use: [Auto, Selected]
+  - name: Auto
+    <<: *health-check
+    type: url-test
+    include-all-providers: true
+    exclude-filter: "Traffic|剩余流量"
+  - name: Selected
+    type: select
+    use: [Example]
+    filter: "Node [12]$"
+  - name: Info
+    type: select
+    use: [$info]
+
+rules:
+  - MATCH,PROXY

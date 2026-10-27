@@ -9,13 +9,28 @@ export async function validateWithMihomo(body: string): Promise<void> {
     const config: string = path.join(directory, "config.yaml");
     await fs.writeFile(config, body, { mode: 0o600 });
     await new Promise<void>((resolve, reject): void => {
-      execFile("mihomo", ["-d", directory, "-f", config, "-t"], (error, stdout, stderr): void => {
-        if (error) {
-          reject(new Error(`mihomo -t failed:\n${stderr || stdout}`.trim(), { cause: error }));
-          return;
-        }
-        resolve();
-      });
+      execFile(
+        "mihomo",
+        ["-d", directory, "-f", config, "-t"],
+        { timeout: 60_000, killSignal: "SIGKILL", maxBuffer: 1024 * 1024 },
+        (error): void => {
+          if (error) {
+            // Native diagnostics can contain provider URLs and credentials. Do not
+            // retain their output, including through an Error cause.
+            const reason =
+              error.code === "ENOENT"
+                ? "Install mihomo and make it available on PATH."
+                : error.code === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER"
+                  ? "Diagnostic output exceeded the 1 MiB limit. Check the generated configuration locally."
+                  : error.killed
+                    ? "Validation exceeded 60 seconds. Check provider and geodata availability locally."
+                    : "Check the generated configuration with mihomo -t locally; native diagnostics are withheld because they may contain credentials.";
+            reject(new Error(`Mihomo configuration validation failed. ${reason}`));
+            return;
+          }
+          resolve();
+        },
+      );
     });
   } finally {
     await fs.rm(directory, { force: true, recursive: true });

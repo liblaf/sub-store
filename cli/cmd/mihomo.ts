@@ -3,30 +3,26 @@ import fs from "node:fs/promises";
 import { Command } from "@commander-js/extra-typings";
 import YAML from "yaml";
 
-import type { Artifact } from "@/lib/core/builder";
-import { PROFILE_SCHEMA } from "@/lib/core/profile";
-import type { Profile } from "@/lib/core/profile";
+import { assertProfileTarget, PROFILE_SCHEMA } from "@/lib/core/profile";
 import { writePrivateArtifact } from "@/lib/core/write-private-artifact";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 
-type Opts = {
-  output: string;
-  template: string;
-  providers: string;
-};
+type Opts = { output: string };
 
-export const mihomo: Command<[], Opts> = new Command("mihomo")
+export const mihomo = new Command("mihomo")
+  .argument("<profile>", "native YAML profile")
   .option("-o, --output <file>", "output artifact", "artifacts/mihomo.yaml")
-  .option("-t, --template <file>", "JSON-e YAML template", "builtin://mihomo.yaml")
-  .requiredOption("-p, --providers <file>", "provider profile")
-  .action(async (options: Opts): Promise<void> => {
-    const profile: Profile = PROFILE_SCHEMA.parse(
-      YAML.parse(await fs.readFile(options.providers, "utf-8")),
-    );
-    const builder: MihomoBuilder = new MihomoBuilder({
-      profile,
-      template: options.template,
-    });
-    const artifact: Artifact = await builder.build();
-    await writePrivateArtifact(options.output, artifact);
+  .action(async (file: string, options: Opts): Promise<void> => {
+    try {
+      const profile = PROFILE_SCHEMA.parse(
+        YAML.parse(await fs.readFile(file, "utf-8"), { merge: true }),
+      );
+      assertProfileTarget(profile, "mihomo");
+      const artifact = await new MihomoBuilder({ profile }).build();
+      await writePrivateArtifact(options.output, artifact);
+    } catch {
+      mihomo.error(
+        "Failed to build Mihomo configuration; check the profile and provider availability",
+      );
+    }
   });

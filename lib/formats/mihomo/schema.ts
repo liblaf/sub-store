@@ -9,7 +9,7 @@ export type MihomoProxy = z.infer<typeof MIHOMO_PROXY_SCHEMA>;
 
 export const MIHOMO_PROXY_GROUP_SCHEMA = z.looseObject({
   name: z.string(),
-  type: z.enum(["select", "url-test"]),
+  type: z.enum(["select", "url-test", "fallback", "load-balance"]),
   proxies: z.array(z.string()),
   url: z.string().optional(),
   lazy: z.boolean().optional(),

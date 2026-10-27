@@ -21,7 +21,9 @@ export const publish = new Command("publish")
         { url: process.env.SUB_STORE_URL ?? "https://subs.liblaf.me", token },
       );
       console.log(`Published ${count} profile(s).`);
-    } catch (error) {
-      publish.error(error instanceof Error ? error.message : String(error));
+    } catch {
+      publish.error(
+        "Failed to publish profiles; check the profiles, upload settings, and provider availability",
+      );
     }
   });

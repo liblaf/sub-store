@@ -1,84 +1,74 @@
 import { describe, expect, test } from "bun:test";
 
-import { PROFILE_SCHEMA } from "./profile";
+import { compilePattern } from "./filter";
+import { PROVIDER_SCHEMA } from "./provider";
+import type { ProviderOptions } from "./provider";
 
-const id = "0123456789ABCDEFGHJK";
+const url = "https://example.invalid/subscription";
 
 describe("provider input schema", (): void => {
-  test("accepts one subscription source with an optional bwcounter", (): void => {
-    const result = PROFILE_SCHEMA.safeParse({
-      id,
-      providers: [
-        {
-          name: "Example",
-          mihomo: "https://example.invalid/subscription",
-          bwcounter: "https://example.invalid/bwcounter",
-        },
-      ],
-    });
-
-    expect(result.success).toBe(true);
+  test("accepts direct YAML URLs with omitted defaults", (): void => {
+    expect(PROVIDER_SCHEMA.parse({ url })).toEqual({ url });
   });
 
-  test("accepts canonical tokens and existing UUID profile IDs", (): void => {
-    const provider = { name: "Example", mihomo: "https://example.invalid/subscription" };
-    for (const profileId of [id, "00000000-0000-4000-8000-000000000000"]) {
-      expect(PROFILE_SCHEMA.safeParse({ id: profileId, providers: [provider] }).success).toBe(true);
-    }
-  });
-
-  test("accepts a nonblank Tailscale auth key variable", (): void => {
-    const profile = PROFILE_SCHEMA.parse({
-      id,
-      vars: { TS_AUTH_KEY: "  tskey-auth-example  " },
-      providers: [],
-    });
-
-    expect(profile.vars).toEqual({ TS_AUTH_KEY: "tskey-auth-example" });
-  });
-
-  test("rejects missing, blank, and unknown profile variables", (): void => {
-    for (const vars of [
-      {},
-      { TS_AUTH_KEY: "   " },
-      { TS_AUTH_KEY: 42 },
-      { TS_AUTH_KEY: "key", EXTRA: "value" },
-    ]) {
-      expect(PROFILE_SCHEMA.safeParse({ id, vars, providers: [] }).success).toBe(false);
-    }
-  });
-
-  test("rejects malformed profile IDs", (): void => {
-    const provider = { name: "Example", mihomo: "https://example.invalid/subscription" };
-    for (const profileId of ["too-short", "0123456789ABCDEFGHJI", "0123456789abcdefghjk"]) {
-      expect(PROFILE_SCHEMA.safeParse({ id: profileId, providers: [provider] }).success).toBe(
-        false,
-      );
-    }
-  });
-
-  test("rejects providers without or with multiple subscription sources", (): void => {
-    for (const provider of [
-      { name: "Missing" },
-      {
-        name: "Ambiguous",
-        mihomo: "https://example.invalid/mihomo",
-        mixed: "https://example.invalid/mixed",
+  test("accepts native provider filters, headers, and ordered name overrides", (): void => {
+    const provider: ProviderOptions = {
+      type: "http",
+      url,
+      headers: { "User-Agent": "mihomo", Accept: ["application/yaml", "text/yaml"] },
+      filter: "(?i)united states",
+      "exclude-filter": "expired",
+      "exclude-type": "ss|vmess",
+      override: {
+        "additional-prefix": "[Example] ",
+        "additional-suffix": " suffix",
+        "proxy-name": [{ pattern: "s(?<server>1|2)\\b", target: "s$<server> United States" }],
       },
-    ]) {
-      expect(PROFILE_SCHEMA.safeParse({ id, providers: [provider] }).success).toBe(false);
-    }
+      "__sub-store": {
+        "strip-common-affixes": true,
+        bwcounter: "https://example.invalid/usage",
+        format: "mixed",
+      },
+    };
+    expect(PROVIDER_SCHEMA.parse(provider)).toEqual(provider);
   });
 
-  test("rejects duplicate provider names", (): void => {
-    expect(
-      PROFILE_SCHEMA.safeParse({
-        id,
-        providers: [
-          { name: "Duplicate", mihomo: "https://example.invalid/one" },
-          { name: "Duplicate", mixed: "https://example.invalid/two" },
-        ],
-      }).success,
-    ).toBe(false);
+  test("rejects unsupported or misplaced behavior options", (): void => {
+    for (const options of [
+      { name: "Example" },
+      { mihomo: url },
+      { mixed: url },
+      { interval: 300 },
+      { type: "file" },
+      { bwcounter: url },
+      { override: { udp: true } },
+      { "__sub-store": { mixed: true } },
+      { "__sub-store": { format: "unknown" } },
+    ]) {
+      expect(PROVIDER_SCHEMA.safeParse({ url, ...options }).success).toBe(false);
+    }
+    expect(PROVIDER_SCHEMA.safeParse({}).success).toBe(false);
+    expect(PROVIDER_SCHEMA.safeParse({ url: "not a URL" }).success).toBe(false);
+  });
+
+  test("rejects invalid regex without putting its text in validation messages", (): void => {
+    for (const options of [
+      { filter: "[secret" },
+      { "exclude-filter": "[secret" },
+      { override: { "proxy-name": [{ pattern: "[secret", target: "replacement" }] } },
+    ]) {
+      const result = PROVIDER_SCHEMA.safeParse({ url, ...options });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map(({ message }) => message).join(" ")).toBe(
+          "Invalid regular expression",
+        );
+      }
+    }
+    expect(() => compilePattern("[secret")).toThrow("Invalid regular expression");
+  });
+
+  test("compiles the supported leading case-insensitive modifier", (): void => {
+    expect(compilePattern("(?i)united states").test("United States")).toBe(true);
   });
 });

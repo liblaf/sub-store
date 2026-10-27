@@ -2,40 +2,35 @@ interface ProxyWrapper {
   name: string;
 }
 
+/** Strip affixes shared by the entire original list, preserving Unicode code points. */
 export function nameStripCommonAffixes<T extends ProxyWrapper>(proxies: T[]): T[] {
   if (proxies.length < 2) return proxies;
-  const names: string[] = proxies.map((proxy: T): string => proxy.name);
-  const prefix: string = longestCommonPrefix(names);
-  const suffix: string = longestCommonSuffix(names);
-  if (names.some((name: string): boolean => name.length <= prefix.length + suffix.length)) {
+  const names: string[][] = proxies.map(({ name }: T): string[] => Array.from(name));
+  const first: string[] = names[0]!;
+  const minLength: number = Math.min(...names.map((name: string[]): number => name.length));
+  let prefixLength: number = 0;
+  while (
+    prefixLength < minLength &&
+    names.every((name: string[]): boolean => name[prefixLength] === first[prefixLength])
+  ) {
+    prefixLength++;
+  }
+  let suffixLength: number = 0;
+  while (
+    suffixLength < minLength &&
+    names.every(
+      (name: string[]): boolean =>
+        name[name.length - 1 - suffixLength] === first[first.length - 1 - suffixLength],
+    )
+  ) {
+    suffixLength++;
+  }
+  if (names.some((name: string[]): boolean => name.length <= prefixLength + suffixLength)) {
     return proxies;
   }
-  return proxies.map((proxy: T): T => {
-    proxy.name = proxy.name.slice(prefix.length, proxy.name.length - suffix.length);
+  return proxies.map((proxy: T, index: number): T => {
+    const name: string[] = names[index]!;
+    proxy.name = name.slice(prefixLength, name.length - suffixLength).join("");
     return proxy;
   });
-}
-
-function longestCommonPrefix(names: string[]): string {
-  if (names.length === 0) return "";
-  const first: string = names[0]!;
-  const minLength: number = Math.min(...names.map((name: string): number => name.length));
-  for (let i: number = 0; i < minLength; i++) {
-    const char: string = first[i]!;
-    if (names.some((name: string): boolean => name[i] !== char)) return first.slice(0, i);
-  }
-  return first.slice(0, minLength);
-}
-
-function longestCommonSuffix(names: string[]): string {
-  if (names.length === 0) return "";
-  const first: string = names[0]!;
-  const minLength: number = Math.min(...names.map((name: string): number => name.length));
-  for (let i: number = 0; i < minLength; i++) {
-    const char: string = first[first.length - 1 - i]!;
-    if (names.some((name: string): boolean => name[name.length - 1 - i] !== char)) {
-      return first.slice(first.length - i);
-    }
-  }
-  return first.slice(first.length - minLength);
 }

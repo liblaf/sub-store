@@ -8,6 +8,7 @@ import type { Profile } from "@/lib/core/profile";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 
+import type { ArtifactUpload } from "./schema";
 import { ARTIFACT_UPLOAD_SCHEMA, MAX_UPLOAD_BYTES } from "./schema";
 
 export type PublishOptions = {
@@ -43,29 +44,36 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
     : [inputPath];
   if (files.length === 0) throw new Error("No .yaml profiles found");
 
-  const profiles: Profile[] = [];
-  const ids = new Set<string>();
+  const profiles: { profile: Profile; id: string; target: "mihomo" | "stash" }[] = [];
+  const pairs = new Set<string>();
   for (const file of files) {
-    const profile = PROFILE_SCHEMA.parse(YAML.parse(await fs.readFile(file, "utf-8")));
-    if (ids.has(profile.id)) throw new Error("Duplicate profile IDs in publish input");
-    ids.add(profile.id);
-    profiles.push(profile);
+    const profile = PROFILE_SCHEMA.parse(
+      YAML.parse(await fs.readFile(file, "utf-8"), { merge: true }),
+    );
+    const { id, target } = profile["__sub-store"] ?? {};
+    if (!id || !target)
+      throw new Error("Publishing requires __sub-store.id and __sub-store.target");
+    const pair = `${id}/${target}`;
+    if (pairs.has(pair)) throw new Error("Duplicate profile ID and target in publish input");
+    pairs.add(pair);
+    profiles.push({ profile, id, target });
   }
 
+  const artifacts = new Map<string, ArtifactUpload>();
+  for (const { profile, id, target } of profiles) {
+    const builder =
+      target === "mihomo" ? new MihomoBuilder({ profile }) : new StashBuilder({ profile });
+    const group = artifacts.get(id) ?? {};
+    group[target] = await builder.build();
+    artifacts.set(id, group);
+  }
   const uploads: { id: string; body: string }[] = [];
-  for (const profile of profiles) {
-    const mihomo = new MihomoBuilder({ profile, template: "builtin://mihomo.yaml" });
-    const stash = new StashBuilder({ profile, template: "builtin://stash.yaml" });
-    const body = JSON.stringify(
-      ARTIFACT_UPLOAD_SCHEMA.parse({
-        mihomo: await mihomo.build(),
-        stash: await stash.build(),
-      }),
-    );
+  for (const [id, group] of artifacts) {
+    const body = JSON.stringify(ARTIFACT_UPLOAD_SCHEMA.parse(group));
     if (new TextEncoder().encode(body).byteLength > MAX_UPLOAD_BYTES) {
       throw new Error("Profile artifacts exceed the 10 MiB upload limit");
     }
-    uploads.push({ id: profile.id, body });
+    uploads.push({ id, body });
   }
 
   for (const { id, body } of uploads) {
@@ -85,5 +93,5 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
       throw new Error(`Artifact upload failed (HTTP ${response.status})`);
     }
   }
-  return profiles.length;
+  return uploads.length;
 }

@@ -1,2 +1,1 @@
-export { nameNormalize } from "./normalize";
-export { namePretty } from "./pretty";
+export { nameNormalize, normalizeProviderProxies } from "./normalize";

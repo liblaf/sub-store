@@ -20,11 +20,16 @@ const artifact = (
   metadata: { headers: { "Subscription-Userinfo": header } },
 });
 
-const profile = (id: string, providers: unknown[] = []): string =>
+const profile = (
+  id: string,
+  target: "mihomo" | "stash" = "mihomo",
+  providers: Record<string, unknown> = {},
+): string =>
   YAML.stringify({
-    id,
-    vars: { TS_AUTH_KEY: "test-auth-key" },
-    providers,
+    "__sub-store": { id, target },
+    proxies: [],
+    "proxy-groups": [],
+    "proxy-providers": providers,
   });
 
 const temporaryDirectories: string[] = [];
@@ -56,7 +61,7 @@ function mockFetch(
 }
 
 describe("publishProfiles", () => {
-  test("publishes one profile file with both artifacts and authorization", async () => {
+  test("publishes only the declared target with authorization", async () => {
     const directory = await makeDirectory();
     const file = path.join(directory, "profile.yaml");
     await fs.writeFile(file, profile("0123456789ABCDEFGHJK"));
@@ -79,6 +84,49 @@ describe("publishProfiles", () => {
     expect(requests[0]?.headers.get("content-type")).toBe("application/json");
     expect((await requests[0]!.json()) as Record<string, unknown>).toEqual({
       mihomo: artifact("mihomo"),
+    });
+  });
+
+  test("groups distinct targets for one ID into one upload", async () => {
+    const directory = await makeDirectory();
+    const id = "0123456789ABCDEFGHJK";
+    await fs.writeFile(path.join(directory, "mihomo.yaml"), profile(id));
+    await fs.writeFile(path.join(directory, "stash.yaml"), profile(id, "stash"));
+    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockResolvedValue(artifact("mihomo"));
+    const stash = spyOn(StashBuilder.prototype, "build").mockResolvedValue(artifact("stash"));
+    const requests: Request[] = [];
+    mockFetch(async (input, init) => {
+      requests.push(new Request(input, init));
+      return new Response(null, { status: 204 });
+    });
+    await expect(
+      publishProfiles(directory, { url: "https://example.test", token: "token" }),
+    ).resolves.toBe(1);
+    expect(mihomo).toHaveBeenCalledTimes(1);
+    expect(stash).toHaveBeenCalledTimes(1);
+    expect(requests).toHaveLength(1);
+    expect((await requests[0]!.json()) as Record<string, unknown>).toEqual({
+      mihomo: artifact("mihomo"),
+      stash: artifact("stash"),
+    });
+  });
+
+  test("builds a Stash profile without running Mihomo", async () => {
+    const directory = await makeDirectory();
+    const file = path.join(directory, "stash.yaml");
+    await fs.writeFile(file, profile("0123456789ABCDEFGHJK", "stash"));
+    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockRejectedValue(
+      new Error("must not run"),
+    );
+    spyOn(StashBuilder.prototype, "build").mockResolvedValue(artifact("stash"));
+    const requests: Request[] = [];
+    mockFetch(async (input, init) => {
+      requests.push(new Request(input, init));
+      return new Response(null, { status: 204 });
+    });
+    await publishProfiles(file, { url: "https://example.test", token: "token" });
+    expect(mihomo).not.toHaveBeenCalled();
+    expect((await requests[0]!.json()) as Record<string, unknown>).toEqual({
       stash: artifact("stash"),
     });
   });
@@ -124,10 +172,52 @@ describe("publishProfiles", () => {
     await fs.writeFile(path.join(directory, "one.yaml"), profile("0123456789ABCDEFGHJK"));
     await fs.writeFile(path.join(directory, "two.yaml"), profile("0123456789ABCDEFGHJK"));
     const duplicateFetch = spyOn(globalThis, "fetch");
+    const duplicateBuild = spyOn(MihomoBuilder.prototype, "build");
     await expect(
       publishProfiles(directory, { url: "https://example.test", token: "token" }),
     ).rejects.toThrow();
     expect(duplicateFetch).not.toHaveBeenCalled();
+    expect(duplicateBuild).not.toHaveBeenCalled();
+  });
+
+  test("requires publishing metadata before any build", async () => {
+    const directory = await makeDirectory();
+    const file = path.join(directory, "profile.yaml");
+    const builder = spyOn(StashBuilder.prototype, "build");
+    const fetch = spyOn(globalThis, "fetch");
+    for (const metadata of [undefined, { id: "0123456789ABCDEFGHJK" }, { target: "stash" }]) {
+      await fs.writeFile(file, YAML.stringify({ "__sub-store": metadata, proxies: [] }));
+      await expect(
+        publishProfiles(file, { url: "https://example.test", token: "token" }),
+      ).rejects.toThrow("Publishing requires __sub-store.id and __sub-store.target");
+    }
+    expect(builder).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test("validates all private publishing metadata before building or fetching", async () => {
+    const directory = await makeDirectory();
+    await fs.writeFile(path.join(directory, "a-valid.yaml"), profile("0123456789ABCDEFGHJK"));
+    const mihomo = spyOn(MihomoBuilder.prototype, "build");
+    const stash = spyOn(StashBuilder.prototype, "build");
+    const fetch = spyOn(globalThis, "fetch");
+    for (const metadata of [
+      { id: "private-invalid-id", target: "stash" },
+      { id: "0123456789ABCDEFGHJM", target: "invalid" },
+      { id: "0123456789ABCDEFGHJM", target: "stash", unexpected: "secret" },
+      null,
+    ]) {
+      await fs.writeFile(
+        path.join(directory, "z-invalid.yaml"),
+        YAML.stringify({ "__sub-store": metadata }),
+      );
+      await expect(
+        publishProfiles(directory, { url: "https://example.test", token: "token" }),
+      ).rejects.toThrow();
+    }
+    expect(mihomo).not.toHaveBeenCalled();
+    expect(stash).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   test("does not upload if a later build fails", async () => {
@@ -152,17 +242,17 @@ describe("publishProfiles", () => {
     const oldDate = "Thu, 29 Feb 2024 12:00:00 GMT";
     await fs.writeFile(
       path.join(directory, "profile.yaml"),
-      profile("0123456789ABCDEFGHJK", [{ name: "Cached", mihomo: upstream }]),
+      profile("0123456789ABCDEFGHJK", "stash", { Cached: { type: "http", url: upstream } }),
     );
 
-    let upstreamAvailable = true;
+    const upstreamState = { available: true };
     let upstreamRequests = 0;
     const cachedFetcher = new Fetcher(
       ky.create({
         retry: 0,
         fetch: async (): Promise<Response> => {
           upstreamRequests += 1;
-          if (!upstreamAvailable) throw new TypeError("offline");
+          if (!upstreamState.available) throw new TypeError("offline");
           return new Response(
             YAML.stringify({ proxies: [{ name: "Cached proxy", type: "direct" }] }),
             { headers: { Date: oldDate } },
@@ -180,16 +270,8 @@ describe("publishProfiles", () => {
     cached.storedAt = 0;
     await fs.writeFile(cachePath, JSON.stringify(cached));
     const cacheBeforePublish = await fs.readFile(cachePath, "utf-8");
-    upstreamAvailable = false;
+    upstreamState.available = false;
 
-    spyOn(MihomoBuilder.prototype, "render").mockImplementation(
-      async (_proxies, infoProxies): Promise<string> =>
-        infoProxies.map(({ name }) => name).join("\n"),
-    );
-    spyOn(StashBuilder.prototype, "render").mockImplementation(
-      async (_proxies, infoProxies): Promise<string> =>
-        infoProxies.map(({ name }) => name).join("\n"),
-    );
     const uploads: Record<string, unknown>[] = [];
     mockFetch(async (input, init) => {
       const request = new Request(input, init);
@@ -201,10 +283,10 @@ describe("publishProfiles", () => {
       publishProfiles(directory, { url: "https://example.test", token: "token" }),
     ).resolves.toBe(1);
 
-    expect(upstreamRequests).toBe(3);
+    expect(upstreamRequests).toBe(2);
     expect(uploads).toHaveLength(1);
     const artifacts = uploads[0]!;
-    for (const format of ["mihomo", "stash"]) {
+    for (const format of ["stash"]) {
       expect((artifacts[format] as { body: string }).body).toContain("[Cached] 📥 2024-02-29");
     }
     expect(await fs.readFile(cachePath, "utf-8")).toBe(cacheBeforePublish);

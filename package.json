@@ -51,14 +51,11 @@
   },
   "dependencies": {
     "@commander-js/extra-typings": "^15.0.0",
-    "@twemoji/api": "^17.0.3",
     "commander": "^15.0.0",
     "consola": "^3.4.2",
     "filesize": "^11.0.17",
-    "json-e": "^4.8.4",
     "ky": "^2.0.2",
     "platformdirs": "^4.3.8-rc3",
-    "world-countries": "^5.1.0",
     "yaml": "^2.9.0",
     "zod": "4.6.7"
   },

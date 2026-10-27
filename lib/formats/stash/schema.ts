@@ -11,7 +11,7 @@ export type StashProxy = z.infer<typeof STASH_PROXY_SCHEMA>;
 
 export const STASH_PROXY_GROUP_SCHEMA = z.looseObject({
   name: z.string(),
-  type: z.enum(["select", "url-test"]),
+  type: z.enum(["select", "url-test", "fallback", "load-balance"]),
   proxies: z.array(z.string()),
   "benchmark-url": z.string().optional(),
   lazy: z.boolean().optional(),

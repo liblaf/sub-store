@@ -7,53 +7,25 @@ import { build } from "bunup";
 import YAML from "yaml";
 
 import config from "@/bunup.config";
-import { STASH_CONFIG_SCHEMA } from "@/lib/formats/stash/schema";
 
-test("packaged CLI preserves Unicode info labels and Taiwan membership", async (): Promise<void> => {
+test("packaged CLI builds native YAML with merge keys into a private artifact", async (): Promise<void> => {
   const root = path.resolve(import.meta.dir, "..");
   await fs.mkdir(path.join(root, "tmp"), { recursive: true });
   const dir = await fs.mkdtemp(path.join(root, "tmp", "cli-test-"));
-  const taiwanName = "🇨🇳台湾专线01|BGP|流媒体";
+  let upstreamRequests = 0;
   const server = serve({
     hostname: "127.0.0.1",
     port: 0,
-    fetch(request): Response {
-      const route = new URL(request.url).pathname;
-      if (route === "/bwcounter") {
-        return Response.json({
-          monthly_bw_limit_b: 200,
-          bw_counter_b: 100,
-          bw_reset_day_of_month: 2,
-        });
-      }
-      if (route !== "/counter" && route !== "/header") {
-        return new Response("Not found", { status: 404 });
-      }
-      return new Response(
-        YAML.stringify({
-          proxies: [
-            { name: taiwanName, type: "direct" },
-            { name: "US Node", type: "direct" },
-          ],
-        }),
-        {
-          headers: {
-            Date: "Sat, 12 Sep 2026 12:00:00 GMT",
-            ...(route === "/header"
-              ? { "Subscription-Userinfo": "upload=20; download=30; total=100; expire=1798761600" }
-              : {}),
-          },
-        },
-      );
+    fetch: () => {
+      upstreamRequests += 1;
+      return new Response("private upstream response", { status: 403 });
     },
   });
-
   try {
     const built = await build(
       {
         ...config,
         outDir: path.relative(root, path.join(dir, "dist")),
-        // Exercise the executable build without declarations or repository mutations.
         dts: false,
         exports: false,
         onSuccess: undefined,
@@ -65,21 +37,28 @@ test("packaged CLI preserves Unicode info labels and Taiwan membership", async (
     const output = path.join(dir, "stash.yaml");
     await fs.writeFile(
       profile,
-      YAML.stringify({
-        id: "00000000-0000-4000-8000-000000000000",
-        vars: { TS_AUTH_KEY: "test-tailscale-auth-key" },
-        providers: [
-          {
-            name: "JMS",
-            mihomo: new URL("counter", server.url).href,
-            bwcounter: new URL("bwcounter", server.url).href,
-          },
-          { name: "Header", mihomo: new URL("header", server.url).href },
-        ],
-      }),
+      `
+__sub-store:
+  id: 0123456789ABCDEFGHJK
+  target: stash
+proxies:
+  - &base
+    name: 节点甲
+    type: direct
+  - <<: *base
+    name: 节点乙
+proxy-groups:
+  - name: 手动选择
+    type: select
+    proxies: [节点甲, 节点乙]
+rules: ["MATCH,手动选择"]
+dns:
+  enable: true
+  nameserver: [https://dns.example.test/dns-query]
+`,
     );
     const child = spawn(
-      [process.execPath, entry.fullPath, "build", "stash", "-p", profile, "-o", output],
+      [process.execPath, entry.fullPath, "build", "stash", profile, "-o", output],
       {
         cwd: root,
         env: { ...process.env, TZ: "UTC", XDG_CACHE_HOME: path.join(dir, "cache") },
@@ -96,19 +75,87 @@ test("packaged CLI preserves Unicode info labels and Taiwan membership", async (
       exitCode: 0,
       output: "",
     });
-    const artifact = STASH_CONFIG_SCHEMA.parse(YAML.parse(await fs.readFile(output, "utf8")));
-    const groups = Object.fromEntries(
-      artifact["proxy-groups"].map(({ name, proxies }) => [name, proxies]),
-    );
-    expect(groups.Taiwan).toEqual([`[JMS] ${taiwanName}`, `[Header] ${taiwanName}`]);
-    expect(groups.Info).toEqual([
-      "[JMS] 📊 100 B / 200 B (50%)",
-      "[JMS] 🔁 2",
-      "[JMS] 📥 2026-09-12",
-      "[Header] 📊 50.0 B / 100 B (50%)",
-      "[Header] ⌛ 2027-01-01",
-      "[Header] 📥 2026-09-12",
+    const artifact = YAML.parse(await fs.readFile(output, "utf8"));
+    expect(artifact["__sub-store"]).toBeUndefined();
+    expect(artifact.proxies).toEqual([
+      { name: "节点甲", type: "direct" },
+      { name: "节点乙", type: "direct" },
     ]);
+    expect(artifact["proxy-groups"]).toEqual([
+      { name: "手动选择", type: "select", proxies: ["节点甲", "节点乙"] },
+    ]);
+    expect(artifact.dns.nameserver).toEqual(["https://dns.example.test/dns-query"]);
+    expect((await fs.stat(output)).mode & 0o777).toBe(0o600);
+    const previousOutput = await fs.readFile(output, "utf8");
+    const secret = "private-subscription-token";
+    for (const target of ["mihomo", "stash"] as const) {
+      await fs.writeFile(
+        profile,
+        YAML.stringify({
+          "__sub-store": {
+            id: "0123456789ABCDEFGHJK",
+            target: target === "mihomo" ? "stash" : "mihomo",
+          },
+          "proxy-providers": {
+            upstream: { url: new URL(`/subscription/${secret}`, server.url).href },
+          },
+        }),
+      );
+      const mismatched = spawn(
+        [process.execPath, entry.fullPath, "build", target, profile, "-o", output],
+        { cwd: root, stdout: "pipe", stderr: "pipe" },
+      );
+      const [mismatchExit, mismatchStdout, mismatchStderr] = await Promise.all([
+        mismatched.exited,
+        new Response(mismatched.stdout).text(),
+        new Response(mismatched.stderr).text(),
+      ]);
+      expect(mismatchExit).toBe(1);
+      expect(mismatchStdout + mismatchStderr).not.toContain(secret);
+      expect(upstreamRequests).toBe(0);
+      expect(await fs.readFile(output, "utf8")).toBe(previousOutput);
+    }
+    await fs.writeFile(
+      profile,
+      YAML.stringify({
+        "proxy-providers": {
+          upstream: { url: new URL(`/subscription/${secret}`, server.url).href },
+        },
+      }),
+    );
+    const failed = spawn(
+      [process.execPath, entry.fullPath, "build", "stash", profile, "-o", output],
+      {
+        cwd: root,
+        env: { ...process.env, XDG_CACHE_HOME: path.join(dir, "cache") },
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
+    const [failedExit, failedStdout, failedStderr] = await Promise.all([
+      failed.exited,
+      new Response(failed.stdout).text(),
+      new Response(failed.stderr).text(),
+    ]);
+    expect(failedExit).toBe(1);
+    expect(failedStderr).toContain("Failed to build Stash configuration");
+    expect(failedStdout + failedStderr).not.toContain(secret);
+    expect(failedStdout + failedStderr).not.toContain("private upstream response");
+    await fs.writeFile(profile, YAML.stringify({ "__sub-store": { id: secret, target: "stash" } }));
+    const failedPublish = spawn([process.execPath, entry.fullPath, "publish", profile], {
+      cwd: root,
+      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: "https://example.test" },
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [publishExit, publishStdout, publishStderr] = await Promise.all([
+      failedPublish.exited,
+      new Response(failedPublish.stdout).text(),
+      new Response(failedPublish.stderr).text(),
+    ]);
+    expect(publishExit).toBe(1);
+    expect(publishStderr).toContain("Failed to publish profiles");
+    expect(publishStdout + publishStderr).not.toContain(secret);
   } finally {
     await server.stop(true);
     await fs.rm(dir, { recursive: true, force: true });

@@ -20,6 +20,7 @@ export async function uploadArtifacts(c: Context<{ Bindings: Env }>): Promise<Re
   try {
     for (const format of ["mihomo", "stash"] as const) {
       const artifact = parsed.data[format];
+      if (!artifact) continue;
       await c.env.KV.put(`artifacts/${id}/${format}.yaml`, artifact.body, {
         metadata: artifact.metadata,
       });
