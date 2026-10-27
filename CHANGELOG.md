@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.1](https://github.com/liblaf/sub-store/releases/tag/v0.5.1) - 2026-10-27
+
+### 🐛 Bug Fixes
+
+- **(publish)** discover nested profiles and report file counts - [3ee1cc0](https://github.com/liblaf/sub-store/commit/3ee1cc042cb9134dfe5be3032332c213e2a70826) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.5.0](https://github.com/liblaf/sub-store/releases/tag/v0.5.0) - 2026-10-27
 
 ### 💥 BREAKING CHANGES
@@ -26,6 +36,7 @@ __sub-store; the previous provider profile and template options are removed. - [
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 - [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
