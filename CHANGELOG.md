@@ -7,7 +7,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.4.6](https://github.com/liblaf/sub-store/releases/tag/v0.4.6) - 2026-09-26
+## [v0.5.0](https://github.com/liblaf/sub-store/releases/tag/v0.5.0) - 2026-10-27
+
+### 💥 BREAKING CHANGES
+
+- build commands now take a native profile path. Declare
+subscription sources under proxy-providers and publishing metadata under
+__sub-store; the previous provider profile and template options are removed. - [689ede1](https://github.com/liblaf/sub-store/commit/689ede10420348b1e129c1dce58dc66a84fd3143) by [@liblaf](https://github.com/liblaf)
+
+### ✨ Features
+
+- **\[breaking\]** compile native profiles into static subscriptions - [689ede1](https://github.com/liblaf/sub-store/commit/689ede10420348b1e129c1dce58dc66a84fd3143) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **(deps)** update dependency zod to v4.6.6 (#274) - [b7882a3](https://github.com/liblaf/sub-store/commit/b7882a3e0855fe9c28bd434d959c7b87c4ca9a4b) by [@renovate[bot]](https://github.com/apps/renovate)
+- **(deps)** update dependency zod to v4.6.7 (#277) - [4408c37](https://github.com/liblaf/sub-store/commit/4408c377a8d16c54b741aa7d16488d13c67fcf0a) by [@renovate[bot]](https://github.com/apps/renovate)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
+
+## [v0.4.6](https://github.com/liblaf/sub-store/releases/tag/v0.4.6) - 2026-09-27
 
 ### 🐛 Bug Fixes
 
@@ -15,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@renovate[bot]](https://github.com/apps/renovate)
 - [@liblaf](https://github.com/liblaf)
 
@@ -85,9 +109,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 💥 BREAKING CHANGES
 
 - Replace the mise profile publishing tasks with sub-store
-  publish. Configure SUB_STORE_API_TOKEN for the CLI and Worker, and provide
-  vars.TS_AUTH_KEY in profiles used for Stash. Template context is version 7;
-  failed refreshes no longer publish stale cache data. - [e71248d](https://github.com/liblaf/sub-store/commit/e71248d892199faa7b2b0dc126bb40248da8f0ea) by [@liblaf](https://github.com/liblaf)
+publish. Configure SUB_STORE_API_TOKEN for the CLI and Worker, and provide
+vars.TS_AUTH_KEY in profiles used for Stash. Template context is version 7;
+failed refreshes no longer publish stale cache data. - [e71248d](https://github.com/liblaf/sub-store/commit/e71248d892199faa7b2b0dc126bb40248da8f0ea) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
@@ -236,7 +260,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **(worker)** All existing API endpoints have been removed and replaced with a new `/api` structure. Consumers of the API must update their integrations to reflect the new paths, request parameters, and response formats. The underlying framework has been entirely swapped, which may impact any direct integrations with the worker's internal logic. The package version has been reset to 0.1.0 to signify this foundational change. - [9f91369](https://github.com/liblaf/sub-store/commit/9f913695d5a8fbcc2c30dba6f8de92bd945f7e29) by [@liblaf](https://github.com/liblaf)
 - Route handlers now extend abstract base classes
-  which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
+which may affect custom implementations. - [6a6a953](https://github.com/liblaf/sub-store/commit/6a6a953996ab7228713ea56bdef974929998f799) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
@@ -472,7 +496,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 💥 BREAKING CHANGES
 
 - **(core)** Removed IPAPIis class in favor of new GeoIP service.
-  Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
+Update imports from geoip module to use new API. - [90060eb](https://github.com/liblaf/sub-store/commit/90060eb9e065dbbd0c64100e56eee71b640e9b72) by [@liblaf](https://github.com/liblaf)
 
 ### ✨ Features
 
