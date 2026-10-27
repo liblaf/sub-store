@@ -101,7 +101,7 @@ describe("publishProfiles", () => {
     });
     await expect(
       publishProfiles(directory, { url: "https://example.test", token: "token" }),
-    ).resolves.toBe(1);
+    ).resolves.toBe(2);
     expect(mihomo).toHaveBeenCalledTimes(1);
     expect(stash).toHaveBeenCalledTimes(1);
     expect(requests).toHaveLength(1);
@@ -109,6 +109,67 @@ describe("publishProfiles", () => {
       mihomo: artifact("mihomo"),
       stash: artifact("stash"),
     });
+  });
+
+  test("publishes all and own subdirectories as two uploads containing both targets", async () => {
+    const directory = await makeDirectory();
+    const ids = ["0123456789ABCDEFGHJK", "0123456789ABCDEFGHJM"];
+    for (const [index, name] of ["all", "own"].entries()) {
+      const subdirectory = path.join(directory, name);
+      await fs.mkdir(subdirectory);
+      for (const target of ["mihomo", "stash"] as const) {
+        await fs.writeFile(path.join(subdirectory, `${target}.yaml`), profile(ids[index]!, target));
+      }
+    }
+    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockResolvedValue(artifact("mihomo"));
+    const stash = spyOn(StashBuilder.prototype, "build").mockResolvedValue(artifact("stash"));
+    const requests: Request[] = [];
+    mockFetch(async (input, init) => {
+      // All four profiles must build before the first upload starts.
+      expect(mihomo).toHaveBeenCalledTimes(2);
+      expect(stash).toHaveBeenCalledTimes(2);
+      requests.push(new Request(input, init));
+      return new Response(null, { status: 204 });
+    });
+
+    await expect(
+      publishProfiles(directory, { url: "https://example.test", token: "token" }),
+    ).resolves.toBe(4);
+    expect(requests.map((request) => request.url)).toEqual(
+      ids.map((id) => `https://example.test/api/profiles/${id}/artifacts`),
+    );
+    for (const request of requests) {
+      expect(await request.json()).toEqual({
+        mihomo: artifact("mihomo"),
+        stash: artifact("stash"),
+      });
+    }
+  });
+
+  test("validates nested malformed and duplicate profiles before any build or fetch", async () => {
+    const directory = await makeDirectory();
+    await fs.mkdir(path.join(directory, "a-valid"));
+    await fs.mkdir(path.join(directory, "z-invalid/deeper"), { recursive: true });
+    const id = "0123456789ABCDEFGHJK";
+    await fs.writeFile(path.join(directory, "a-valid/profile.yaml"), profile(id));
+    const invalid = path.join(directory, "z-invalid/deeper/profile.yaml");
+    const mihomo = spyOn(MihomoBuilder.prototype, "build");
+    const stash = spyOn(StashBuilder.prototype, "build");
+    const network = spyOn(globalThis, "fetch");
+
+    for (const content of [
+      "__sub-store: [invalid YAML",
+      YAML.stringify({ "__sub-store": { id: "invalid", target: "stash" } }),
+      profile(id),
+    ]) {
+      await fs.writeFile(invalid, content);
+      await expect(
+        publishProfiles(directory, { url: "https://example.test", token: "token" }),
+      ).rejects.toThrow();
+      expect(mihomo).not.toHaveBeenCalled();
+      expect(stash).not.toHaveBeenCalled();
+      expect(network).not.toHaveBeenCalled();
+    }
   });
 
   test("builds a Stash profile without running Mihomo", async () => {

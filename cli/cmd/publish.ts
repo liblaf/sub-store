@@ -4,10 +4,11 @@ import path from "node:path";
 import { Command } from "@commander-js/extra-typings";
 
 import { publishProfiles } from "@/lib/publish";
+import { PublishInputError } from "@/lib/publish/errors";
 
 export const publish = new Command("publish")
   .description("Build and upload profile artifacts to the Worker")
-  .argument("[path]", "profile file or folder (default: ~/.config/sub-store/profiles)")
+  .argument("[path]", "profile file or recursive folder (default: ~/.config/sub-store/profiles)")
   .addHelpText(
     "after",
     "\nEnvironment:\n  SUB_STORE_API_TOKEN  Required upload token\n  SUB_STORE_URL        Worker URL (default: https://subs.liblaf.me)",
@@ -20,10 +21,12 @@ export const publish = new Command("publish")
         inputPath ?? path.join(os.homedir(), ".config", "sub-store", "profiles"),
         { url: process.env.SUB_STORE_URL ?? "https://subs.liblaf.me", token },
       );
-      console.log(`Published ${count} profile(s).`);
-    } catch {
+      console.log(`Published ${count} profile file(s).`);
+    } catch (error) {
       publish.error(
-        "Failed to publish profiles; check the profiles, upload settings, and provider availability",
+        error instanceof PublishInputError
+          ? error.message
+          : "Failed to publish profiles; check the profiles, upload settings, and provider availability",
       );
     }
   });

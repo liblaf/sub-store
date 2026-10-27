@@ -1,5 +1,4 @@
 import fs from "node:fs/promises";
-import path from "node:path";
 
 import YAML from "yaml";
 
@@ -8,6 +7,8 @@ import type { Profile } from "@/lib/core/profile";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 
+import { discoverProfiles } from "./discover";
+import { PublishInputError } from "./errors";
 import type { ArtifactUpload } from "./schema";
 import { ARTIFACT_UPLOAD_SCHEMA, MAX_UPLOAD_BYTES } from "./schema";
 
@@ -36,13 +37,7 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
   }
   if (!options.token.trim()) throw new Error("SUB_STORE_API_TOKEN is required");
 
-  const files: string[] = (await fs.stat(inputPath)).isDirectory()
-    ? (await fs.readdir(inputPath))
-        .filter((name: string): boolean => !name.startsWith(".") && name.endsWith(".yaml"))
-        .sort()
-        .map((name: string): string => path.join(inputPath, name))
-    : [inputPath];
-  if (files.length === 0) throw new Error("No .yaml profiles found");
+  const files = await discoverProfiles(inputPath);
 
   const profiles: { profile: Profile; id: string; target: "mihomo" | "stash" }[] = [];
   const pairs = new Set<string>();
@@ -52,9 +47,10 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
     );
     const { id, target } = profile["__sub-store"] ?? {};
     if (!id || !target)
-      throw new Error("Publishing requires __sub-store.id and __sub-store.target");
+      throw new PublishInputError("Publishing requires __sub-store.id and __sub-store.target");
     const pair = `${id}/${target}`;
-    if (pairs.has(pair)) throw new Error("Duplicate profile ID and target in publish input");
+    if (pairs.has(pair))
+      throw new PublishInputError("Duplicate profile ID and target in publish input");
     pairs.add(pair);
     profiles.push({ profile, id, target });
   }
@@ -93,5 +89,5 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
       throw new Error(`Artifact upload failed (HTTP ${response.status})`);
     }
   }
-  return uploads.length;
+  return profiles.length;
 }

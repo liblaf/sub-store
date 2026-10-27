@@ -103,7 +103,7 @@ sub-store publish /path/to/profiles
 sub-store publish /path/to/profile.yaml
 ```
 
-The CLI builds each profile for its declared target before any upload begins. Folder discovery is nonrecursive and includes non-hidden `*.yaml` files. Empty folders, build failures, and upload failures cause a nonzero exit.
+The CLI recursively discovers non-hidden `*.yaml` files, sorts them by path, and builds each profile for its declared target before any upload begins. You can organize profiles as `all/mihomo.yaml`, `all/stash.yaml`, `own/mihomo.yaml`, and `own/stash.yaml`. The success count reports profile files; those four files publish through two uploads grouped by subscription ID. Hidden folders and directory symlinks are skipped. Empty folders, build failures, and upload failures cause a nonzero exit.
 
 `SUB_STORE_URL` defaults to `https://subs.liblaf.me`. HTTPS is required except for localhost development. The CLI sends the upload token in an `Authorization: Bearer` header and refuses redirects.
 

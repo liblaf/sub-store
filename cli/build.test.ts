@@ -13,10 +13,15 @@ test("packaged CLI builds native YAML with merge keys into a private artifact", 
   await fs.mkdir(path.join(root, "tmp"), { recursive: true });
   const dir = await fs.mkdtemp(path.join(root, "tmp", "cli-test-"));
   let upstreamRequests = 0;
+  let uploads = 0;
   const server = serve({
     hostname: "127.0.0.1",
     port: 0,
-    fetch: () => {
+    fetch: (request) => {
+      if (request.method === "PUT") {
+        uploads += 1;
+        return new Response(null, { status: 204 });
+      }
       upstreamRequests += 1;
       return new Response("private upstream response", { status: 403 });
     },
@@ -156,6 +161,50 @@ dns:
     expect(publishExit).toBe(1);
     expect(publishStderr).toContain("Failed to publish profiles");
     expect(publishStdout + publishStderr).not.toContain(secret);
+    const empty = path.join(dir, `empty-${secret}`);
+    await fs.mkdir(empty);
+    const emptyPublish = spawn([process.execPath, entry.fullPath, "publish", empty], {
+      cwd: root,
+      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: "https://example.test" },
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [emptyExit, emptyStdout, emptyStderr] = await Promise.all([
+      emptyPublish.exited,
+      new Response(emptyPublish.stdout).text(),
+      new Response(emptyPublish.stderr).text(),
+    ]);
+    expect(emptyExit).toBe(1);
+    expect(emptyStderr).toContain("No .yaml profiles found");
+    expect(emptyStdout + emptyStderr).not.toContain(secret);
+    const nested = path.join(dir, "nested");
+    for (const [folder, id] of [
+      ["all", "0123456789ABCDEFGHJK"],
+      ["own", "0123456789ABCDEFGHJM"],
+    ] as const) {
+      await fs.mkdir(path.join(nested, folder), { recursive: true });
+      await fs.writeFile(
+        path.join(nested, folder, "stash.yaml"),
+        YAML.stringify({
+          "__sub-store": { id, target: "stash" },
+        }),
+      );
+    }
+    const published = spawn([process.execPath, entry.fullPath, "publish", nested], {
+      cwd: root,
+      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: server.url.origin },
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const [publishedExit, publishedStdout, publishedStderr] = await Promise.all([
+      published.exited,
+      new Response(published.stdout).text(),
+      new Response(published.stderr).text(),
+    ]);
+    expect(publishedExit).toBe(0);
+    expect(publishedStdout).toContain("Published 2 profile file(s).");
+    expect(publishedStdout + publishedStderr).not.toContain(secret);
+    expect(uploads).toBe(2);
   } finally {
     await server.stop(true);
     await fs.rm(dir, { recursive: true, force: true });
