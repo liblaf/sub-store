@@ -14,12 +14,14 @@ test("packaged CLI builds native YAML with merge keys into a private artifact", 
   const dir = await fs.mkdtemp(path.join(root, "tmp", "cli-test-"));
   let upstreamRequests = 0;
   let uploads = 0;
+  const uploadTokens: (string | null)[] = [];
   const server = serve({
     hostname: "127.0.0.1",
     port: 0,
     fetch: (request) => {
       if (request.method === "PUT") {
         uploads += 1;
+        uploadTokens.push(request.headers.get("authorization"));
         return new Response(null, { status: 204 });
       }
       upstreamRequests += 1;
@@ -149,7 +151,12 @@ dns:
     await fs.writeFile(profile, YAML.stringify({ "__sub-store": { id: secret, target: "stash" } }));
     const failedPublish = spawn([process.execPath, entry.fullPath, "publish", profile], {
       cwd: root,
-      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: "https://example.test" },
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: path.join(dir, "config"),
+        SUB_STORE_API_TOKEN: secret,
+        SUB_STORE_URL: "https://example.test",
+      },
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -165,7 +172,12 @@ dns:
     await fs.mkdir(empty);
     const emptyPublish = spawn([process.execPath, entry.fullPath, "publish", empty], {
       cwd: root,
-      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: "https://example.test" },
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: path.join(dir, "config"),
+        SUB_STORE_API_TOKEN: secret,
+        SUB_STORE_URL: "https://example.test",
+      },
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -192,7 +204,12 @@ dns:
     }
     const published = spawn([process.execPath, entry.fullPath, "publish", nested], {
       cwd: root,
-      env: { ...process.env, SUB_STORE_API_TOKEN: secret, SUB_STORE_URL: server.url.origin },
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: path.join(dir, "config"),
+        SUB_STORE_API_TOKEN: secret,
+        SUB_STORE_URL: server.url.origin,
+      },
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -205,6 +222,54 @@ dns:
     expect(publishedStdout).toContain("Published 2 profile file(s).");
     expect(publishedStdout + publishedStderr).not.toContain(secret);
     expect(uploads).toBe(2);
+    const configHome = path.join(dir, "config");
+    await fs.mkdir(path.join(configHome, "sub-store"), { recursive: true });
+    const tomlPath = path.join(configHome, "sub-store", "config.toml");
+    const configToken = "private-config-upload-token";
+    await fs.writeFile(tomlPath, `token = "${configToken}"\nbase-url = "${server.url.origin}"\n`);
+    const configEnv = {
+      ...process.env,
+      XDG_CONFIG_HOME: configHome,
+      XDG_CACHE_HOME: path.join(dir, "cache"),
+      SUB_STORE_API_TOKEN: undefined,
+      SUB_STORE_URL: undefined,
+    };
+    for (const configArgs of [[], ["--config", tomlPath]]) {
+      const fromConfig = spawn(
+        [process.execPath, entry.fullPath, "publish", nested, ...configArgs],
+        { cwd: root, env: configEnv, stdout: "pipe", stderr: "pipe" },
+      );
+      const [configExit, configStdout, configStderr] = await Promise.all([
+        fromConfig.exited,
+        new Response(fromConfig.stdout).text(),
+        new Response(fromConfig.stderr).text(),
+      ]);
+      expect({
+        exitCode: configExit,
+        output: configExit === 0 ? "" : configStdout + configStderr,
+      }).toEqual({
+        exitCode: 0,
+        output: "",
+      });
+      expect(configStdout).toContain("Published 2 profile file(s).");
+      expect(configStdout + configStderr).not.toContain(configToken);
+    }
+    expect(uploads).toBe(6);
+    expect(uploadTokens.slice(2)).toEqual(Array(4).fill(`Bearer ${configToken}`));
+    await fs.writeFile(tomlPath, `token = "${configToken}`);
+    const malformed = spawn(
+      [process.execPath, entry.fullPath, "publish", nested, "--config", tomlPath],
+      { cwd: root, env: configEnv, stdout: "pipe", stderr: "pipe" },
+    );
+    const [malformedExit, malformedStdout, malformedStderr] = await Promise.all([
+      malformed.exited,
+      new Response(malformed.stdout).text(),
+      new Response(malformed.stderr).text(),
+    ]);
+    expect(malformedExit).toBe(1);
+    expect(malformedStderr).toContain("Invalid TOML configuration");
+    expect(malformedStdout + malformedStderr).not.toContain(configToken);
+    expect(uploads).toBe(6);
   } finally {
     await server.stop(true);
     await fs.rm(dir, { recursive: true, force: true });

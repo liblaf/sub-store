@@ -68,6 +68,8 @@ rules:
 
 Provider entries use a direct `url`; `type` defaults to `http`. For subscriptions that require conversion, set the provider's `__sub-store.format: mixed`. Optional `__sub-store.bwcounter` supplies display usage when subscription headers have none. Common affix stripping is opt-in through `__sub-store.strip-common-affixes: true`. Provider names do not automatically prefix proxy names; set `override.additional-prefix` explicitly.
 
+For a JMS bandwidth counter, set `proxy-providers.JMS.__sub-store.bwcounter` to the complete `getbwcounter.php` API URL in each target profile. The API's `monthly_bw_limit_b`, `bw_counter_b`, and `bw_reset_day_of_month` fields supply remaining traffic and the monthly reset day for `$info`. The reset day is not a subscription expiration date. Responses are cached for one hour; a failed refresh may reuse a valid stale response. Bwcounter values appear when the profile is built or published, and do not refresh independently in the client.
+
 Names are normalized in order: optional common affix stripping, sequential name overrides, then the explicit prefix and suffix. Provider and group filters match these final names. Name overrides run sequentially and support JavaScript named capture replacements such as `$<number>`. Patterns use JavaScript regular expressions and accept a leading `(?i)` for case-insensitive matching. Invalid patterns fail the build.
 
 A group's `use` accepts provider names, group names, and `$info`. Group names remain group references. `include-all-providers` imports every provider in profile order and excludes generated `$info` entries. Members are collected in order: explicit `proxies`, `use`, then `include-all-providers`, with stable deduplication. `filter` keeps imported proxy names, then `exclude-filter` removes matching names; explicit proxy members and group references retain their place.
@@ -96,16 +98,23 @@ Mihomo output receives schema and reference checks followed by `mihomo -t` using
 
 Add `__sub-store.id` and `__sub-store.target` to each profile you want to publish. New IDs use 20 uppercase Crockford Base32 characters; existing UUIDs remain supported. Separate Mihomo and Stash profiles may share an ID. Duplicate `(id, target)` pairs fail before upload.
 
+Create `~/.config/sub-store/config.toml`:
+
+```toml
+token = "<upload token>"
+base-url = "https://subs.liblaf.me"
+```
+
 ```bash
-export SUB_STORE_API_TOKEN='<upload token>'
-sub-store publish                       # ~/.config/sub-store/profiles/*.yaml
+sub-store publish                       # Recursively reads ~/.config/sub-store/profiles
 sub-store publish /path/to/profiles
 sub-store publish /path/to/profile.yaml
+sub-store publish --config /path/to/config.toml
 ```
 
 The CLI recursively discovers non-hidden `*.yaml` files, sorts them by path, and builds each profile for its declared target before any upload begins. You can organize profiles as `all/mihomo.yaml`, `all/stash.yaml`, `own/mihomo.yaml`, and `own/stash.yaml`. The success count reports profile files; those four files publish through two uploads grouped by subscription ID. Hidden folders and directory symlinks are skipped. Empty folders, build failures, and upload failures cause a nonzero exit.
 
-`SUB_STORE_URL` defaults to `https://subs.liblaf.me`. HTTPS is required except for localhost development. The CLI sends the upload token in an `Authorization: Bearer` header and refuses redirects.
+The default config and profiles folders follow `XDG_CONFIG_HOME` when set. `SUB_STORE_API_TOKEN` and `SUB_STORE_URL` override `token` and `base-url` respectively. A missing default config is allowed when the token comes from the environment; an explicitly selected file must exist. `base-url` defaults to `https://subs.liblaf.me`. HTTPS is required except for localhost development. The CLI sends the upload token in an `Authorization: Bearer` header and refuses redirects. Keep `config.toml` private, for example with `chmod 600 ~/.config/sub-store/config.toml`.
 
 Configure the Worker upload secret and deploy separately:
 

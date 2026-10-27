@@ -27,7 +27,8 @@ proxy-providers:
           target: "Node $<number>"
     __sub-store:
       strip-common-affixes: false
-      # bwcounter: https://example.invalid/bwcounter.json
+      # JMS API: use the complete private URL from the service's Bandwidth Counter page.
+      # bwcounter: https://justmysocks.net/members/getbwcounter.php?service=SERVICE_ID&id=API_ID
       # format: mixed
 
 proxy-groups:
