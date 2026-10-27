@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.2](https://github.com/liblaf/sub-store/releases/tag/v0.5.2) - 2026-10-27
+
+### ✨ Features
+
+- **(cli)** load publish settings from TOML config - [094aa16](https://github.com/liblaf/sub-store/commit/094aa164c645a62f86b3e4a2e4d48996f9592ea8) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.5.1](https://github.com/liblaf/sub-store/releases/tag/v0.5.1) - 2026-10-27
 
 ### 🐛 Bug Fixes
@@ -15,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 
 ## [v0.5.0](https://github.com/liblaf/sub-store/releases/tag/v0.5.0) - 2026-10-27
