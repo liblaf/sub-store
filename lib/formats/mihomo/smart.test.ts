@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { which } from "bun";
+import { spawnSync, which } from "bun";
 import YAML from "yaml";
 
 import { PROFILE_SCHEMA } from "@/lib/core/profile";
@@ -8,6 +8,10 @@ import { renderProfile } from "@/lib/core/template";
 
 import { validateWithMihomo } from "../validate";
 import { MIHOMO_CONFIG_SCHEMA, MIHOMO_SMART_CONFIG_SCHEMA } from "./schema";
+
+const nativeMihomo = which("mihomo");
+const nativeSmartMihomo =
+  nativeMihomo && /smart/i.test(spawnSync([nativeMihomo, "-v"]).stdout.toString());
 
 function renderSmartProfile(): string {
   const profile = PROFILE_SCHEMA.parse(
@@ -93,8 +97,8 @@ test("Smart profiles expand providers and preserve native Smart settings and YAM
   expect(MIHOMO_CONFIG_SCHEMA.safeParse(config).success).toBe(false);
 });
 
-test.skipIf(!which("mihomo-smart"))(
-  "the Smart core accepts an offline compiled Smart group",
+test.skipIf(!nativeSmartMihomo)(
+  "a Smart-capable mihomo executable accepts an offline compiled Smart group",
   async () => {
     const body = renderProfile({
       profile: PROFILE_SCHEMA.parse({
@@ -107,6 +111,6 @@ test.skipIf(!which("mihomo-smart"))(
       infoProxies: [],
       schema: MIHOMO_SMART_CONFIG_SCHEMA,
     });
-    await validateWithMihomo(body, "mihomo-smart");
+    await validateWithMihomo(body);
   },
 );

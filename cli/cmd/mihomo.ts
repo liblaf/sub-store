@@ -24,7 +24,7 @@ function createMihomoCommand(target: "mihomo" | "mihomo-smart") {
       } catch {
         const label = target === "mihomo-smart" ? "Mihomo Smart" : "Mihomo";
         command.error(
-          `Failed to build ${label} configuration; check the profile, ${target} executable, and provider availability`,
+          `Failed to build ${label} configuration; check the profile, mihomo executable, and provider availability`,
         );
       }
     });

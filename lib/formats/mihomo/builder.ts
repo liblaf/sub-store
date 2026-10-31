@@ -26,7 +26,7 @@ export class MihomoBuilder extends Builder<MihomoProxy> {
       infoProxies: unwrapProxies(infoProxies),
       schema: this.target === "mihomo-smart" ? MIHOMO_SMART_CONFIG_SCHEMA : MIHOMO_CONFIG_SCHEMA,
     });
-    await validateWithMihomo(body, this.target);
+    await validateWithMihomo(body);
     return body;
   }
 

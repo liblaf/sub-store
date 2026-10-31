@@ -18,7 +18,7 @@
 - Keep client settings, static proxies, groups, rule providers, and routing rules in one native YAML profile.
 - Fetch providers during the build and expand provider references into static proxy lists.
 - Apply explicit name overrides and regex filters, with generated quota, expiry, reset, and update entries available through `$info`.
-- Validate references for every target and run `mihomo -t` or `mihomo-smart -t` for the corresponding Mihomo output.
+- Validate references for every target and run `mihomo -t` for both Mihomo targets.
 - Cache upstream responses for one hour. Failed fetches can reuse a valid stale cache with its original update date; invalid refresh data and failures without a valid cache fail the build.
 
 ## 📦 Native profiles
@@ -82,7 +82,7 @@ Mihomo Smart profiles declare `__sub-store.target: mihomo-smart` and support `ty
 
 ## ⌨️ Build
 
-Install dependencies from a checkout and put `mihomo` on `PATH` for Mihomo builds. For Mihomo Smart, install the [Smart core](https://github.com/vernesong/mihomo/releases/tag/Prerelease-Alpha) as `mihomo-smart` on `PATH`:
+Install dependencies from a checkout and put `mihomo` on `PATH` for Mihomo builds. For Mihomo Smart, install the [Smart-capable core](https://github.com/vernesong/mihomo/releases/tag/Prerelease-Alpha) as `mihomo` on `PATH`:
 
 ```bash
 bun install
@@ -95,7 +95,7 @@ The installed package exposes the same commands through `sub-store`. Root `__sub
 
 Each build writes YAML and a sibling `.metadata.json` file with owner-only permissions. The metadata contains response headers. Missing usage fields do not create information entries. A generated `Subscription-Userinfo` field is aggregated only when every header-based provider supplies that field. Bwcounter usage is display-only.
 
-Mihomo and Mihomo Smart output receive schema and reference checks followed by `mihomo -t` or `mihomo-smart -t` using the corresponding installed executable. Stash output receives schema and reference checks. These checks do not establish connectivity or runtime routing behavior; verify the generated profile in its client. Treat profiles, cached provider responses, and generated artifacts as secrets.
+Mihomo and Mihomo Smart output receive schema and reference checks followed by `mihomo -t` using the installed `mihomo` executable for both targets. Stash output receives schema and reference checks. These checks do not establish connectivity or runtime routing behavior; verify the generated profile in its client. Treat profiles, cached provider responses, and generated artifacts as secrets.
 
 ## ☁️ Publish to Cloudflare
 

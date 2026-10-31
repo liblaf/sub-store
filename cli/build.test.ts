@@ -97,10 +97,9 @@ dns:
     const smartProfile = path.join(dir, "mihomo-smart.yaml");
     const smartBin = path.join(dir, "bin");
     await fs.mkdir(smartBin);
-    await fs.writeFile(path.join(smartBin, "mihomo"), "#!/bin/sh\nexit 1\n", { mode: 0o700 });
     await fs.writeFile(
-      path.join(smartBin, "mihomo-smart"),
-      '#!/bin/sh\nprintf "%s\\n" "$@" > "$(dirname "$0")/arguments"\ncp "$4" "$(dirname "$0")/checked.yaml"\n',
+      path.join(smartBin, "mihomo"),
+      '#!/bin/sh\nprintf "%s\\n" "$@" > "${0%/*}/arguments"\nwhile IFS= read -r line; do printf "%s\\n" "$line"; done < "$4" > "${0%/*}/checked.yaml"\n',
       { mode: 0o700 },
     );
     await fs.writeFile(
@@ -116,7 +115,7 @@ dns:
       [process.execPath, entry.fullPath, "build", "mihomo-smart", smartProfile],
       {
         cwd: dir,
-        env: { ...process.env, PATH: `${smartBin}:${process.env.PATH ?? ""}` },
+        env: { ...process.env, PATH: smartBin },
         stdout: "pipe",
         stderr: "pipe",
       },
@@ -173,6 +172,7 @@ dns:
         new Response(mismatched.stderr).text(),
       ]);
       expect(mismatchExit).toBe(1);
+      if (target !== "stash") expect(mismatchStderr).toContain("mihomo executable");
       expect(mismatchStdout + mismatchStderr).not.toContain(secret);
       expect(upstreamRequests).toBe(0);
       expect(await fs.readFile(output, "utf8")).toBe(previousOutput);

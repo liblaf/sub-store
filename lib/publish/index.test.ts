@@ -6,6 +6,7 @@ import path from "node:path";
 import ky from "ky";
 import YAML from "yaml";
 
+import type { Artifact } from "@/lib/core/builder";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 import { publishProfiles } from "@/lib/publish";
@@ -142,6 +143,59 @@ describe("publishProfiles", () => {
     expect(stash).not.toHaveBeenCalled();
     expect(requests).toHaveLength(1);
     expect(await requests[0]!.json()).toEqual({ "mihomo-smart": artifact("mihomo-smart") });
+  });
+
+  test("validates both Mihomo targets with mihomo before uploading distinct artifacts", async () => {
+    const directory = await makeDirectory();
+    const bin = path.join(directory, "bin");
+    await fs.mkdir(bin);
+    await fs.writeFile(
+      path.join(bin, "mihomo"),
+      '#!/bin/sh\nprintf "%s\\n" "$4" >> "${0%/*}/validated-paths"\n',
+      { mode: 0o700 },
+    );
+    const id = "0123456789ABCDEFGHJK";
+    await fs.writeFile(path.join(directory, "mihomo.yaml"), profile(id));
+    await fs.writeFile(
+      path.join(directory, "mihomo-smart.yaml"),
+      YAML.stringify({
+        "__sub-store": { id, target: "mihomo-smart" },
+        "lgbm-auto-update": false,
+        "proxy-groups": [{ name: "Smart", type: "smart", proxies: ["DIRECT"], uselightgbm: false }],
+        rules: ["MATCH,Smart"],
+      }),
+    );
+    const requests: Request[] = [];
+    mockFetch(async (input, init) => {
+      const configs = (await fs.readFile(path.join(bin, "validated-paths"), "utf8"))
+        .trim()
+        .split("\n");
+      expect(configs).toHaveLength(2);
+      for (const config of configs) {
+        expect(await fs.exists(path.dirname(config))).toBe(false);
+      }
+      requests.push(new Request(input, init));
+      return new Response(null, { status: 204 });
+    });
+    const previousPath = process.env.PATH;
+    try {
+      process.env.PATH = bin;
+      await expect(
+        publishProfiles(directory, { url: "https://example.test", token: "token" }),
+      ).resolves.toBe(2);
+    } finally {
+      process.env.PATH = previousPath;
+    }
+    expect(requests).toHaveLength(1);
+    const artifacts = (await requests[0]!.json()) as Record<string, Artifact>;
+    expect(artifacts).toEqual({
+      mihomo: { body: expect.any(String), metadata: { headers: {} } },
+      "mihomo-smart": { body: expect.any(String), metadata: { headers: {} } },
+    });
+    expect(YAML.parse(artifacts["mihomo-smart"]!.body)).toMatchObject({
+      "lgbm-auto-update": false,
+      "proxy-groups": [{ name: "Smart", type: "smart", proxies: ["DIRECT"], uselightgbm: false }],
+    });
   });
 
   test("publishes all and own subdirectories as two uploads containing both targets", async () => {
