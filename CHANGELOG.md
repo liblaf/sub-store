@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.4](https://github.com/liblaf/sub-store/releases/tag/v0.5.4) - 2026-10-31
+
+### 🐛 Bug Fixes
+
+- validate both Mihomo targets with the mihomo executable - [1859e40](https://github.com/liblaf/sub-store/commit/1859e400c64c1d78b30a2b780d158e3512f97970) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+
 ## [v0.5.3](https://github.com/liblaf/sub-store/releases/tag/v0.5.3) - 2026-10-31
 
 ### ✨ Features
@@ -15,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
