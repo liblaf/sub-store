@@ -35,6 +35,10 @@ describe("subscription artifacts", (): void => {
     [`artifacts/${id}/stash.yaml`]: {
       body: "proxy-groups: []\n",
     },
+    [`artifacts/${id}/mihomo-smart.yaml`]: {
+      body: "proxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n",
+      metadata: { headers: { "Subscription-Userinfo": "upload=5; total=6" } },
+    },
     [`artifacts/${legacyId}/stash.yaml`]: {
       body: "proxy-groups: []\n",
     },
@@ -71,6 +75,22 @@ describe("subscription artifacts", (): void => {
     expect(response.headers.get("Content-Type")).toBe("application/yaml");
     expect(await response.text()).toBe(
       `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/stash.yaml\nproxy-groups: []\n`,
+    );
+  });
+
+  test("serves Smart through its distinct bearer path with stored metadata", async (): Promise<void> => {
+    const response = await app.request(
+      `https://example.test/subs/${id}/mihomo-smart.yaml`,
+      undefined,
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("application/yaml");
+    expect(response.headers.get("Subscription-Userinfo")).toBe("upload=5; total=6");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(await response.text()).toBe(
+      `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/mihomo-smart.yaml\nproxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n`,
     );
   });
 

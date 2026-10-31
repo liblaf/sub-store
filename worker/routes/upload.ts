@@ -1,6 +1,6 @@
 import type { Context } from "hono";
 
-import { PROFILE_ID_SCHEMA } from "@/lib/core/profile";
+import { PROFILE_ID_SCHEMA, PROFILE_TARGET_SCHEMA } from "@/lib/core/profile";
 import { ARTIFACT_UPLOAD_SCHEMA } from "@/lib/publish/schema";
 
 export async function uploadArtifacts(c: Context<{ Bindings: Env }>): Promise<Response> {
@@ -18,7 +18,7 @@ export async function uploadArtifacts(c: Context<{ Bindings: Env }>): Promise<Re
   if (!parsed.success) return c.text("Invalid artifact upload", 400);
 
   try {
-    for (const format of ["mihomo", "stash"] as const) {
+    for (const format of PROFILE_TARGET_SCHEMA.options) {
       const artifact = parsed.data[format];
       if (!artifact) continue;
       await c.env.KV.put(`artifacts/${id}/${format}.yaml`, artifact.body, {

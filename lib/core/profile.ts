@@ -8,7 +8,7 @@ export const PROFILE_ID_SCHEMA = z.union([
   z.uuid(),
 ]);
 
-export const PROFILE_TARGET_SCHEMA = z.enum(["mihomo", "stash"]);
+export const PROFILE_TARGET_SCHEMA = z.enum(["mihomo", "mihomo-smart", "stash"]);
 export type ProfileTarget = z.infer<typeof PROFILE_TARGET_SCHEMA>;
 
 const PROFILE_METADATA_SCHEMA = z.strictObject({

@@ -22,7 +22,7 @@ const artifact = (
 
 const profile = (
   id: string,
-  target: "mihomo" | "stash" = "mihomo",
+  target: "mihomo" | "mihomo-smart" | "stash" = "mihomo",
   providers: Record<string, unknown> = {},
 ): string =>
   YAML.stringify({
@@ -87,28 +87,61 @@ describe("publishProfiles", () => {
     });
   });
 
-  test("groups distinct targets for one ID into one upload", async () => {
+  test("groups all three targets for one ID into one upload", async () => {
     const directory = await makeDirectory();
     const id = "0123456789ABCDEFGHJK";
     await fs.writeFile(path.join(directory, "mihomo.yaml"), profile(id));
+    await fs.writeFile(path.join(directory, "mihomo-smart.yaml"), profile(id, "mihomo-smart"));
     await fs.writeFile(path.join(directory, "stash.yaml"), profile(id, "stash"));
-    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockResolvedValue(artifact("mihomo"));
+    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockImplementation(function (
+      this: MihomoBuilder,
+    ) {
+      return Promise.resolve(artifact(this.target));
+    });
     const stash = spyOn(StashBuilder.prototype, "build").mockResolvedValue(artifact("stash"));
     const requests: Request[] = [];
     mockFetch(async (input, init) => {
+      expect(mihomo).toHaveBeenCalledTimes(2);
+      expect(stash).toHaveBeenCalledTimes(1);
       requests.push(new Request(input, init));
       return new Response(null, { status: 204 });
     });
     await expect(
       publishProfiles(directory, { url: "https://example.test", token: "token" }),
-    ).resolves.toBe(2);
-    expect(mihomo).toHaveBeenCalledTimes(1);
+    ).resolves.toBe(3);
+    expect(mihomo).toHaveBeenCalledTimes(2);
     expect(stash).toHaveBeenCalledTimes(1);
     expect(requests).toHaveLength(1);
     expect((await requests[0]!.json()) as Record<string, unknown>).toEqual({
       mihomo: artifact("mihomo"),
+      "mihomo-smart": artifact("mihomo-smart"),
       stash: artifact("stash"),
     });
+  });
+
+  test("publishes a Smart profile only under its declared target", async () => {
+    const directory = await makeDirectory();
+    const file = path.join(directory, "mihomo-smart.yaml");
+    await fs.writeFile(file, profile("0123456789ABCDEFGHJK", "mihomo-smart"));
+    const mihomo = spyOn(MihomoBuilder.prototype, "build").mockImplementation(function (
+      this: MihomoBuilder,
+    ) {
+      return Promise.resolve(artifact(this.target));
+    });
+    const stash = spyOn(StashBuilder.prototype, "build");
+    const requests: Request[] = [];
+    mockFetch(async (input, init) => {
+      requests.push(new Request(input, init));
+      return new Response(null, { status: 204 });
+    });
+
+    await expect(
+      publishProfiles(file, { url: "https://example.test", token: "token" }),
+    ).resolves.toBe(1);
+    expect(mihomo).toHaveBeenCalledTimes(1);
+    expect(stash).not.toHaveBeenCalled();
+    expect(requests).toHaveLength(1);
+    expect(await requests[0]!.json()).toEqual({ "mihomo-smart": artifact("mihomo-smart") });
   });
 
   test("publishes all and own subdirectories as two uploads containing both targets", async () => {

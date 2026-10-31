@@ -43,6 +43,10 @@ const upload = {
     body: "proxies: []\n",
     metadata: { headers: { "Subscription-Userinfo": "upload=1; total=2" } },
   },
+  "mihomo-smart": {
+    body: "proxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n",
+    metadata: { headers: { "Subscription-Userinfo": "upload=3; total=4" } },
+  },
   stash: {
     body: "proxy-groups: []\n",
     metadata: { headers: {} },
@@ -108,12 +112,16 @@ describe("artifact upload", (): void => {
     }
   });
 
-  test("writes both artifacts and serves their metadata", async (): Promise<void> => {
+  test("writes all three artifacts and serves their metadata", async (): Promise<void> => {
     const { env, writes } = createEnv({ token });
     const response = await app.request(path, put(JSON.stringify(upload)), env);
 
     expect(response.status).toBe(204);
-    expect(writes).toEqual([`artifacts/${id}/mihomo.yaml`, `artifacts/${id}/stash.yaml`]);
+    expect(writes).toEqual([
+      `artifacts/${id}/mihomo.yaml`,
+      `artifacts/${id}/mihomo-smart.yaml`,
+      `artifacts/${id}/stash.yaml`,
+    ]);
 
     const downloaded = await app.request(
       `https://example.test/subs/${id}/mihomo.yaml`,
@@ -128,12 +136,13 @@ describe("artifact upload", (): void => {
   });
 
   test("updates only supplied formats and preserves existing artifacts", async (): Promise<void> => {
-    for (const format of ["mihomo", "stash"] as const) {
+    for (const format of ["mihomo", "mihomo-smart", "stash"] as const) {
       const { env, entries, writes } = createEnv({ token });
-      const other = format === "mihomo" ? "stash" : "mihomo";
-      const otherKey = `artifacts/${id}/${other}.yaml`;
       const previous = { body: "existing artifact", metadata: { headers: {} } };
-      entries.set(otherKey, previous);
+      const otherKeys = ["mihomo", "mihomo-smart", "stash"]
+        .filter((target) => target !== format)
+        .map((target) => `artifacts/${id}/${target}.yaml`);
+      for (const key of otherKeys) entries.set(key, previous);
       const response = await app.request(
         path,
         put(JSON.stringify({ [format]: upload[format] })),
@@ -141,7 +150,7 @@ describe("artifact upload", (): void => {
       );
       expect(response.status).toBe(204);
       expect(writes).toEqual([`artifacts/${id}/${format}.yaml`]);
-      expect(entries.get(otherKey)).toEqual(previous);
+      for (const key of otherKeys) expect(entries.get(key)).toEqual(previous);
       expect(entries.get(`artifacts/${id}/${format}.yaml`)).toEqual(upload[format]);
     }
   });

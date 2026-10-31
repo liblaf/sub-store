@@ -67,3 +67,22 @@ test("both builders reject mismatched metadata before fetching providers", async
     }
   }
 });
+
+test("Mihomo variants reject each other's target before fetching providers", async () => {
+  for (const target of ["mihomo", "mihomo-smart"] as const) {
+    const builder = new MihomoBuilder({
+      target,
+      profile: PROFILE_SCHEMA.parse({
+        "__sub-store": { target: target === "mihomo" ? "mihomo-smart" : "mihomo" },
+        "proxy-providers": { Example: { url: "https://example.invalid/sub" } },
+      }),
+    });
+    const fetch = spyOn(builder, "fetch");
+    try {
+      await expect(builder.build()).rejects.toThrow("requested target");
+      expect(fetch).not.toHaveBeenCalled();
+    } finally {
+      fetch.mockRestore();
+    }
+  }
+});

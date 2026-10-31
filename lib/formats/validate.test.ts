@@ -14,11 +14,15 @@ import { validateWithMihomo } from "./validate";
 
 const nativeMihomo = which("mihomo");
 
-async function withFakeMihomo(script: string, check: (directory: string) => Promise<void>) {
+async function withFakeMihomo(
+  script: string,
+  check: (directory: string) => Promise<void>,
+  executable: "mihomo" | "mihomo-smart" = "mihomo",
+) {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "sub-store-validator-test-"));
   const previousPath = process.env.PATH;
   try {
-    await fs.writeFile(path.join(directory, "mihomo"), `#!/bin/sh\n${script}\n`, { mode: 0o700 });
+    await fs.writeFile(path.join(directory, executable), `#!/bin/sh\n${script}\n`, { mode: 0o700 });
     process.env.PATH = `${directory}:${previousPath ?? ""}`;
     await check(directory);
   } finally {
@@ -28,36 +32,49 @@ async function withFakeMihomo(script: string, check: (directory: string) => Prom
 }
 
 describe("native Mihomo validation", () => {
-  test("withholds sensitive diagnostics and removes the private temporary configuration", async () => {
-    await withFakeMihomo(
-      'printf "%s\\n" "$4" > "$(dirname "$0")/config-path"\nstat -c %a "$4" > "$(dirname "$0")/mode"\nprintf "credential-from-config" >&2\nexit 1',
-      async (directory) => {
-        let failure: unknown;
-        try {
-          await validateWithMihomo("password: credential-from-config\n");
-        } catch (error) {
-          failure = error;
-        }
-        expect(failure).toBeInstanceOf(Error);
-        expect(String(failure)).toContain("mihomo -t locally");
-        expect(String(failure)).not.toContain("credential-from-config");
-        expect((failure as Error).cause).toBeUndefined();
-        expect((await fs.readFile(path.join(directory, "mode"), "utf8")).trim()).toBe("600");
-        const config = (await fs.readFile(path.join(directory, "config-path"), "utf8")).trim();
-        expect(await fs.exists(path.dirname(config))).toBe(false);
-      },
-    );
-  });
+  for (const executable of ["mihomo", "mihomo-smart"] as const) {
+    test(`${executable} withholds sensitive diagnostics and removes the private temporary configuration`, async () => {
+      await withFakeMihomo(
+        'printf "%s\\n" "$4" > "$(dirname "$0")/config-path"\nstat -c %a "$4" > "$(dirname "$0")/mode"\nprintf "credential-from-config" >&2\nexit 1',
+        async (directory) => {
+          let failure: unknown;
+          try {
+            await validateWithMihomo("password: credential-from-config\n", executable);
+          } catch (error) {
+            failure = error;
+          }
+          expect(failure).toBeInstanceOf(Error);
+          expect(String(failure)).toContain(`${executable} -t locally`);
+          expect(String(failure)).not.toContain("credential-from-config");
+          expect((failure as Error).cause).toBeUndefined();
+          expect((await fs.readFile(path.join(directory, "mode"), "utf8")).trim()).toBe("600");
+          const config = (await fs.readFile(path.join(directory, "config-path"), "utf8")).trim();
+          expect(await fs.exists(path.dirname(config))).toBe(false);
+        },
+        executable,
+      );
+    });
 
-  test("bounds excessive native output and cleans up after terminating the validator", async () => {
-    await withFakeMihomo(
-      'printf "%s\\n" "$4" > "$(dirname "$0")/config-path"\nexec yes credential-from-config',
-      async (directory) => {
-        await expect(validateWithMihomo("{}\n")).rejects.toThrow("1 MiB limit");
-        const config = (await fs.readFile(path.join(directory, "config-path"), "utf8")).trim();
-        expect(await fs.exists(path.dirname(config))).toBe(false);
-      },
-    );
+    test(`${executable} bounds excessive native output and cleans up after terminating the validator`, async () => {
+      await withFakeMihomo(
+        'printf "%s\\n" "$4" > "$(dirname "$0")/config-path"\nexec yes credential-from-config',
+        async (directory) => {
+          await expect(validateWithMihomo("{}\n", executable)).rejects.toThrow("1 MiB limit");
+          const config = (await fs.readFile(path.join(directory, "config-path"), "utf8")).trim();
+          expect(await fs.exists(path.dirname(config))).toBe(false);
+        },
+        executable,
+      );
+    });
+  }
+
+  test("requires the Smart executable even when ordinary Mihomo is available", async () => {
+    await withFakeMihomo("exit 0", async (directory) => {
+      process.env.PATH = directory;
+      await expect(validateWithMihomo("{}\n", "mihomo-smart")).rejects.toThrow(
+        "Install mihomo-smart and make it available on PATH.",
+      );
+    });
   });
 
   test.skipIf(!nativeMihomo)(

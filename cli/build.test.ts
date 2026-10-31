@@ -94,14 +94,69 @@ dns:
     expect(artifact.dns.nameserver).toEqual(["https://dns.example.test/dns-query"]);
     expect((await fs.stat(output)).mode & 0o777).toBe(0o600);
     const previousOutput = await fs.readFile(output, "utf8");
+    const smartProfile = path.join(dir, "mihomo-smart.yaml");
+    const smartBin = path.join(dir, "bin");
+    await fs.mkdir(smartBin);
+    await fs.writeFile(path.join(smartBin, "mihomo"), "#!/bin/sh\nexit 1\n", { mode: 0o700 });
+    await fs.writeFile(
+      path.join(smartBin, "mihomo-smart"),
+      '#!/bin/sh\nprintf "%s\\n" "$@" > "$(dirname "$0")/arguments"\ncp "$4" "$(dirname "$0")/checked.yaml"\n',
+      { mode: 0o700 },
+    );
+    await fs.writeFile(
+      smartProfile,
+      YAML.stringify({
+        "__sub-store": { target: "mihomo-smart" },
+        "lgbm-auto-update": true,
+        "proxy-groups": [{ name: "Smart", type: "smart", proxies: ["DIRECT"], uselightgbm: true }],
+        rules: ["MATCH,Smart"],
+      }),
+    );
+    const smartChild = spawn(
+      [process.execPath, entry.fullPath, "build", "mihomo-smart", smartProfile],
+      {
+        cwd: dir,
+        env: { ...process.env, PATH: `${smartBin}:${process.env.PATH ?? ""}` },
+        stdout: "pipe",
+        stderr: "pipe",
+      },
+    );
+    const [smartExit, smartStdout, smartStderr] = await Promise.all([
+      smartChild.exited,
+      new Response(smartChild.stdout).text(),
+      new Response(smartChild.stderr).text(),
+    ]);
+    expect({
+      exitCode: smartExit,
+      output: smartExit === 0 ? "" : smartStdout + smartStderr,
+    }).toEqual({
+      exitCode: 0,
+      output: "",
+    });
+    const smartOutput = path.join(dir, "artifacts", "mihomo-smart.yaml");
+    const smartBody = await fs.readFile(smartOutput, "utf8");
+    expect(YAML.parse(smartBody)).toEqual({
+      "lgbm-auto-update": true,
+      "proxy-groups": [{ name: "Smart", type: "smart", proxies: ["DIRECT"], uselightgbm: true }],
+      rules: ["MATCH,Smart"],
+      proxies: [],
+    });
+    expect(await fs.readFile(path.join(smartBin, "checked.yaml"), "utf8")).toBe(smartBody);
+    const smartArgs = (await fs.readFile(path.join(smartBin, "arguments"), "utf8"))
+      .trim()
+      .split("\n");
+    expect(smartArgs).toEqual(["-d", expect.any(String), "-f", expect.any(String), "-t"]);
+    expect(await fs.exists(smartArgs[1]!)).toBe(false);
+    expect((await fs.stat(smartOutput)).mode & 0o777).toBe(0o600);
+    expect((await fs.stat(`${smartOutput}.metadata.json`)).mode & 0o777).toBe(0o600);
     const secret = "private-subscription-token";
-    for (const target of ["mihomo", "stash"] as const) {
+    for (const target of ["mihomo", "mihomo-smart", "stash"] as const) {
       await fs.writeFile(
         profile,
         YAML.stringify({
           "__sub-store": {
             id: "0123456789ABCDEFGHJK",
-            target: target === "mihomo" ? "stash" : "mihomo",
+            target: target === "stash" ? "mihomo-smart" : "stash",
           },
           "proxy-providers": {
             upstream: { url: new URL(`/subscription/${secret}`, server.url).href },

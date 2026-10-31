@@ -24,9 +24,10 @@ const ARTIFACT_SCHEMA = z.strictObject({
 export const ARTIFACT_UPLOAD_SCHEMA = z
   .strictObject({
     mihomo: ARTIFACT_SCHEMA.optional(),
+    "mihomo-smart": ARTIFACT_SCHEMA.optional(),
     stash: ARTIFACT_SCHEMA.optional(),
   })
-  .refine((artifacts) => artifacts.mihomo !== undefined || artifacts.stash !== undefined, {
+  .refine((artifacts) => Object.values(artifacts).some((artifact) => artifact !== undefined), {
     message: "At least one artifact is required",
   });
 

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import YAML from "yaml";
 
 import { PROFILE_SCHEMA } from "@/lib/core/profile";
-import type { Profile } from "@/lib/core/profile";
+import type { Profile, ProfileTarget } from "@/lib/core/profile";
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 
@@ -39,7 +39,7 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
 
   const files = await discoverProfiles(inputPath);
 
-  const profiles: { profile: Profile; id: string; target: "mihomo" | "stash" }[] = [];
+  const profiles: { profile: Profile; id: string; target: ProfileTarget }[] = [];
   const pairs = new Set<string>();
   for (const file of files) {
     const profile = PROFILE_SCHEMA.parse(
@@ -58,7 +58,7 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
   const artifacts = new Map<string, ArtifactUpload>();
   for (const { profile, id, target } of profiles) {
     const builder =
-      target === "mihomo" ? new MihomoBuilder({ profile }) : new StashBuilder({ profile });
+      target === "stash" ? new StashBuilder({ profile }) : new MihomoBuilder({ profile, target });
     const group = artifacts.get(id) ?? {};
     group[target] = await builder.build();
     artifacts.set(id, group);

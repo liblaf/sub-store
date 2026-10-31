@@ -9,20 +9,27 @@ import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
 
 type Opts = { output: string };
 
-export const mihomo = new Command("mihomo")
-  .argument("<profile>", "native YAML profile")
-  .option("-o, --output <file>", "output artifact", "artifacts/mihomo.yaml")
-  .action(async (file: string, options: Opts): Promise<void> => {
-    try {
-      const profile = PROFILE_SCHEMA.parse(
-        YAML.parse(await fs.readFile(file, "utf-8"), { merge: true }),
-      );
-      assertProfileTarget(profile, "mihomo");
-      const artifact = await new MihomoBuilder({ profile }).build();
-      await writePrivateArtifact(options.output, artifact);
-    } catch {
-      mihomo.error(
-        "Failed to build Mihomo configuration; check the profile and provider availability",
-      );
-    }
-  });
+function createMihomoCommand(target: "mihomo" | "mihomo-smart") {
+  const command = new Command(target)
+    .argument("<profile>", "native YAML profile")
+    .option("-o, --output <file>", "output artifact", `artifacts/${target}.yaml`)
+    .action(async (file: string, options: Opts): Promise<void> => {
+      try {
+        const profile = PROFILE_SCHEMA.parse(
+          YAML.parse(await fs.readFile(file, "utf-8"), { merge: true }),
+        );
+        assertProfileTarget(profile, target);
+        const artifact = await new MihomoBuilder({ profile, target }).build();
+        await writePrivateArtifact(options.output, artifact);
+      } catch {
+        const label = target === "mihomo-smart" ? "Mihomo Smart" : "Mihomo";
+        command.error(
+          `Failed to build ${label} configuration; check the profile, ${target} executable, and provider availability`,
+        );
+      }
+    });
+  return command;
+}
+
+export const mihomo = createMihomoCommand("mihomo");
+export const mihomoSmart = createMihomoCommand("mihomo-smart");

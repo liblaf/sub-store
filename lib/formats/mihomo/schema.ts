@@ -26,3 +26,11 @@ export const MIHOMO_CONFIG_SCHEMA = z.looseObject({
 });
 
 export type MihomoConfig = z.infer<typeof MIHOMO_CONFIG_SCHEMA>;
+
+export const MIHOMO_SMART_PROXY_GROUP_SCHEMA = MIHOMO_PROXY_GROUP_SCHEMA.extend({
+  type: z.enum([...MIHOMO_PROXY_GROUP_SCHEMA.shape.type.options, "smart"]),
+});
+
+export const MIHOMO_SMART_CONFIG_SCHEMA = MIHOMO_CONFIG_SCHEMA.extend({
+  "proxy-groups": z.array(MIHOMO_SMART_PROXY_GROUP_SCHEMA),
+});

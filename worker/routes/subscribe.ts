@@ -1,12 +1,12 @@
 import type { Context } from "hono";
 
-import { PROFILE_ID_SCHEMA } from "@/lib/core/profile";
+import { PROFILE_ID_SCHEMA, PROFILE_TARGET_SCHEMA } from "@/lib/core/profile";
 
 type Metadata = {
   headers?: Record<string, string>;
 };
 
-const ARTIFACT_FILENAMES = new Set(["mihomo.yaml", "stash.yaml"]);
+const ARTIFACT_FILENAMES = new Set(PROFILE_TARGET_SCHEMA.options.map((target) => `${target}.yaml`));
 const SUBSCRIPTION_ORIGIN = "https://subs.liblaf.me";
 
 export async function serveSubscription(c: Context<{ Bindings: Env }>): Promise<Response> {
