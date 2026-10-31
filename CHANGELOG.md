@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.3](https://github.com/liblaf/sub-store/releases/tag/v0.5.3) - 2026-10-31
+
+### ✨ Features
+
+- add Mihomo Smart build and subscription support - [1e94061](https://github.com/liblaf/sub-store/commit/1e94061427a8647cd5da24f98d8d3f1d1c7d7768) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [v0.5.2](https://github.com/liblaf/sub-store/releases/tag/v0.5.2) - 2026-10-27
 
 ### ✨ Features
@@ -15,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 
 ## [v0.5.1](https://github.com/liblaf/sub-store/releases/tag/v0.5.1) - 2026-10-27
