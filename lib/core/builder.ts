@@ -2,7 +2,7 @@ import YAML from "yaml";
 import type { ZodType } from "zod";
 
 import { normalizeProviderProxies } from "@/lib/pipeline/name";
-import { fetcher, subconvert } from "@/lib/utils";
+import { fetcher, isStaleResponse, subconvert } from "@/lib/utils";
 
 import { compilePattern } from "./filter";
 import { assertProfileTarget } from "./profile";
@@ -15,7 +15,7 @@ import { infoProxyNames, usageFromBwcounter, usageFromHeader, usageToHeader } fr
 import type { SubscriptionUserinfo, Usage } from "./usage";
 
 export type BuildOptions = { profile: Profile };
-export type Metadata = { date: Date; usage?: Usage };
+export type Metadata = { date: Date; usage?: Usage; stale?: boolean };
 export type FetchResult<T = unknown> = { proxies: ProxyWrapper<T>[]; metadata: Metadata };
 type ProviderSnapshot<T = unknown> = FetchResult<T> & { name: string };
 
@@ -74,7 +74,7 @@ export abstract class Builder<T extends NativeProxy> {
     );
     const providers = new Map(snapshots.map(({ name, proxies }) => [name, proxies]));
     const infoProxies = snapshots.flatMap(({ name, metadata }) =>
-      infoProxyNames(name, metadata.date, metadata.usage).map((name) =>
+      infoProxyNames(name, metadata.date, metadata.usage, metadata.stale).map((name) =>
         createProxyWrapper({
           info: true,
           name,
@@ -122,7 +122,11 @@ export abstract class Builder<T extends NativeProxy> {
       proxies: config.proxies.map((proxy) =>
         createProxyWrapper({ name: proxy.name, wrapped: proxy }),
       ),
-      metadata: { date, usage },
+      metadata: {
+        date,
+        usage,
+        stale: isStaleResponse(response) || !!(usage && "source" in usage && usage.stale),
+      },
     };
   }
 

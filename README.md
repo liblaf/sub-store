@@ -18,6 +18,7 @@
 - Keep client settings, static proxies, groups, rule providers, and routing rules in one native YAML profile.
 - Fetch providers during the build and expand provider references into static proxy lists.
 - Apply explicit name overrides and regex filters, with generated quota, expiry, reset, and update entries available through `$info`.
+- Mark provider info entries with 🔴 when their quota is exhausted and ⚠️ when a failed refresh uses stale subscription or bandwidth-counter data.
 - Validate references for every target and run `mihomo -t` for both Mihomo targets.
 - Cache upstream responses for one hour. Failed fetches can reuse a valid stale cache with its original update date; invalid refresh data and failures without a valid cache fail the build.
 

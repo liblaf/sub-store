@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
+import ky from "ky";
 import YAML from "yaml";
 
 import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
@@ -7,6 +11,7 @@ import { MIHOMO_CONFIG_SCHEMA } from "@/lib/formats/mihomo/schema";
 import type { MihomoProxy } from "@/lib/formats/mihomo/schema";
 import { StashBuilder } from "@/lib/formats/stash/builder";
 import { fetcher } from "@/lib/utils";
+import { Fetcher } from "@/lib/utils/cache-fetch";
 
 import { unwrapProxies } from "./builder";
 import { PROFILE_SCHEMA } from "./profile";
@@ -117,6 +122,63 @@ for (const target of ["mihomo", "stash"] as const) {
         fetcher.fetch = originalFetch;
       }
     });
+
+    test.each(["subscription", "counter"] as const)(
+      "marks exhausted info nodes when only the %s response is stale",
+      async (source): Promise<void> => {
+        const directory = await mkdtemp(path.join(os.tmpdir(), "sub-store-info-"));
+        const originalFetch = fetcher.fetch;
+        const staleUrl = source === "subscription" ? subscriptionUrl : counterUrl;
+        let fail = false;
+        const cachedFetcher = new Fetcher(
+          ky.create({
+            retry: 0,
+            fetch: async (input): Promise<Response> => {
+              const url = new Request(input).url;
+              if (fail && url === staleUrl) throw new TypeError("offline");
+              return url === subscriptionUrl
+                ? subscriptionResponse()
+                : Response.json({
+                    monthly_bw_limit_b: 200,
+                    bw_counter_b: 200,
+                    bw_reset_day_of_month: 15,
+                  });
+            },
+          }),
+          directory,
+        );
+        try {
+          await cachedFetcher.fetch(
+            staleUrl,
+            source === "subscription" ? { headers: { "User-Agent": "clash.meta" } } : undefined,
+          );
+          const [file] = await readdir(directory);
+          const cacheFile = path.join(directory, file!);
+          const cached = JSON.parse(await readFile(cacheFile, "utf-8"));
+          cached.storedAt = 0;
+          await writeFile(cacheFile, JSON.stringify(cached));
+          fail = true;
+          fetcher.fetch = cachedFetcher.fetch.bind(cachedFetcher);
+
+          const artifact = await createBuilder(target).build();
+          const config = YAML.parse(artifact.body);
+          const names = [
+            "[Counter] 🔴 ⚠️ 📊 0.00 B / 200 B (0%)",
+            "[Counter] 🔴 ⚠️ 🔁 15",
+            "[Counter] 🔴 ⚠️ 📥 2026-09-01",
+          ];
+          expect(config["proxy-groups"][0].proxies).toEqual(names);
+          expect(config.proxies.map(({ name }: { name: string }) => name)).toEqual([
+            "Example Node",
+            ...names,
+          ]);
+          expect(artifact.metadata.headers).toEqual({});
+        } finally {
+          fetcher.fetch = originalFetch;
+          await rm(directory, { recursive: true, force: true });
+        }
+      },
+    );
 
     test("withholds configured API credentials and diagnostics on failure", async () => {
       const originalFetch = fetcher.fetch;

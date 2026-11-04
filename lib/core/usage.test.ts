@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { fetcher } from "../utils";
 import { infoProxyNames, usageFromBwcounter, usageFromHeader, usageToHeader } from "./usage";
+import type { Usage } from "./usage";
 
 describe("Subscription-Userinfo", (): void => {
   test("keeps only finite nonnegative recognized fields", (): void => {
@@ -56,6 +57,69 @@ describe("Subscription-Userinfo", (): void => {
     ]);
     expect(infoProxyNames("Unlimited", new Date("2026-09-01T12:00:00Z"), { expire: 0 })).toEqual([
       "[Unlimited] 📥 2026-09-01",
+    ]);
+  });
+
+  test.each([
+    {
+      label: "header at quota",
+      usage: { upload: 20, download: 80, total: 100 },
+      quota: "0.00 B / 100 B (0%)",
+    },
+    {
+      label: "header over quota",
+      usage: { upload: 20, download: 81, total: 100 },
+      quota: "-1.00 B / 100 B (-1%)",
+    },
+    {
+      label: "bwcounter at quota",
+      usage: { source: "bwcounter", used: 100, total: 100, resetDay: 15 },
+      quota: "0.00 B / 100 B (0%)",
+    },
+    {
+      label: "bwcounter over quota",
+      usage: { source: "bwcounter", used: 101, total: 100, resetDay: 15 },
+      quota: "-1.00 B / 100 B (-1%)",
+    },
+  ] satisfies { label: string; usage: Usage; quota: string }[])(
+    "marks all info nodes for $label",
+    ({ usage, quota }): void => {
+      const names = infoProxyNames("Exhausted", new Date("2026-09-01T12:00:00Z"), usage);
+      expect(names[0]).toBe(`[Exhausted] 🔴 📊 ${quota}`);
+      expect(names.every((name) => name.startsWith("[Exhausted] 🔴 "))).toBe(true);
+    },
+  );
+
+  test.each([
+    { upload: 20, download: 79.9, total: 100 },
+    { source: "bwcounter", used: 99.9, total: 100, resetDay: 15 },
+    { upload: 100, total: 100 },
+    { upload: 20, download: 80, total: 0 },
+    { expire: 1 },
+  ] satisfies Usage[])(
+    "does not mark available, unknown, or unlimited quota: %j",
+    (usage): void => {
+      expect(
+        infoProxyNames("Available", new Date("2026-09-01T12:00:00Z"), usage).join(),
+      ).not.toContain("🔴");
+    },
+  );
+
+  test("combines stale and exhausted markers on each existing info node", (): void => {
+    expect(
+      infoProxyNames(
+        "Both",
+        new Date("2026-09-01T12:00:00Z"),
+        { upload: 20, download: 80, total: 100, expire: 1798761600 },
+        true,
+      ),
+    ).toEqual([
+      "[Both] 🔴 ⚠️ 📊 0.00 B / 100 B (0%)",
+      "[Both] 🔴 ⚠️ ⌛ 2027-01-01",
+      "[Both] 🔴 ⚠️ 📥 2026-09-01",
+    ]);
+    expect(infoProxyNames("Stale", new Date("2026-09-01T12:00:00Z"), undefined, true)).toEqual([
+      "[Stale] ⚠️ 📥 2026-09-01",
     ]);
   });
 

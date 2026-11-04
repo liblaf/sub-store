@@ -1,6 +1,6 @@
 import { partial } from "filesize";
 
-import { fetcher } from "../utils";
+import { fetcher, isStaleResponse } from "../utils";
 
 export type Bwcounter = {
   monthly_bw_limit_b: number;
@@ -22,6 +22,7 @@ export type BwcounterUsage = {
   used: number;
   total: number;
   resetDay: number;
+  stale?: boolean;
 };
 
 export type Usage = SubscriptionUserinfo | BwcounterUsage;
@@ -36,6 +37,7 @@ export async function usageFromBwcounter(url?: string | null): Promise<Bwcounter
     used: bwcounter.bw_counter_b,
     total: bwcounter.monthly_bw_limit_b,
     resetDay: bwcounter.bw_reset_day_of_month,
+    ...(isStaleResponse(response) ? { stale: true } : {}),
   };
 }
 
@@ -64,9 +66,16 @@ export function usageToHeader(usage?: Usage | null): string {
     .join("; ");
 }
 
-export function infoProxyNames(providerName: string, date: Date, usage?: Usage | null): string[] {
+export function infoProxyNames(
+  providerName: string,
+  date: Date,
+  usage?: Usage | null,
+  stale = false,
+): string[] {
   const names: string[] = [];
+  let exhausted = false;
   if (isBwcounterUsage(usage)) {
+    exhausted = usage.total > 0 && usage.used >= usage.total;
     names.push(quotaToDisplay(usage.used, usage.total));
     names.push(`🔁 ${usage.resetDay}`);
   } else if (usage) {
@@ -76,6 +85,7 @@ export function infoProxyNames(providerName: string, date: Date, usage?: Usage |
       usage.total !== undefined &&
       usage.total > 0
     ) {
+      exhausted = usage.upload + usage.download >= usage.total;
       names.push(quotaToDisplay(usage.upload + usage.download, usage.total));
     }
     if (usage.expire !== undefined && usage.expire > 0) {
@@ -84,7 +94,8 @@ export function infoProxyNames(providerName: string, date: Date, usage?: Usage |
     }
   }
   names.push(`📥 ${formatDate(date)}`);
-  return names.map((name: string): string => `[${providerName}] ${name}`);
+  const status = `${exhausted ? "🔴 " : ""}${stale ? "⚠️ " : ""}`;
+  return names.map((name: string): string => `[${providerName}] ${status}${name}`);
 }
 
 function quotaToDisplay(used: number, total: number): string {

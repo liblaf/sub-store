@@ -6,7 +6,7 @@ import path from "node:path";
 import ky from "ky";
 import type { KyInstance } from "ky";
 
-import { Fetcher, formatUrlForLog } from "./cache-fetch";
+import { Fetcher, formatUrlForLog, isStaleResponse } from "./cache-fetch";
 
 type Request = (url: string | URL) => Promise<Response>;
 
@@ -100,8 +100,12 @@ describe("Fetcher cache", (): void => {
         ),
         dir,
       );
-      expect(await (await fetcher.fetch("https://example.test/sub")).text()).toBe("valid-1");
-      expect(await (await fetcher.fetch("https://example.test/sub")).text()).toBe("valid-1");
+      const original = await fetcher.fetch("https://example.test/sub");
+      const cached = await fetcher.fetch("https://example.test/sub");
+      expect(await original.text()).toBe("valid-1");
+      expect(await cached.text()).toBe("valid-1");
+      expect(isStaleResponse(original)).toBe(false);
+      expect(isStaleResponse(cached)).toBe(false);
       expect(calls).toBe(1);
     });
   });
@@ -125,7 +129,7 @@ describe("Fetcher cache", (): void => {
     "reuses stale cache after a %s failure without updating its date or age",
     async (failure): Promise<void> => {
       await withCache(async (dir: string): Promise<void> => {
-        let fail = false;
+        const upstream = { fail: false };
         let calls = 0;
         const date = "Mon, 01 Jan 2024 12:00:00 GMT";
         const userinfo = "upload=1; download=2; total=100";
@@ -134,7 +138,7 @@ describe("Fetcher cache", (): void => {
             retry: 0,
             fetch: async (): Promise<Response> => {
               calls++;
-              if (fail) {
+              if (upstream.fail) {
                 if (failure === "network") throw new TypeError("offline");
                 return new Response("unavailable", { status: 503 });
               }
@@ -150,11 +154,12 @@ describe("Fetcher cache", (): void => {
         const [file] = await readdir(dir);
         const cacheFile = path.join(dir, file!);
         const before = await readFile(cacheFile, "utf-8");
-        fail = true;
+        upstream.fail = true;
 
         for (let attempt = 0; attempt < 2; attempt++) {
           const response = await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
 
+          expect(isStaleResponse(response)).toBe(true);
           expect(await response.text()).toBe("valid");
           expect(response.headers.get("date")).toBe(date);
           expect(response.headers.get("subscription-userinfo")).toBe(userinfo);
@@ -162,10 +167,12 @@ describe("Fetcher cache", (): void => {
         }
         expect(calls).toBe(3);
 
-        fail = false;
-        await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        upstream.fail = false;
+        const refreshed = await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        expect(isStaleResponse(refreshed)).toBe(false);
         expect(await readFile(cacheFile, "utf-8")).not.toBe(before);
-        await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        const cached = await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+        expect(isStaleResponse(cached)).toBe(false);
         expect(calls).toBe(4);
       });
     },
@@ -173,17 +180,17 @@ describe("Fetcher cache", (): void => {
 
   test("preserves the original fetch date when stale upstream data had no Date header", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
-      let fail = false;
+      const upstream = { fail: false };
       const fetcher = new Fetcher(
         kyFrom(async (): Promise<Response> => {
-          if (fail) throw new Error("offline");
+          if (upstream.fail) throw new Error("offline");
           return new Response("valid");
         }),
         dir,
       );
       const original = await fetcher.fetch("https://example.test/sub");
       await expireCache(dir);
-      fail = true;
+      upstream.fail = true;
 
       const response = await fetcher.fetch("https://example.test/sub");
 
@@ -194,17 +201,17 @@ describe("Fetcher cache", (): void => {
 
   test("rejects an invalid stale cache when upstream fails", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
-      let fail = false;
+      const upstream = { fail: false };
       const fetcher = new Fetcher(
         kyFrom(async (): Promise<Response> => {
-          if (fail) throw new Error("offline");
+          if (upstream.fail) throw new Error("offline");
           return new Response("malformed");
         }),
         dir,
       );
       await fetcher.fetch("https://example.test/sub");
       await expireCache(dir);
-      fail = true;
+      upstream.fail = true;
 
       await expect(
         fetcher.fetch("https://example.test/sub", undefined, validateYaml),
@@ -214,11 +221,11 @@ describe("Fetcher cache", (): void => {
 
   test("rejects a malformed refresh without overwriting the cache", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
-      let body = "valid";
+      const upstream = { body: "valid" };
       const fetcher = new Fetcher(
         kyFrom(
           async (): Promise<Response> =>
-            new Response(body, { headers: { Date: "Thu, 01 Jan 1970 00:00:00 GMT" } }),
+            new Response(upstream.body, { headers: { Date: "Thu, 01 Jan 1970 00:00:00 GMT" } }),
         ),
         dir,
       );
@@ -227,7 +234,7 @@ describe("Fetcher cache", (): void => {
       const [file] = await readdir(dir);
       const cacheFile = path.join(dir, file!);
       const before = await readFile(cacheFile, "utf-8");
-      body = "malformed";
+      upstream.body = "malformed";
       await expect(
         fetcher.fetch("https://example.test/sub", undefined, validateYaml),
       ).rejects.toThrow("invalid provider body");

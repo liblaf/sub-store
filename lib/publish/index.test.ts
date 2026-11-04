@@ -435,7 +435,7 @@ describe("publishProfiles", () => {
     expect(uploads).toHaveLength(1);
     const artifacts = uploads[0]!;
     for (const format of ["stash"]) {
-      expect((artifacts[format] as { body: string }).body).toContain("[Cached] 📥 2024-02-29");
+      expect((artifacts[format] as { body: string }).body).toContain("[Cached] ⚠️ 📥 2024-02-29");
     }
     expect(await fs.readFile(cachePath, "utf-8")).toBe(cacheBeforePublish);
   });

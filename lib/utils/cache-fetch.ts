@@ -22,6 +22,8 @@ type CacheEntry = {
 
 export type ResponseValidator = (response: Response) => void | Promise<void>;
 
+const staleResponses = new WeakSet<Response>();
+
 export class Fetcher {
   private appOwnedDir: boolean;
   private dir: string;
@@ -65,6 +67,7 @@ export class Fetcher {
       if (!cached) throw error;
       await this.validate(cached.response, validator);
       consola.warn(`Upstream fetch failed; using stale cache: ${formatUrlForLog(url)}`);
+      staleResponses.add(cached.response);
       return cached.response;
     }
     await this.validate(fetched, validator);
@@ -133,6 +136,11 @@ export class Fetcher {
 }
 
 export const fetcher: Fetcher = new Fetcher();
+
+/** Whether a failed refresh caused this response to be served from an expired cache. */
+export function isStaleResponse(response: Response): boolean {
+  return staleResponses.has(response);
+}
 
 export function formatUrlForLog(url: string | URL): string {
   return new URL(url).origin;
