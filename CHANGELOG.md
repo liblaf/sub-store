@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.5.5](https://github.com/liblaf/sub-store/releases/tag/v0.5.5) - 2026-11-04
+
+### ✨ Features
+
+- mark exhausted and stale provider info nodes - [41a8fce](https://github.com/liblaf/sub-store/commit/41a8fcebb2228766ff0299021972a4ad669b7ae7) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [v0.5.4](https://github.com/liblaf/sub-store/releases/tag/v0.5.4) - 2026-10-31
 
 ### 🐛 Bug Fixes
@@ -15,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 
 ## [v0.5.3](https://github.com/liblaf/sub-store/releases/tag/v0.5.3) - 2026-10-31
