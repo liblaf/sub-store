@@ -21,8 +21,8 @@ afterEach(async (): Promise<void> => {
   );
 });
 
-test("publish settings load native TOML and retain the default service origin", async (): Promise<void> => {
-  const configPath = await temporaryConfig('token = "config-token"\n');
+test("publish settings load the publish table and retain the default service origin", async (): Promise<void> => {
+  const configPath = await temporaryConfig('[publish]\ntoken = " config-token "\n');
   expect(await resolvePublishConfig({ configPath, env: {} })).toEqual({
     token: "config-token",
     url: "https://subs.liblaf.me",
@@ -35,7 +35,7 @@ test("publish settings discover the config under the injected XDG config directo
   await fs.mkdir(path.join(configHome, "sub-store"));
   await fs.writeFile(
     path.join(configHome, "sub-store", "config.toml"),
-    'token = "xdg-token"\nbase-url = "https://config.example.test"\n',
+    '[publish]\ntoken = "xdg-token"\nbase-url = "https://config.example.test"\n',
   );
   expect(await resolvePublishConfig({ env: { XDG_CONFIG_HOME: configHome } })).toEqual({
     token: "xdg-token",
@@ -43,25 +43,31 @@ test("publish settings discover the config under the injected XDG config directo
   });
 });
 
-test("environment settings override TOML token and service origin", async (): Promise<void> => {
+test("credential environment variables do not override the TOML settings", async (): Promise<void> => {
   const configPath = await temporaryConfig(
-    'token = "config-token"\nbase-url = "https://config.example.test"\n',
+    '[publish]\ntoken = "config-token"\nbase-url = "https://config.example.test"\n',
   );
   expect(
     await resolvePublishConfig({
       configPath,
-      env: { SUB_STORE_API_TOKEN: "environment-token", SUB_STORE_URL: "http://127.0.0.1:43123" },
+      env: {
+        SUB_STORE_API_TOKEN: "environment-token",
+        SUB_STORE_URL: "https://user:private-environment-secret@example.test",
+      },
     }),
-  ).toEqual({ token: "environment-token", url: "http://127.0.0.1:43123" });
+  ).toEqual({
+    token: "config-token",
+    url: "https://config.example.test",
+  });
 });
 
-test("missing default config permits environment-only operation", async (): Promise<void> => {
+test("missing default config fails even with environment credentials", async (): Promise<void> => {
   const configPath = await temporaryConfig();
-  expect(
-    await resolvePublishConfig({
+  await expect(
+    resolvePublishConfig({
       env: { XDG_CONFIG_HOME: path.dirname(configPath), SUB_STORE_API_TOKEN: "environment-token" },
     }),
-  ).toEqual({ token: "environment-token", url: "https://subs.liblaf.me" });
+  ).rejects.toThrow("Failed to read configuration file");
 });
 
 test("an explicitly selected missing config fails even with an environment token", async (): Promise<void> => {
@@ -69,13 +75,6 @@ test("an explicitly selected missing config fails even with an environment token
   await expect(
     resolvePublishConfig({ configPath, env: { SUB_STORE_API_TOKEN: "environment-token" } }),
   ).rejects.toBeInstanceOf(CliConfigError);
-});
-
-test("missing upload token reports a config error", async (): Promise<void> => {
-  const configPath = await temporaryConfig("");
-  await expect(resolvePublishConfig({ configPath, env: {} })).rejects.toBeInstanceOf(
-    CliConfigError,
-  );
 });
 
 for (const url of [
@@ -86,7 +85,7 @@ for (const url of [
 ]) {
   test(`publish configuration accepts origin ${url}`, async (): Promise<void> => {
     const configPath = await temporaryConfig(
-      `token = "config-token"\nbase-url = ${JSON.stringify(url)}\n`,
+      `[publish]\ntoken = "config-token"\nbase-url = ${JSON.stringify(url)}\n`,
     );
     expect(await resolvePublishConfig({ configPath, env: {} })).toEqual({
       token: "config-token",
@@ -96,22 +95,29 @@ for (const url of [
 }
 
 for (const [index, source] of [
-  'token = "private-config-secret',
-  "token = 123\n",
-  'token = "   "\n',
-  'token = "private-config-secret"\nbase-url = 123\n',
-  'token = "private-config-secret"\nunrecognized = "private-config-secret"\n',
-  'token = "private-config-secret"\nbase-url = "http://public.example.test"\n',
-  'token = "private-config-secret"\nbase-url = "https://user:private-config-secret@example.test"\n',
-  'token = "private-config-secret"\nbase-url = "https://example.test/path/private-config-secret"\n',
-  'token = "private-config-secret"\nbase-url = "https://example.test?token=private-config-secret"\n',
-  'token = "private-config-secret"\nbase-url = "https://example.test#private-config-secret"\n',
+  '[publish]\ntoken = "private-config-secret',
+  "",
+  'token = "private-config-secret"\n',
+  "[publish]\ntoken = 123\n",
+  '[publish]\ntoken = "   "\n',
+  '[publish]\nbase-url = "https://config.example.test"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = 123\n',
+  'unrecognized = "private-config-secret"\n[publish]\ntoken = "config-token"\n',
+  '[publish]\ntoken = "private-config-secret"\nunrecognized = "private-config-secret"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = "http://public.example.test"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = "https://user:private-config-secret@example.test"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = "https://example.test/path/private-config-secret"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = "https://example.test?token=private-config-secret"\n',
+  '[publish]\ntoken = "private-config-secret"\nbase-url = "https://example.test#private-config-secret"\n',
 ].entries()) {
   test(`invalid config fails safely (case ${index + 1})`, async (): Promise<void> => {
     const configPath = await temporaryConfig(source);
     let error: unknown;
     try {
-      await resolvePublishConfig({ configPath, env: {} });
+      await resolvePublishConfig({
+        configPath,
+        env: { SUB_STORE_API_TOKEN: "environment-token" },
+      });
     } catch (caught) {
       error = caught;
     }
@@ -120,19 +126,9 @@ for (const [index, source] of [
       "Invalid TOML configuration",
       "Invalid configuration options",
       "Invalid publish base URL",
-      "An upload token is required; set token in config.toml or SUB_STORE_API_TOKEN",
     ]).toContain((error as Error).message);
     expect(String(error)).not.toContain("private-config-secret");
-    expect(String(error)).not.toContain(source);
+    if (source) expect(String(error)).not.toContain(source);
+    expect((error as Error).cause).toBeUndefined();
   });
 }
-
-test("invalid environment origins fail safely", async (): Promise<void> => {
-  const configPath = await temporaryConfig('token = "config-token"\n');
-  await expect(
-    resolvePublishConfig({
-      configPath,
-      env: { SUB_STORE_URL: "https://user:private-environment-secret@example.test" },
-    }),
-  ).rejects.toBeInstanceOf(CliConfigError);
-});

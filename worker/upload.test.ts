@@ -38,18 +38,23 @@ function createEnv(setup: { failKey?: string; token?: string } = {}): {
 const id = "0123456789ABCDEFGHJK";
 const path = `https://example.test/api/profiles/${id}/artifacts`;
 const token = "test-token";
+const infoHeaders = {
+  "Content-Disposition": "attachment; filename*=UTF-8''%E8%AE%A2%E9%98%85",
+  "Profile-Update-Interval": "24",
+  "Profile-Web-Page-Url": "https://example.test/account",
+};
 const upload = {
   mihomo: {
     body: "proxies: []\n",
-    metadata: { headers: { "Subscription-Userinfo": "upload=1; total=2" } },
+    metadata: { headers: { ...infoHeaders, "Subscription-Userinfo": "upload=1; total=2" } },
   },
   "mihomo-smart": {
     body: "proxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n",
-    metadata: { headers: { "Subscription-Userinfo": "upload=3; total=4" } },
+    metadata: { headers: { ...infoHeaders, "Subscription-Userinfo": "upload=3; total=4" } },
   },
   stash: {
     body: "proxy-groups: []\n",
-    metadata: { headers: {} },
+    metadata: { headers: infoHeaders },
   },
 };
 
@@ -123,16 +128,43 @@ describe("artifact upload", (): void => {
       `artifacts/${id}/stash.yaml`,
     ]);
 
-    const downloaded = await app.request(
-      `https://example.test/subs/${id}/mihomo.yaml`,
-      undefined,
+    for (const target of ["mihomo", "mihomo-smart", "stash"] as const) {
+      const response = await app.request(
+        `https://example.test/subs/${id}/${target}.yaml`,
+        undefined,
+        env,
+      );
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe(
+        `#SUBSCRIBED https://example.test/subs/${id}/${target}.yaml\n${upload[target].body}`,
+      );
+      for (const [name, value] of Object.entries(upload[target].metadata.headers)) {
+        expect(response.headers.get(name)).toBe(value);
+      }
+    }
+  });
+
+  test("preserves previous artifacts when an overwrite payload fails validation", async (): Promise<void> => {
+    const { env, entries, writes } = createEnv({ token });
+    expect((await app.request(path, put(JSON.stringify(upload)), env)).status).toBe(204);
+    const previous = structuredClone(entries);
+    writes.length = 0;
+
+    const response = await app.request(
+      path,
+      put(
+        JSON.stringify({
+          mihomo: { ...upload.mihomo, body: "replacement artifact" },
+          stash: { ...upload.stash, metadata: { headers: { "Set-Cookie": "private=value" } } },
+        }),
+      ),
       env,
     );
-    expect(downloaded.status).toBe(200);
-    expect(downloaded.headers.get("Subscription-Userinfo")).toBe("upload=1; total=2");
-    expect(await downloaded.text()).toBe(
-      `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/mihomo.yaml\nproxies: []\n`,
-    );
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid artifact upload");
+    expect(writes).toEqual([]);
+    expect(entries).toEqual(previous);
   });
 
   test("updates only supplied formats and preserves existing artifacts", async (): Promise<void> => {
@@ -159,7 +191,18 @@ describe("artifact upload", (): void => {
     for (const headers of [
       { "Set-Cookie": "private=value" },
       { "Subscription-Userinfo": "upload=1\r\nX-Injected: value" },
+      { "Subscription-Userinfo": "upload=1\n" },
       { "Subscription-Userinfo": "\\".repeat(600) },
+      { "Content-Disposition": "attachment; filename=private\r\nX-Injected: value" },
+      { "Content-Disposition": "attachment; filename=订阅" },
+      { "Content-Disposition": `attachment; filename*=UTF-8''${"%E8%AE%A2".repeat(128)}` },
+      { "Profile-Update-Interval": "0" },
+      { "Profile-Update-Interval": "1.5" },
+      { "Profile-Update-Interval": "9007199254740992" },
+      { "Profile-Update-Interval": "24\r\nX-Injected: value" },
+      { "Profile-Web-Page-Url": "javascript:alert(1)" },
+      { "Profile-Web-Page-Url": "https://example.test/账户" },
+      { "Profile-Web-Page-Url": "https://example.test/\r\nX-Injected: value" },
     ]) {
       const { env, writes } = createEnv({ token });
       const payload = { ...upload, stash: { ...upload.stash, metadata: { headers } } };

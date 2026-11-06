@@ -2,15 +2,21 @@ import { z } from "zod";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
+const HEADER_VALUE_SCHEMA = z
+  .string()
+  .refine((value) => !/[^\x20-\x7e]/.test(value), "Expected printable ASCII header value");
+
 const ARTIFACT_SCHEMA = z.strictObject({
   body: z.string().min(1),
   metadata: z
     .strictObject({
       headers: z.strictObject({
-        "Subscription-Userinfo": z
-          .string()
-          .regex(/^[\x20-\x7e]*$/)
+        "Content-Disposition": HEADER_VALUE_SCHEMA.optional(),
+        "Profile-Update-Interval": HEADER_VALUE_SCHEMA.regex(/^[1-9][0-9]*$/)
+          .refine((value) => Number.isSafeInteger(Number(value)))
           .optional(),
+        "Profile-Web-Page-Url": HEADER_VALUE_SCHEMA.pipe(z.httpUrl()).optional(),
+        "Subscription-Userinfo": HEADER_VALUE_SCHEMA.optional(),
       }),
     })
     .refine(

@@ -1,0 +1,7 @@
+# Copy to ~/.config/sub-store/config.toml and keep it private (chmod 600).
+# XDG_CONFIG_HOME changes the default configuration directory when set.
+[publish]
+# Optional; defaults to this service origin. Localhost HTTP is also supported.
+base-url = "https://subs.liblaf.me"
+# Match the Worker's SUB_STORE_API_TOKEN secret binding.
+token = "<upload token>"

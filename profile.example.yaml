@@ -3,6 +3,10 @@
 __sub-store:
   id: 0123456789ABCDEFGHJK
   target: stash
+  # Optional subscription response headers.
+  name: My subscription
+  update-interval: 24 # Hours between client updates.
+  web-page-url: https://example.com/account
 
 mode: rule
 log-level: info
@@ -21,10 +25,12 @@ proxy-providers:
   Example:
     url: https://example.invalid/subscription.yaml
     override:
+      # Applies to expanded Provider Proxies; omission preserves upstream values.
+      skip-cert-verify: false
       additional-prefix: "[Example] "
       proxy-name:
-        - pattern: "(?i)^node (?<number>[0-9]+)$"
-          target: "Node $<number>"
+        - pattern: "(?i)^proxy (?<number>[0-9]+)$"
+          target: "Proxy $<number>"
     __sub-store:
       strip-common-affixes: false
       # JMS API: use the complete private URL from the service's Bandwidth Counter page.
@@ -44,7 +50,8 @@ proxy-groups:
   - name: Selected
     type: select
     use: [Example]
-    filter: "Node [12]$"
+    filter: "Proxy [12]$"
+  # Generated Info Proxies are for display; keep this group out of routing groups.
   - name: Info
     type: select
     use: [$info]

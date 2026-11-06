@@ -7,7 +7,6 @@ type Metadata = {
 };
 
 const ARTIFACT_FILENAMES = new Set(PROFILE_TARGET_SCHEMA.options.map((target) => `${target}.yaml`));
-const SUBSCRIPTION_ORIGIN = "https://subs.liblaf.me";
 
 export async function serveSubscription(c: Context<{ Bindings: Env }>): Promise<Response> {
   const { id, filename } = c.req.param();
@@ -30,6 +29,6 @@ export async function serveSubscription(c: Context<{ Bindings: Env }>): Promise<
   headers.set("Content-Type", "application/yaml");
   headers.set("Referrer-Policy", "no-referrer");
   headers.set("X-Robots-Tag", "noindex");
-  const marker = `#SUBSCRIBED ${SUBSCRIPTION_ORIGIN}/subs/${id}/${filename}`;
+  const marker = `#SUBSCRIBED ${new URL(c.req.url).origin}/subs/${id}/${filename}`;
   return new Response(`${marker}\n${result.value}`, { headers });
 }

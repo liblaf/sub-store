@@ -8,8 +8,10 @@ import { z } from "zod";
 import type { PublishOptions } from "@/lib/publish";
 
 const CONFIG_SCHEMA = z.strictObject({
-  token: z.string().trim().min(1).optional(),
-  "base-url": z.string().trim().min(1).optional(),
+  publish: z.strictObject({
+    token: z.string().trim().min(1),
+    "base-url": z.string().trim().min(1).optional(),
+  }),
 });
 
 export class CliConfigError extends Error {}
@@ -27,37 +29,28 @@ export async function resolvePublishConfig(
 ): Promise<PublishOptions> {
   const env = options.env ?? process.env;
   const configPath = options.configPath ?? path.join(subStoreConfigDir(env), "config.toml");
-  let text: string | undefined;
+  let text: string;
   try {
     text = await fs.readFile(configPath, "utf8");
-  } catch (error) {
-    if (options.configPath !== undefined || (error as NodeJS.ErrnoException).code !== "ENOENT") {
-      throw new CliConfigError("Failed to read configuration file");
-    }
+  } catch {
+    throw new CliConfigError("Failed to read configuration file");
   }
 
-  let parsed: unknown = {};
-  if (text !== undefined) {
-    try {
-      parsed = TOML.parse(text);
-    } catch {
-      throw new CliConfigError("Invalid TOML configuration");
-    }
+  let parsed: unknown;
+  try {
+    parsed = TOML.parse(text);
+  } catch {
+    throw new CliConfigError("Invalid TOML configuration");
   }
   const result = CONFIG_SCHEMA.safeParse(parsed);
   if (!result.success) throw new CliConfigError("Invalid configuration options");
   const config = result.data;
-  if (config["base-url"] !== undefined) validateBaseUrl(config["base-url"]);
-
-  const token = env.SUB_STORE_API_TOKEN ?? config.token;
-  if (!token?.trim()) {
-    throw new CliConfigError(
-      "An upload token is required; set token in config.toml or SUB_STORE_API_TOKEN",
-    );
-  }
-  const url = env.SUB_STORE_URL ?? config["base-url"] ?? "https://subs.liblaf.me";
+  const url = config.publish["base-url"] ?? "https://subs.liblaf.me";
   validateBaseUrl(url);
-  return { token: token.trim(), url };
+  return {
+    token: config.publish.token,
+    url,
+  };
 }
 
 function validateBaseUrl(value: string): void {

@@ -203,15 +203,25 @@ dns:
     expect(failedStderr).toContain("Failed to build Stash configuration");
     expect(failedStdout + failedStderr).not.toContain(secret);
     expect(failedStdout + failedStderr).not.toContain("private upstream response");
+    const configHome = path.join(dir, "config");
+    await fs.mkdir(path.join(configHome, "sub-store"), { recursive: true });
+    const tomlPath = path.join(configHome, "sub-store", "config.toml");
+    const configToken = "private-config-upload-token";
+    await fs.writeFile(
+      tomlPath,
+      `[publish]\ntoken = "${configToken}"\nbase-url = "${server.url.origin}"\n`,
+    );
+    const configEnv = {
+      ...process.env,
+      XDG_CONFIG_HOME: configHome,
+      XDG_CACHE_HOME: path.join(dir, "cache"),
+      SUB_STORE_API_TOKEN: secret,
+      SUB_STORE_URL: "https://user:private-environment-secret@example.invalid",
+    };
     await fs.writeFile(profile, YAML.stringify({ "__sub-store": { id: secret, target: "stash" } }));
     const failedPublish = spawn([process.execPath, entry.fullPath, "publish", profile], {
       cwd: root,
-      env: {
-        ...process.env,
-        XDG_CONFIG_HOME: path.join(dir, "config"),
-        SUB_STORE_API_TOKEN: secret,
-        SUB_STORE_URL: "https://example.test",
-      },
+      env: configEnv,
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -227,12 +237,7 @@ dns:
     await fs.mkdir(empty);
     const emptyPublish = spawn([process.execPath, entry.fullPath, "publish", empty], {
       cwd: root,
-      env: {
-        ...process.env,
-        XDG_CONFIG_HOME: path.join(dir, "config"),
-        SUB_STORE_API_TOKEN: secret,
-        SUB_STORE_URL: "https://example.test",
-      },
+      env: configEnv,
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -244,7 +249,8 @@ dns:
     expect(emptyExit).toBe(1);
     expect(emptyStderr).toContain("No .yaml profiles found");
     expect(emptyStdout + emptyStderr).not.toContain(secret);
-    const nested = path.join(dir, "nested");
+    expect(uploads).toBe(0);
+    const nested = path.join(configHome, "sub-store", "profiles");
     for (const [folder, id] of [
       ["all", "0123456789ABCDEFGHJK"],
       ["own", "0123456789ABCDEFGHJM"],
@@ -259,12 +265,7 @@ dns:
     }
     const published = spawn([process.execPath, entry.fullPath, "publish", nested], {
       cwd: root,
-      env: {
-        ...process.env,
-        XDG_CONFIG_HOME: path.join(dir, "config"),
-        SUB_STORE_API_TOKEN: secret,
-        SUB_STORE_URL: server.url.origin,
-      },
+      env: configEnv,
       stdout: "pipe",
       stderr: "pipe",
     });
@@ -276,24 +277,21 @@ dns:
     expect(publishedExit).toBe(0);
     expect(publishedStdout).toContain("Published 2 profile file(s).");
     expect(publishedStdout + publishedStderr).not.toContain(secret);
+    expect(publishedStdout + publishedStderr).not.toContain(configToken);
     expect(uploads).toBe(2);
-    const configHome = path.join(dir, "config");
-    await fs.mkdir(path.join(configHome, "sub-store"), { recursive: true });
-    const tomlPath = path.join(configHome, "sub-store", "config.toml");
-    const configToken = "private-config-upload-token";
-    await fs.writeFile(tomlPath, `token = "${configToken}"\nbase-url = "${server.url.origin}"\n`);
-    const configEnv = {
-      ...process.env,
-      XDG_CONFIG_HOME: configHome,
-      XDG_CACHE_HOME: path.join(dir, "cache"),
-      SUB_STORE_API_TOKEN: undefined,
-      SUB_STORE_URL: undefined,
-    };
-    for (const configArgs of [[], ["--config", tomlPath]]) {
-      const fromConfig = spawn(
-        [process.execPath, entry.fullPath, "publish", nested, ...configArgs],
-        { cwd: root, env: configEnv, stdout: "pipe", stderr: "pipe" },
-      );
+    const overridePath = path.join(dir, "override-config.toml");
+    const overrideToken = "private-override-upload-token";
+    await fs.writeFile(
+      overridePath,
+      `[publish]\ntoken = "${overrideToken}"\nbase-url = "${server.url.origin}"\n`,
+    );
+    for (const configArgs of [[], ["--config", overridePath]]) {
+      const fromConfig = spawn([process.execPath, entry.fullPath, "publish", ...configArgs], {
+        cwd: root,
+        env: configEnv,
+        stdout: "pipe",
+        stderr: "pipe",
+      });
       const [configExit, configStdout, configStderr] = await Promise.all([
         fromConfig.exited,
         new Response(fromConfig.stdout).text(),
@@ -308,10 +306,15 @@ dns:
       });
       expect(configStdout).toContain("Published 2 profile file(s).");
       expect(configStdout + configStderr).not.toContain(configToken);
+      expect(configStdout + configStderr).not.toContain(overrideToken);
+      expect(configStdout + configStderr).not.toContain(secret);
     }
     expect(uploads).toBe(6);
-    expect(uploadTokens.slice(2)).toEqual(Array(4).fill(`Bearer ${configToken}`));
-    await fs.writeFile(tomlPath, `token = "${configToken}`);
+    expect(uploadTokens).toEqual([
+      ...Array(4).fill(`Bearer ${configToken}`),
+      ...Array(2).fill(`Bearer ${overrideToken}`),
+    ]);
+    await fs.writeFile(tomlPath, `[publish]\ntoken = "${configToken}`);
     const malformed = spawn(
       [process.execPath, entry.fullPath, "publish", nested, "--config", tomlPath],
       { cwd: root, env: configEnv, stdout: "pipe", stderr: "pipe" },

@@ -1,10 +1,9 @@
 import YAML from "yaml";
 import type { ZodType } from "zod";
 
-import { normalizeProviderProxies } from "@/lib/pipeline/name";
+import { prepareProviderProxies } from "@/lib/pipeline/provider";
 import { fetcher, isStaleResponse, subconvert } from "@/lib/utils";
 
-import { compilePattern } from "./filter";
 import { assertProfileTarget } from "./profile";
 import type { Profile, ProfileTarget } from "./profile";
 import type { ProviderOptions } from "./provider";
@@ -38,36 +37,9 @@ export abstract class Builder<T extends NativeProxy> {
     const snapshots: ProviderSnapshot<T>[] = await Promise.all(
       Object.entries(this.profile["proxy-providers"]).map(async ([name, provider]) => {
         const { proxies, metadata } = await this.fetch(provider);
-        const sourceNames = proxies.map((proxy) => proxy.name);
-        normalizeProviderProxies(proxies, provider);
-        const names = new Map(
-          sourceNames.map((sourceName, index) => [sourceName, proxies[index]!.name]),
-        );
-        for (const proxy of proxies) {
-          const dialer = proxy.wrapped["dialer-proxy"];
-          if (typeof dialer === "string" && names.has(dialer)) {
-            proxy.wrapped = { ...proxy.wrapped, "dialer-proxy": names.get(dialer)! };
-          }
-        }
-        const include = provider.filter === undefined ? undefined : compilePattern(provider.filter);
-        const exclude =
-          provider["exclude-filter"] === undefined
-            ? undefined
-            : compilePattern(provider["exclude-filter"]);
-        const excludedTypes = new Set(
-          (provider["exclude-type"] ?? "")
-            .split("|")
-            .filter(Boolean)
-            .map((type) => type.toLowerCase()),
-        );
         return {
           name,
-          proxies: proxies.filter(
-            (proxy) =>
-              (!include || include.test(proxy.name)) &&
-              !exclude?.test(proxy.name) &&
-              !excludedTypes.has(proxy.wrapped.type.toLowerCase()),
-          ),
+          proxies: prepareProviderProxies(proxies, provider),
           metadata,
         };
       }),
@@ -86,7 +58,23 @@ export abstract class Builder<T extends NativeProxy> {
     const header = usageToHeader(
       mergeSubscriptionUserinfo(snapshots.map(({ metadata }) => metadata)),
     );
-    return { body, metadata: { headers: header ? { "Subscription-Userinfo": header } : {} } };
+    const headers: Record<string, string> = {};
+    const metadata = this.profile["__sub-store"];
+    if (metadata?.name !== undefined) {
+      const filename = encodeURIComponent(metadata.name).replace(
+        /['()*]/g,
+        (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
+      );
+      headers["Content-Disposition"] = `attachment; filename*=UTF-8''${filename}`;
+    }
+    if (metadata?.["update-interval"] !== undefined) {
+      headers["Profile-Update-Interval"] = String(metadata["update-interval"]);
+    }
+    if (metadata?.["web-page-url"] !== undefined) {
+      headers["Profile-Web-Page-Url"] = new URL(metadata["web-page-url"]).href;
+    }
+    if (header) headers["Subscription-Userinfo"] = header;
+    return { body, metadata: { headers } };
   }
 
   public async fetch(provider: ProviderOptions): Promise<FetchResult<T>> {

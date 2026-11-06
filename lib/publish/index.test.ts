@@ -12,6 +12,7 @@ import { StashBuilder } from "@/lib/formats/stash/builder";
 import { publishProfiles } from "@/lib/publish";
 import { fetcher } from "@/lib/utils";
 import { Fetcher } from "@/lib/utils/cache-fetch";
+import app from "@/worker";
 
 const artifact = (
   body: string,
@@ -62,6 +63,73 @@ function mockFetch(
 }
 
 describe("publishProfiles", () => {
+  test("builds, uploads, and serves conventional subscription headers", async () => {
+    const directory = await makeDirectory();
+    const file = path.join(directory, "stash.yaml");
+    const id = "0123456789ABCDEFGHJK";
+    await fs.writeFile(
+      file,
+      YAML.stringify({
+        "__sub-store": {
+          id,
+          target: "stash",
+          name: "我的订阅 '()*",
+          "update-interval": 12,
+          "web-page-url": "https://example.test/账户",
+        },
+        "proxy-providers": { Example: { url: "https://example.invalid/subscription" } },
+      }),
+    );
+    spyOn(fetcher, "fetch").mockResolvedValue(
+      new Response("proxies: [{name: Node, type: direct}]", {
+        headers: { "Subscription-Userinfo": "upload=1; download=2; total=3; expire=4" },
+      }),
+    );
+    const entries = new Map<string, Artifact>();
+    const env: Env = {
+      SUB_STORE_API_TOKEN: "secret",
+      KV: {
+        async put(key: string, body: string, options?: KVNamespacePutOptions): Promise<void> {
+          entries.set(key, { body, metadata: options?.metadata as Artifact["metadata"] });
+        },
+        async getWithMetadata(key: string) {
+          const entry = entries.get(key);
+          return {
+            value: entry?.body ?? null,
+            metadata: entry?.metadata ?? null,
+            cacheStatus: null,
+          };
+        },
+      } as KVNamespace,
+    };
+    mockFetch(async (input, init) => app.fetch(new Request(input, init), env));
+
+    await expect(
+      publishProfiles(file, { url: "https://example.test", token: "secret" }),
+    ).resolves.toBe(1);
+    expect(entries.size).toBe(1);
+    const response = await app.request(
+      `https://example.test/subs/${id}/stash.yaml`,
+      undefined,
+      env,
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Disposition")).toBe(
+      "attachment; filename*=UTF-8''%E6%88%91%E7%9A%84%E8%AE%A2%E9%98%85%20%27%28%29%2A",
+    );
+    expect(response.headers.get("Profile-Update-Interval")).toBe("12");
+    expect(response.headers.get("Profile-Web-Page-Url")).toBe(
+      "https://example.test/%E8%B4%A6%E6%88%B7",
+    );
+    expect(response.headers.get("Subscription-Userinfo")).toBe(
+      "upload=1; download=2; total=3; expire=4",
+    );
+    const body = await response.text();
+    expect(body.startsWith(`#SUBSCRIBED https://example.test/subs/${id}/stash.yaml\n`)).toBe(true);
+    expect(YAML.parse(body)).not.toHaveProperty("__sub-store");
+    expect(YAML.parse(body).proxies).toContainEqual({ name: "Node", type: "direct" });
+  });
+
   test("publishes only the declared target with authorization", async () => {
     const directory = await makeDirectory();
     const file = path.join(directory, "profile.yaml");

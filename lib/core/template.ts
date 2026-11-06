@@ -109,6 +109,7 @@ export function compileProfile(
   const postprocessed = removeEmptyProxyGroups(config);
   assertReferencesExist(postprocessed);
   assertAcyclicOutbounds(postprocessed);
+  assertInfoProxiesAreDisplayOnly(postprocessed, new Set(infoProxies.map(({ name }) => name)));
   return postprocessed;
 }
 
@@ -205,10 +206,7 @@ function assertReferencesExist(config: NativeConfig): void {
 }
 
 function assertAcyclicOutbounds(config: NativeConfig): void {
-  const edges = new Map(config["proxy-groups"].map((group) => [group.name, group.proxies]));
-  for (const proxy of config.proxies) {
-    edges.set(proxy.name, typeof proxy["dialer-proxy"] === "string" ? [proxy["dialer-proxy"]] : []);
-  }
+  const edges = proxyReferences(config);
   const active = new Set<string>();
   const complete = new Set<string>();
   const visit = (name: string): void => {
@@ -220,6 +218,97 @@ function assertAcyclicOutbounds(config: NativeConfig): void {
     complete.add(name);
   };
   for (const name of edges.keys()) visit(name);
+}
+
+function proxyReferences(config: NativeConfig): Map<string, string[]> {
+  const edges = new Map(config["proxy-groups"].map((group) => [group.name, group.proxies]));
+  for (const proxy of config.proxies) {
+    edges.set(proxy.name, typeof proxy["dialer-proxy"] === "string" ? [proxy["dialer-proxy"]] : []);
+  }
+  return edges;
+}
+
+function assertInfoProxiesAreDisplayOnly(config: NativeConfig, infoNames: Set<string>): void {
+  if (!infoNames.size) return;
+  const edges = proxyReferences(config);
+  const reachesInfo = new Map<string, boolean>();
+  const visit = (name: string): boolean => {
+    if (infoNames.has(name)) return true;
+    if (reachesInfo.has(name)) return reachesInfo.get(name)!;
+    const result = (edges.get(name) ?? []).some(visit);
+    reachesInfo.set(name, result);
+    return result;
+  };
+  const assertRoutingTarget = (target: unknown): void => {
+    if (typeof target === "string" && visit(target)) {
+      throw new Error("Routing references a display-only Info Proxy");
+    }
+  };
+  const subRules = isRecord(config["sub-rules"]) ? config["sub-rules"] : {};
+  const visitedSubRules = new Set<string>();
+  const visitSubRule = (name: string): void => {
+    if (visitedSubRules.has(name) || !Object.hasOwn(subRules, name)) return;
+    visitedSubRules.add(name);
+    visitRules(subRules[name]);
+  };
+  const visitRules = (rules: unknown): void => {
+    if (!Array.isArray(rules)) return;
+    for (const rule of rules) {
+      if (typeof rule !== "string") continue;
+      const fields = rule.split(",");
+      if (fields[0]?.trim() === "SUB-RULE") visitSubRule(fields.at(-1)!.trim());
+      else assertRoutingTarget(ruleTarget(fields));
+    }
+  };
+  visitRules(config.rules);
+  for (const proxy of config.proxies) assertRoutingTarget(proxy["dialer-proxy"]);
+  if (Array.isArray(config.listeners)) {
+    for (const listener of config.listeners) {
+      if (!isRecord(listener)) continue;
+      if (typeof listener.proxy === "string" && listener.proxy !== "") {
+        assertRoutingTarget(listener.proxy);
+      } else if (typeof listener.rule === "string") {
+        visitSubRule(listener.rule);
+      }
+    }
+  }
+  if (isRecord(config.dns)) {
+    const visitServers = (servers: unknown): void => {
+      if (Array.isArray(servers)) {
+        for (const server of servers) visitServers(server);
+      } else if (typeof servers === "string" && servers.includes("#")) {
+        let fragment: string;
+        try {
+          fragment = decodeURIComponent(servers.slice(servers.indexOf("#") + 1));
+        } catch {
+          return;
+        }
+        // Mihomo uses the last fragment item without '=' as the proxy or interface name.
+        const selector = fragment
+          .split("&")
+          .filter((item) => !item.includes("="))
+          .at(-1);
+        assertRoutingTarget(selector);
+      }
+    };
+    for (const key of [
+      "default-nameserver",
+      "nameserver",
+      "fallback",
+      "proxy-server-nameserver",
+      "direct-nameserver",
+    ]) {
+      visitServers(config.dns[key]);
+    }
+    for (const key of ["nameserver-policy", "proxy-server-nameserver-policy"]) {
+      const policy = config.dns[key];
+      if (isRecord(policy)) for (const servers of Object.values(policy)) visitServers(servers);
+    }
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function ruleTarget(fields: string[]): string | undefined {

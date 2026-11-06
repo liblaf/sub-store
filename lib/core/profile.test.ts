@@ -24,6 +24,26 @@ test("validates private metadata and canonicalizes the earlier metadata alias", 
   ).toBe(false);
 });
 
+test("validates subscription names, refresh hours, and homepage URLs", () => {
+  const metadata = {
+    name: "我的订阅",
+    "update-interval": 24,
+    "web-page-url": "https://example.test/account",
+  };
+  expect(PROFILE_SCHEMA.parse({ "__sub-store": metadata })["__sub-store"]).toEqual(metadata);
+  for (const invalid of [
+    { name: "   " },
+    { "update-interval": 0 },
+    { "update-interval": -1 },
+    { "update-interval": 1.5 },
+    { "update-interval": "24" },
+    { "web-page-url": "not a URL" },
+    { "web-page-url": "javascript:alert(1)" },
+  ]) {
+    expect(PROFILE_SCHEMA.safeParse({ "__sub-store": invalid }).success).toBe(false);
+  }
+});
+
 test("provider options use the same private namespace and reject ambiguous aliases", () => {
   const options = {
     "strip-common-affixes": true,

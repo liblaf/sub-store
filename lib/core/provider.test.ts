@@ -33,6 +33,20 @@ describe("provider input schema", (): void => {
     expect(PROVIDER_SCHEMA.parse(provider)).toEqual(provider);
   });
 
+  test("preserves explicit certificate verification overrides", (): void => {
+    for (const skipCertVerify of [false, true]) {
+      const provider = { url, override: { "skip-cert-verify": skipCertVerify } };
+      expect(PROVIDER_SCHEMA.parse(provider)).toEqual(provider);
+    }
+    expect(PROVIDER_SCHEMA.parse({ url, override: {} })).toEqual({ url, override: {} });
+    for (const skipCertVerify of ["false", 0, null]) {
+      expect(
+        PROVIDER_SCHEMA.safeParse({ url, override: { "skip-cert-verify": skipCertVerify } })
+          .success,
+      ).toBe(false);
+    }
+  });
+
   test("rejects unsupported or misplaced behavior options", (): void => {
     for (const options of [
       { name: "Example" },

@@ -14,6 +14,9 @@ export type ProfileTarget = z.infer<typeof PROFILE_TARGET_SCHEMA>;
 const PROFILE_METADATA_SCHEMA = z.strictObject({
   id: PROFILE_ID_SCHEMA.optional(),
   target: PROFILE_TARGET_SCHEMA.optional(),
+  name: z.string().trim().min(1).optional(),
+  "update-interval": z.int().positive().optional(),
+  "web-page-url": z.httpUrl().optional(),
 });
 
 export const PROFILE_PROXY_SCHEMA = z.looseObject({

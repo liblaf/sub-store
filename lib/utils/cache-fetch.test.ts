@@ -1,12 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { chmod, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 import ky from "ky";
-import type { KyInstance } from "ky";
+import type { KyInstance, Options } from "ky";
 
-import { Fetcher, formatUrlForLog, isStaleResponse } from "./cache-fetch";
+import { CACHE_TTL_MS, DAY_MS, Fetcher, formatUrlForLog, isStaleResponse } from "./cache-fetch";
 
 type Request = (url: string | URL) => Promise<Response>;
 
@@ -37,6 +38,106 @@ async function expireCache(dir: string): Promise<void> {
 }
 
 describe("Fetcher cache", (): void => {
+  test.each([
+    { headers: { "User-Agent": "clash.meta" }, age: DAY_MS / 2 },
+    { headers: { "User-Agent": "clash.meta" }, age: DAY_MS + 1 },
+    { headers: [["User-Agent", "clash.meta"]] as [string, string][], age: DAY_MS / 2 },
+    { headers: [["User-Agent", "clash.meta"]] as [string, string][], age: DAY_MS + 1 },
+  ])("reads safe legacy cache %# without renewing its age or date", async ({ headers, age }) => {
+    await withCache(async (dir) => {
+      const url = "https://example.test/sub";
+      const options: Options = { headers };
+      const key = `${createHash("sha256")
+        .update(JSON.stringify({ input: url, options }))
+        .digest("hex")}.json`;
+      const storedAt = Date.now() - age;
+      const date = "Mon, 01 Jan 2024 12:00:00 GMT";
+      const contents = JSON.stringify({
+        body: "valid",
+        storedAt,
+        init: { headers: { Date: date } },
+      });
+      await writeFile(path.join(dir, key), contents);
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async () => {
+          calls++;
+          throw new Error("offline");
+        }),
+        dir,
+        validateYaml,
+      );
+      const response = await fetcher.fetch(url, options);
+      expect(await response.text()).toBe("valid");
+      expect(response.headers.get("date")).toBe(date);
+      expect(isStaleResponse(response)).toBe(age >= DAY_MS);
+      expect(calls).toBe(age >= DAY_MS ? 1 : 0);
+      expect(await readFile(path.join(dir, key), "utf-8")).toBe(contents);
+      expect(await readdir(dir)).toEqual([key]);
+    });
+  });
+
+  test("writes and prefers the new key after a successful legacy refresh", async () => {
+    await withCache(async (dir) => {
+      const url = "https://example.test/sub";
+      const options: Options = { headers: { "User-Agent": "clash.meta" } };
+      const key = `${createHash("sha256")
+        .update(JSON.stringify({ input: url, options }))
+        .digest("hex")}.json`;
+      const contents = JSON.stringify({
+        body: "old",
+        storedAt: 0,
+        init: { headers: { Date: "Mon, 01 Jan 2024 12:00:00 GMT" } },
+      });
+      await writeFile(path.join(dir, key), contents);
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async () => {
+          calls++;
+          return new Response("new");
+        }),
+        dir,
+      );
+      expect(await (await fetcher.fetch(url, options)).text()).toBe("new");
+      expect(await readFile(path.join(dir, key), "utf-8")).toBe(contents);
+      expect(await readdir(dir)).toHaveLength(2);
+      expect(await (await fetcher.fetch(url, options)).text()).toBe("new");
+      expect(calls).toBe(1);
+    });
+  });
+
+  test("never reuses legacy Headers entries whose credentials were lost from the key", async () => {
+    await withCache(async (dir) => {
+      const url = "https://example.test/sub";
+      // Model runtimes where Headers has no enumerable serialized header fields.
+      class LegacyHeaders extends Headers {
+        override toJSON(): Record<string, never> {
+          return {};
+        }
+      }
+      const first: Options = { headers: new LegacyHeaders({ Authorization: "first-secret" }) };
+      const second: Options = { headers: new LegacyHeaders({ Authorization: "second-secret" }) };
+      expect(JSON.stringify(first)).toBe(JSON.stringify(second));
+      const key = `${createHash("sha256")
+        .update(JSON.stringify({ input: url, options: first }))
+        .digest("hex")}.json`;
+      const contents = JSON.stringify({ body: "valid", storedAt: Date.now(), init: {} });
+      await writeFile(path.join(dir, key), contents);
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async () => {
+          calls++;
+          throw new Error("offline");
+        }),
+        dir,
+        validateYaml,
+      );
+      await expect(fetcher.fetch(url, second)).rejects.toThrow("offline");
+      expect(calls).toBe(1);
+      expect(await readFile(path.join(dir, key), "utf-8")).toBe(contents);
+    });
+  });
+
   test("creates private cache files and repairs permissive existing ones", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       const cacheDir = path.join(dir, "cache");
@@ -219,7 +320,7 @@ describe("Fetcher cache", (): void => {
     });
   });
 
-  test("rejects a malformed refresh without overwriting the cache", async (): Promise<void> => {
+  test("reuses valid stale data after a malformed refresh without overwriting the cache", async (): Promise<void> => {
     await withCache(async (dir: string): Promise<void> => {
       const upstream = { body: "valid" };
       const fetcher = new Fetcher(
@@ -235,10 +336,91 @@ describe("Fetcher cache", (): void => {
       const cacheFile = path.join(dir, file!);
       const before = await readFile(cacheFile, "utf-8");
       upstream.body = "malformed";
-      await expect(
-        fetcher.fetch("https://example.test/sub", undefined, validateYaml),
-      ).rejects.toThrow("invalid provider body");
+      const response = await fetcher.fetch("https://example.test/sub", undefined, validateYaml);
+      expect(isStaleResponse(response)).toBe(true);
+      expect(await response.text()).toBe("valid");
       expect(await readFile(cacheFile, "utf-8")).toBe(before);
+    });
+  });
+
+  test("keeps entries for 24 hours and refreshes at the exact boundary", async (): Promise<void> => {
+    await withCache(async (dir): Promise<void> => {
+      expect(CACHE_TTL_MS).toBe(DAY_MS);
+      let calls = 0;
+      let now = 1_800_000_000_000;
+      const clock = spyOn(Date, "now").mockImplementation(() => now);
+      try {
+        const fetcher = new Fetcher(
+          kyFrom(async () => new Response(String(++calls))),
+          dir,
+        );
+        await fetcher.fetch("https://example.test/sub");
+        now += DAY_MS - 1;
+        expect(await (await fetcher.fetch("https://example.test/sub")).text()).toBe("1");
+        now++;
+        expect(await (await fetcher.fetch("https://example.test/sub")).text()).toBe("2");
+        expect(calls).toBe(2);
+      } finally {
+        clock.mockRestore();
+      }
+    });
+  });
+
+  test("deduplicates concurrent requests and gives callers independent response bodies", async (): Promise<void> => {
+    await withCache(async (dir): Promise<void> => {
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async () => {
+          calls++;
+          return new Response("valid");
+        }),
+        dir,
+        validateYaml,
+      );
+      const responses = await Promise.all(
+        Array.from({ length: 8 }, () => fetcher.fetch("https://example.test/sub")),
+      );
+      expect(calls).toBe(1);
+      expect(await Promise.all(responses.map((response) => response.text()))).toEqual(
+        Array(8).fill("valid"),
+      );
+      await expireCache(dir);
+      const failing = new Fetcher(
+        kyFrom(async () => {
+          calls++;
+          throw new Error("offline");
+        }),
+        dir,
+        validateYaml,
+      );
+      const stale = await Promise.all([
+        failing.fetch("https://example.test/sub"),
+        failing.fetch("https://example.test/sub"),
+      ]);
+      expect(calls).toBe(2);
+      expect(stale.every(isStaleResponse)).toBe(true);
+      expect(await Promise.all(stale.map((response) => response.text()))).toEqual([
+        "valid",
+        "valid",
+      ]);
+    });
+  });
+
+  test("keeps Header objects with different credentials in separate cache entries", async (): Promise<void> => {
+    await withCache(async (dir): Promise<void> => {
+      let calls = 0;
+      const fetcher = new Fetcher(
+        kyFrom(async () => new Response(String(++calls))),
+        dir,
+      );
+      const first = await fetcher.fetch("https://example.test/sub", {
+        headers: new Headers({ Authorization: "first" }),
+      });
+      const second = await fetcher.fetch("https://example.test/sub", {
+        headers: new Headers({ Authorization: "second" }),
+      });
+      expect(await first.text()).toBe("1");
+      expect(await second.text()).toBe("2");
     });
   });
 

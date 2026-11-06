@@ -60,7 +60,7 @@ describe("subscription artifacts", (): void => {
     expect(response.headers.get("Referrer-Policy")).toBe("no-referrer");
     expect(response.headers.get("X-Robots-Tag")).toBe("noindex");
     expect(await response.text()).toBe(
-      `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/mihomo.yaml\nproxies: []\n`,
+      `#SUBSCRIBED https://example.test/subs/${id}/mihomo.yaml\nproxies: []\n`,
     );
   });
 
@@ -74,7 +74,7 @@ describe("subscription artifacts", (): void => {
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/yaml");
     expect(await response.text()).toBe(
-      `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/stash.yaml\nproxy-groups: []\n`,
+      `#SUBSCRIBED https://example.test/subs/${id}/stash.yaml\nproxy-groups: []\n`,
     );
   });
 
@@ -90,7 +90,7 @@ describe("subscription artifacts", (): void => {
     expect(response.headers.get("Subscription-Userinfo")).toBe("upload=5; total=6");
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(await response.text()).toBe(
-      `#SUBSCRIBED https://subs.liblaf.me/subs/${id}/mihomo-smart.yaml\nproxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n`,
+      `#SUBSCRIBED https://example.test/subs/${id}/mihomo-smart.yaml\nproxy-groups: [{name: Smart, type: smart, proxies: [DIRECT]}]\n`,
     );
   });
 
@@ -103,8 +103,27 @@ describe("subscription artifacts", (): void => {
 
     expect(response.status).toBe(200);
     expect((await response.text()).split("\n", 1)).toEqual([
-      `#SUBSCRIBED https://subs.liblaf.me/subs/${legacyId}/stash.yaml`,
+      `#SUBSCRIBED https://example.test/subs/${legacyId}/stash.yaml`,
     ]);
+  });
+
+  test("uses the custom request origin instead of forwarded headers in subscription markers", async (): Promise<void> => {
+    const response = await app.request(
+      `https://subscriptions.example.test:8443/subs/${id}/stash.yaml?ignored=true`,
+      {
+        headers: {
+          Forwarded: "host=forwarded.example.test;proto=http",
+          "X-Forwarded-Host": "forwarded.example.test",
+          "X-Forwarded-Proto": "http",
+        },
+      },
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe(
+      `#SUBSCRIBED https://subscriptions.example.test:8443/subs/${id}/stash.yaml\nproxy-groups: []\n`,
+    );
   });
 
   test("returns 404 for absent, invalid, and unsupported artifact locators", async (): Promise<void> => {

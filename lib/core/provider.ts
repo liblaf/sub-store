@@ -21,6 +21,7 @@ export const PROVIDER_SCHEMA = z
       .strictObject({
         "additional-prefix": z.string().optional(),
         "additional-suffix": z.string().optional(),
+        "skip-cert-verify": z.boolean().optional(),
         "proxy-name": z
           .array(
             z.strictObject({

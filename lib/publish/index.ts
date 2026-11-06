@@ -1,11 +1,6 @@
-import fs from "node:fs/promises";
-
-import YAML from "yaml";
-
-import { PROFILE_SCHEMA } from "@/lib/core/profile";
+import { loadProfile } from "@/lib/core/load-profile";
 import type { Profile, ProfileTarget } from "@/lib/core/profile";
-import { MihomoBuilder } from "@/lib/formats/mihomo/builder";
-import { StashBuilder } from "@/lib/formats/stash/builder";
+import { buildProfile } from "@/lib/formats/build";
 
 import { discoverProfiles } from "./discover";
 import { PublishInputError } from "./errors";
@@ -22,7 +17,7 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
   const baseUrl = new URL(options.url);
   const local = ["localhost", "127.0.0.1", "[::1]"].includes(baseUrl.hostname);
   if (baseUrl.protocol !== "https:" && !(local && baseUrl.protocol === "http:")) {
-    throw new Error("SUB_STORE_URL must use HTTPS (HTTP is allowed for localhost)");
+    throw new Error("publish.base-url must use HTTPS (HTTP is allowed for localhost)");
   }
   if (
     baseUrl.username ||
@@ -32,19 +27,17 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
     baseUrl.hash
   ) {
     throw new Error(
-      "SUB_STORE_URL must be an origin without credentials, a path, a query, or a fragment",
+      "publish.base-url must be an origin without credentials, a path, a query, or a fragment",
     );
   }
-  if (!options.token.trim()) throw new Error("SUB_STORE_API_TOKEN is required");
+  if (!options.token.trim()) throw new Error("publish.token is required");
 
   const files = await discoverProfiles(inputPath);
 
   const profiles: { profile: Profile; id: string; target: ProfileTarget }[] = [];
   const pairs = new Set<string>();
   for (const file of files) {
-    const profile = PROFILE_SCHEMA.parse(
-      YAML.parse(await fs.readFile(file, "utf-8"), { merge: true }),
-    );
+    const profile = await loadProfile(file);
     const { id, target } = profile["__sub-store"] ?? {};
     if (!id || !target)
       throw new PublishInputError("Publishing requires __sub-store.id and __sub-store.target");
@@ -57,10 +50,8 @@ export async function publishProfiles(inputPath: string, options: PublishOptions
 
   const artifacts = new Map<string, ArtifactUpload>();
   for (const { profile, id, target } of profiles) {
-    const builder =
-      target === "stash" ? new StashBuilder({ profile }) : new MihomoBuilder({ profile, target });
     const group = artifacts.get(id) ?? {};
-    group[target] = await builder.build();
+    group[target] = await buildProfile(profile, target);
     artifacts.set(id, group);
   }
   const uploads: { id: string; body: string }[] = [];

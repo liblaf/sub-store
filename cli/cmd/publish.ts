@@ -12,7 +12,7 @@ export const publish = new Command("publish")
   .option("--config <path>", "TOML configuration file (default: ~/.config/sub-store/config.toml)")
   .addHelpText(
     "after",
-    "\nConfiguration:\n  token               Upload token\n  base-url            Worker URL (default: https://subs.liblaf.me)\n\nEnvironment overrides:\n  SUB_STORE_API_TOKEN  Overrides token\n  SUB_STORE_URL        Overrides base-url\n\nThe default configuration folder follows XDG_CONFIG_HOME when set.",
+    '\nRequired TOML configuration:\n  [publish]\n  token = "upload-token"\n  base-url = "https://subs.liblaf.me" # optional; this is the default\n\nCredentials are read only from this file.\nThe default configuration folder follows XDG_CONFIG_HOME when set.',
   )
   .action(async (inputPath: string | undefined, options): Promise<void> => {
     try {

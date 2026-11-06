@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { constants } from "node:fs";
 import fs from "node:fs/promises";
 import type { FileHandle } from "node:fs/promises";
@@ -22,12 +22,16 @@ type CacheEntry = {
 
 export type ResponseValidator = (response: Response) => void | Promise<void>;
 
+export const DAY_MS = 24 * 60 * 60 * 1000;
+export const CACHE_TTL_MS = DAY_MS;
+
 const staleResponses = new WeakSet<Response>();
 
 export class Fetcher {
   private appOwnedDir: boolean;
   private dir: string;
   private ky: KyInstance;
+  private pending = new Map<ResponseValidator | undefined, Map<string, Promise<Response>>>();
 
   constructor(
     kyInstance?: KyInstance,
@@ -44,14 +48,46 @@ export class Fetcher {
     options?: Options,
     validator: ResponseValidator | undefined = this.validator,
   ): Promise<Response> {
-    await this.ensureCacheDirectory();
     const key: string = this.makeKey(url, options);
-    const cached: CacheEntry | null = await this.loadCache(key);
+    let requests = this.pending.get(validator);
+    if (!requests) {
+      requests = new Map();
+      this.pending.set(validator, requests);
+    }
+    let pending = requests.get(key);
+    if (!pending) {
+      pending = this.fetchOnce(url, options, validator, key);
+      requests.set(key, pending);
+    }
+    try {
+      const response = await pending;
+      const cloned = response.clone();
+      if (isStaleResponse(response)) staleResponses.add(cloned);
+      return cloned;
+    } finally {
+      if (requests.get(key) === pending) requests.delete(key);
+      if (!requests.size) this.pending.delete(validator);
+    }
+  }
+
+  private async fetchOnce(
+    url: string | URL,
+    options: Options | undefined,
+    validator: ResponseValidator | undefined,
+    key: string,
+  ): Promise<Response> {
+    await this.ensureCacheDirectory();
+    let cached: CacheEntry | null = await this.loadCache(key);
+    if (!cached && hasSafeLegacyHeaders(options?.headers)) {
+      const legacyKey = `${createHash("sha256")
+        .update(JSON.stringify({ input: url, options }))
+        .digest("hex")}.json`;
+      if (legacyKey !== key) cached = await this.loadCache(legacyKey);
+    }
     if (cached) {
       const age: number | undefined =
         cached.storedAt === undefined ? undefined : Date.now() - cached.storedAt;
-      if (age !== undefined && age < 60 * 60 * 1000) {
-        // 1 hour
+      if (age !== undefined && age >= 0 && age < CACHE_TTL_MS) {
         await this.validate(cached.response, validator);
         consola.success(`Cache hit: ${formatUrlForLog(url)}`);
         return withValidDate(cached.response);
@@ -63,6 +99,8 @@ export class Fetcher {
     let fetched: Response;
     try {
       fetched = await this.ky(url, options);
+      if (!fetched.ok) throw new Error("Upstream returned an unsuccessful response");
+      await this.validate(fetched, validator);
     } catch (error) {
       if (!cached) throw error;
       await this.validate(cached.response, validator);
@@ -70,7 +108,6 @@ export class Fetcher {
       staleResponses.add(cached.response);
       return cached.response;
     }
-    await this.validate(fetched, validator);
     const response: Response = withValidDate(fetched);
     await this.saveCache(key, response.clone());
     return response;
@@ -99,7 +136,21 @@ export class Fetcher {
   }
 
   protected makeKey(input: string | URL, options?: Options): string {
-    const serialized: string = JSON.stringify({ input, options });
+    const headers = options?.headers;
+    const entries: readonly (readonly [string, string | undefined])[] =
+      headers instanceof Headers
+        ? [...headers.entries()]
+        : Array.isArray(headers)
+          ? headers
+          : Object.entries(headers ?? {});
+    const normalizedHeaders = new Headers();
+    for (const [name, value] of entries) {
+      if (value !== undefined) normalizedHeaders.append(name, value);
+    }
+    const normalized = headers
+      ? { ...options, headers: [...normalizedHeaders.entries()].sort() }
+      : options;
+    const serialized: string = JSON.stringify({ input: String(input), options: normalized });
     const hash: string = createHash("sha256").update(serialized).digest("hex");
     return `${hash}.json`;
   }
@@ -115,17 +166,15 @@ export class Fetcher {
         headers: Object.fromEntries(response.headers.entries()),
       },
     });
-    const handle = await fs.open(
-      file,
-      constants.O_APPEND | constants.O_CREAT | constants.O_NOFOLLOW | constants.O_WRONLY,
-      0o600,
-    );
+    const temporary = `${file}.${randomUUID()}.tmp`;
+    const handle = await fs.open(temporary, "wx", 0o600);
     try {
-      await handle.chmod(0o600);
-      await handle.truncate(0);
       await handle.writeFile(contents);
+      await handle.close();
+      await fs.rename(temporary, file);
     } finally {
       await handle.close();
+      await fs.rm(temporary, { force: true });
     }
   }
 
@@ -144,6 +193,23 @@ export function isStaleResponse(response: Response): boolean {
 
 export function formatUrlForLog(url: string | URL): string {
   return new URL(url).origin;
+}
+
+function hasSafeLegacyHeaders(headers: Options["headers"]): boolean {
+  if (headers === undefined) return true;
+  // Legacy JSON serialization turned Headers into {}, losing credentials from the key.
+  if (headers instanceof Headers) return false;
+  if (Array.isArray(headers)) {
+    return headers.every(
+      (entry) =>
+        Array.isArray(entry) &&
+        entry.length === 2 &&
+        typeof entry[0] === "string" &&
+        typeof entry[1] === "string",
+    );
+  }
+  const prototype = Object.getPrototypeOf(headers);
+  return prototype === Object.prototype || prototype === null;
 }
 
 function withValidDate(response: Response): Response {
