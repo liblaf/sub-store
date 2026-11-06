@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.6.0](https://github.com/liblaf/sub-store/releases/tag/v0.6.0) - 2026-11-06
+
+### 💥 BREAKING CHANGES
+
+- publish credentials must be configured under [publish] in
+config.toml. SUB_STORE_API_TOKEN and SUB_STORE_URL no longer configure the CLI. - [7f243f9](https://github.com/liblaf/sub-store/commit/7f243f97846cc365c72714f27d3da6cb1b109b70) by [@liblaf](https://github.com/liblaf)
+
+### ✨ Features
+
+- **\[breaking\]** align publishing with native profiles and TOML config - [7f243f9](https://github.com/liblaf/sub-store/commit/7f243f97846cc365c72714f27d3da6cb1b109b70) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@liblaf](https://github.com/liblaf)
+- [@renovate[bot]](https://github.com/apps/renovate)
+
 ## [v0.5.5](https://github.com/liblaf/sub-store/releases/tag/v0.5.5) - 2026-11-04
 
 ### ✨ Features
@@ -15,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
