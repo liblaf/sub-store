@@ -25,7 +25,7 @@ function profile(extra: Record<string, unknown> = {}) {
       Beta: { url: "https://example.invalid/beta" },
     },
     "proxy-groups": [
-      { name: "PROXY", type: "select", proxies: ["Static"], use: ["Auto", "United States"] },
+      { name: "PROXY", type: "select", proxies: ["Static", "Auto", "United States"] },
       {
         name: "Auto",
         type: "url-test",
@@ -114,8 +114,8 @@ describe("native profile compiler", () => {
           {
             name: "PROXY",
             type: "select",
-            proxies: ["Static"],
-            use: ["United States", "Alpha", "Beta"],
+            proxies: ["Static", "United States"],
+            use: ["Alpha", "Beta"],
             filter: "United States|Traffic",
             "exclude-filter": "Traffic|States 2",
           },
@@ -166,14 +166,41 @@ describe("native profile compiler", () => {
     ).toThrow();
   });
 
-  test("rejects unknown use sources and ambiguous provider/group names", () => {
-    expect(() =>
-      compileProfile(
-        profile({ "proxy-groups": [{ name: "PROXY", type: "select", use: ["Missing"] }] }),
-        providers,
-        [],
-      ),
-    ).toThrow();
+  test.each([
+    "Auto",
+    "PROXY",
+    "Static",
+    "[Alpha] United States 1",
+    "DIRECT",
+    "Missing",
+    "$unknown",
+  ])(
+    "rejects non-provider use source %s with a diagnostic identifying the group and source",
+    (source) => {
+      expect(() =>
+        compileProfile(
+          profile({
+            "proxy-groups": [
+              {
+                name: "PROXY",
+                type: "select",
+                proxies: ["Static"],
+                use: [source],
+                "include-all-providers": true,
+              },
+              { name: "Auto", type: "select", proxies: ["Static"] },
+            ],
+          }),
+          providers,
+          [],
+        ),
+      ).toThrow(
+        `Proxy group PROXY references an unknown provider in use: ${source}. Use proxies for proxy or group references.`,
+      );
+    },
+  );
+
+  test("rejects ambiguous provider/group names", () => {
     expect(() =>
       compileProfile(
         profile({ "proxy-groups": [{ name: "Alpha", type: "select", proxies: ["Static"] }] }),
@@ -200,21 +227,19 @@ describe("native profile compiler", () => {
     expect(() => compileProfile(profile(), providers, [node("Static")])).toThrow();
   });
 
-  test("rejects cycles through both native proxies and use references", () => {
-    for (const key of ["proxies", "use"]) {
-      expect(() =>
-        compileProfile(
-          profile({
-            "proxy-groups": [
-              { name: "PROXY", type: "select", [key]: ["Other"] },
-              { name: "Other", type: "select", [key]: ["PROXY"] },
-            ],
-          }),
-          providers,
-          [],
-        ),
-      ).toThrow();
-    }
+  test("rejects cycles through native group references", () => {
+    expect(() =>
+      compileProfile(
+        profile({
+          "proxy-groups": [
+            { name: "PROXY", type: "select", proxies: ["Other"] },
+            { name: "Other", type: "select", proxies: ["PROXY"] },
+          ],
+        }),
+        providers,
+        [],
+      ),
+    ).toThrow("Circular proxy or group reference");
   });
 
   test("rejects unresolved members, rule targets, and rule providers", () => {

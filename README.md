@@ -53,8 +53,7 @@ proxy-providers:
 proxy-groups:
   - name: PROXY
     type: select
-    proxies: [Local Direct]
-    use: [Auto, Selected]
+    proxies: [Local Direct, Auto, Selected]
   - name: Auto
     type: url-test
     include-all-providers: true
@@ -83,7 +82,7 @@ For a JMS bandwidth counter, set `proxy-providers.JMS.__sub-store.bwcounter` to 
 
 Names are normalized in order: optional common affix stripping, sequential name overrides, then the explicit prefix and suffix. Provider and group filters match these final names. Name overrides run sequentially and support JavaScript named capture replacements such as `$<number>`. Patterns use JavaScript regular expressions and accept a leading `(?i)` for case-insensitive matching. Invalid patterns fail the build.
 
-A group's `use` accepts provider names, group names, and `$info`. Group names remain group references. `include-all-providers` imports every provider in profile order and excludes generated Info Proxies. Members are collected in order: explicit `proxies`, `use`, then `include-all-providers`, with stable deduplication. `filter` keeps imported proxy names, then `exclude-filter` removes matching names; explicit proxy members and group references retain their place.
+Use a group's native `proxies` list for explicit proxy names and nested group references. `use` accepts only declared proxy-provider names and the reserved `$info` source. Proxy names, group names, built-in targets, and unknown sources in `use` fail compilation. `include-all-providers` imports every provider in profile order and excludes generated Info Proxies. Members are collected in order: explicit `proxies`, `use`, then `include-all-providers`, with stable deduplication. `filter` keeps imported proxy names, then `exclude-filter` removes matching names; explicit proxy members and group references retain their place.
 
 Static proxies stay first, followed by Provider Proxies in profile order and generated Info Proxies. Provider-local `dialer-proxy` references follow renamed proxies. Compilation removes `proxy-providers`, build metadata, group build directives, and every key beginning with `__` recursively. Use private keys such as `__health-check` to define YAML anchors and reuse them with `<<` merges. YAML merges are resolved before compilation.
 
@@ -129,9 +128,9 @@ sub-store publish /path/to/profile.yaml
 sub-store publish --config /path/to/config.toml
 ```
 
-The CLI recursively discovers non-hidden `*.yaml` files, sorts them by path, and builds each profile for its declared target before any upload begins. You can organize profiles as `all/mihomo.yaml`, `all/stash.yaml`, `own/mihomo.yaml`, and `own/stash.yaml`. The success count reports profile files; those four files publish through two uploads grouped by subscription ID. Hidden folders and directory symlinks are skipped. Empty folders, build failures, and upload failures cause a nonzero exit.
+The CLI recursively discovers non-hidden `*.yaml` files, sorts them by path, and builds each profile for its declared target before any upload begins. You can organize profiles as `all/mihomo-smart.yaml`, `all/stash.yaml`, and `share/mihomo.yaml`. The success count reports profile files; when the two `all` files share an ID and `share` uses another, those three files publish through two uploads grouped by subscription ID. Hidden folders and directory symlinks are skipped. Empty folders, build failures, and upload failures cause a nonzero exit.
 
-Add a Smart variant such as `all/mihomo-smart.yaml` with the same ID and `target: mihomo-smart`; it is discovered automatically and published as a separate artifact in the same upload.
+Add another target such as `all/mihomo.yaml` with the same ID and `target: mihomo`; it is discovered automatically and published as a separate artifact in the same upload.
 
 The default config and profiles folders follow `XDG_CONFIG_HOME` when set. Publishing requires a readable configuration file and `[publish].token`; `[publish].base-url` defaults to `https://subs.liblaf.me`. Credentials are read only from the TOML file; the CLI ignores `SUB_STORE_API_TOKEN` and `SUB_STORE_URL`. HTTPS is required except for localhost development. The CLI sends the upload token in an `Authorization: Bearer` header and refuses redirects. Keep `config.toml` private, for example with `chmod 600 ~/.config/sub-store/config.toml`.
 

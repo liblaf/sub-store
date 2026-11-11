@@ -30,7 +30,7 @@ function renderGroups(target: "mihomo" | "stash"): string {
         strategy: "consistent-hashing",
         ...healthCheck,
       },
-      { name: "PROXY", type: "select", use: ["Failover", "Balanced"] },
+      { name: "PROXY", type: "select", proxies: ["Failover", "Balanced"] },
     ],
     rules: ["MATCH,PROXY"],
   });

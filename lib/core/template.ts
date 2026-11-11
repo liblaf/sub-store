@@ -51,12 +51,10 @@ export function compileProfile(
   }
   const allProviderProxies = providerNames.flatMap((name) => providers.get(name)!);
   const proxies = [...profile.proxies, ...allProviderProxies, ...infoProxies];
-  const groupNames = new Set<string>();
   const targets = new Set(BUILTIN_TARGETS);
   for (const proxy of proxies) addUnique(targets, proxy.name);
   for (const group of profile["proxy-groups"]) {
     addUnique(targets, group.name);
-    groupNames.add(group.name);
   }
   for (const name of providerNames) {
     if (targets.has(name))
@@ -84,8 +82,10 @@ export function compileProfile(
     for (const name of group.use) {
       if (name === "$info") append(infoProxies);
       else if (providers.has(name)) append(providers.get(name)!);
-      else if (groupNames.has(name)) names.push(name);
-      else throw new Error(`Proxy group ${group.name} references an unknown use source: ${name}`);
+      else
+        throw new Error(
+          `Proxy group ${group.name} references an unknown provider in use: ${name}. Use proxies for proxy or group references.`,
+        );
     }
     if (group["include-all"] || group["include-all-proxies"]) append(profile.proxies);
     if (group["include-all"] || group["include-all-providers"]) append(allProviderProxies);

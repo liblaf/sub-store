@@ -48,7 +48,7 @@ proxy-groups:
     filter: Missing
   - name: PROXY
     type: select
-    use: [Auto, Empty]
+    proxies: [Auto, Empty]
 rules:
   - MATCH,PROXY
 `,
