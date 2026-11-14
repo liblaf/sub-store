@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Conventional Changelog](https://github.com/conventional-changelog/conventional-changelog-config-spec/blob/master/versions/2.2.0/README.md),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.7.0](https://github.com/liblaf/sub-store/releases/tag/v0.7.0) - 2026-11-14
+
+### 💥 BREAKING CHANGES
+
+- **(core)** Move nested group references from use to proxies. Invalid use sources now report the group and source. - [b82b460](https://github.com/liblaf/sub-store/commit/b82b4604d054e2796e1fbd0fa93cdd7a9111bb06) by [@liblaf](https://github.com/liblaf)
+
+### 🐛 Bug Fixes
+
+- **(core)** **\[breaking\]** restrict group use to providers and $info - [b82b460](https://github.com/liblaf/sub-store/commit/b82b4604d054e2796e1fbd0fa93cdd7a9111bb06) by [@liblaf](https://github.com/liblaf)
+
+### ❤️ Contributors
+
+- [@renovate[bot]](https://github.com/apps/renovate)
+- [@liblaf](https://github.com/liblaf)
+- [@liblaf-copier[bot]](https://github.com/apps/liblaf-copier)
+
 ## [v0.6.0](https://github.com/liblaf/sub-store/releases/tag/v0.6.0) - 2026-11-06
 
 ### 💥 BREAKING CHANGES
@@ -20,6 +36,7 @@ config.toml. SUB_STORE_API_TOKEN and SUB_STORE_URL no longer configure the CLI. 
 
 ### ❤️ Contributors
 
+- [@liblaf-release-please[bot]](https://github.com/apps/liblaf-release-please)
 - [@liblaf](https://github.com/liblaf)
 - [@renovate[bot]](https://github.com/apps/renovate)
 
